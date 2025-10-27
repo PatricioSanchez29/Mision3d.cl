@@ -47,7 +47,7 @@ function add(id){
   if(it) it.qty++;
   else cart.push({id, qty:1});
   save(); badge();
-  const prod = PRODUCTS.find(x=>x.id===id);
+  const prod = window.PRODUCTS?.find(x=>x.id===id);
   if (prod && typeof showToast === 'function') {
     showToast(`¡${prod.name} agregado al carrito!`, 'success');
   }
@@ -96,7 +96,7 @@ function render(highlightId, addedName){
     c.innerHTML = '<p>Carrito vacío</p>';
   } else {
     cart.forEach(it=>{
-      const p = PRODUCTS.find(x=>x.id===it.id);
+      const p = window.PRODUCTS?.find(x=>x.id===it.id);
       if(!p) return;
       const sub = p.price * it.qty;
       t += sub;
@@ -136,13 +136,21 @@ function render(highlightId, addedName){
 function showSearchSuggestions(text) {
   const sugDiv = document.getElementById('searchSuggestions');
   if (!sugDiv) return;
+  
+  // Verificar que PRODUCTS esté disponible
+  if (!window.PRODUCTS || !Array.isArray(window.PRODUCTS)) {
+    console.warn('PRODUCTS no está disponible aún');
+    return;
+  }
+  
   const txt = (text||'').trim().toLowerCase();
   if (!txt) {
     sugDiv.innerHTML = '';
     sugDiv.style.display = 'none';
     return;
   }
-  const matches = PRODUCTS.filter(p => p.name.toLowerCase().includes(txt));
+  
+  const matches = window.PRODUCTS.filter(p => p.name.toLowerCase().includes(txt));
   if (matches.length === 0) {
     sugDiv.innerHTML = '<div style="color:#888">No se encontraron productos</div>';
     sugDiv.style.display = 'block';
@@ -217,7 +225,11 @@ function applySort(list){
 function buildCategoryChips(){
   const cont = document.getElementById('categoryChips');
   if(!cont) return;
-  const cats = ['all', ...Array.from(new Set(PRODUCTS.map(p=>p.category)))];
+  if (!window.PRODUCTS || !Array.isArray(window.PRODUCTS)) {
+    console.warn('PRODUCTS no disponible para categorías');
+    return;
+  }
+  const cats = ['all', ...Array.from(new Set(window.PRODUCTS.map(p=>p.category)))];
   cont.innerHTML = cats.map(c=>`<span class="chip" data-cat="${c}">${c==='all'?'Todos':c}</span>`).join('');
   cont.querySelectorAll('.chip').forEach(ch=>{
     ch.onclick=()=>{
@@ -233,6 +245,13 @@ function buildCategoryChips(){
 function renderCatalog(filterText = ""){
   const grid = document.getElementById('catalogGrid') || document.querySelector('.catalog-grid') || document.querySelector('.grid.catalog-grid');
   if (!grid) return;
+  
+  // Verificar que PRODUCTS esté disponible
+  if (!window.PRODUCTS || !Array.isArray(window.PRODUCTS) || window.PRODUCTS.length === 0) {
+    console.warn('PRODUCTS no está disponible o está vacío');
+    grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#888">Cargando productos...</p>';
+    return;
+  }
 
   if(!renderCatalog._loading){
     // Usar skeleton loaders de ui-components.js si está disponible
@@ -253,7 +272,7 @@ function renderCatalog(filterText = ""){
     return;
   }
 
-  let productos = PRODUCTS.slice();
+  let productos = window.PRODUCTS.slice();
 
   if (filterText) {
     const txt = filterText.trim().toLowerCase();
@@ -517,7 +536,7 @@ async function confirmCheckout(){
   }
 
   const total = cart.reduce((a, it) => {
-    const p = PRODUCTS.find(x => x.id === it.id);
+    const p = window.PRODUCTS?.find(x => x.id === it.id);
     return a + (p ? p.price * it.qty : 0);
   }, 0);
   
@@ -531,7 +550,7 @@ async function confirmCheckout(){
   const totalFinal = total + costoEnvio;
 
   const cartItems = cart.map(it=>{
-    const p = PRODUCTS.find(x=>x.id===it.id) || {};
+    const p = window.PRODUCTS?.find(x=>x.id===it.id) || {};
     return { id: p.id || it.id, name: p.name || '', price: p.price || 0, qty: it.qty };
   });
 
