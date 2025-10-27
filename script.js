@@ -47,6 +47,12 @@ function add(id){
   if(it) it.qty++;
   else cart.push({id, qty:1});
   save(); badge();
+  
+  // Animar botón del carrito
+  if (typeof window.animateCartButton === 'function') {
+    window.animateCartButton();
+  }
+  
   const prod = window.PRODUCTS?.find(x=>x.id===id);
   if (prod && typeof showToast === 'function') {
     showToast(`¡${prod.name} agregado al carrito!`, 'success');

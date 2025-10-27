@@ -33,6 +33,11 @@ function addToWishlist(productId) {
     wishlist.push(productId);
     saveWishlist();
     
+    // Animar botón de favoritos
+    if (typeof window.animateWishlistButton === 'function') {
+      window.animateWishlistButton();
+    }
+    
     if (typeof showToast === 'function') {
       const product = window.PRODUCTS?.find(p => p.id === productId);
       showToast(`❤️ ${product?.name || 'Producto'} agregado a favoritos`, 'success');

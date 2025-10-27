@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Mision3D - Tienda</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css"/>
   <script>window.GA_MEASUREMENT_ID = 'G-XXXXXXXXXX';</script>
   <script src="consent.js"></script>
@@ -36,6 +39,7 @@
       </a>
     </h1>
     <nav class="nav">
+      <a href="index.html" class="active">Inicio</a>
       <a href="catalogo.html" id="navCatalog">Catálogo</a>
       <a href="#nosotros">Nosotros</a>
       <a href="#contacto">Contacto</a>
@@ -54,6 +58,7 @@
         </button>
       </div>
       <div id="searchSuggestions" class="search-suggestions"></div>
+      <div id="headerTrendChips" class="trend-chips" aria-label="Búsquedas populares"></div>
     </div>
     <div class="right-actions" style="display:flex;align-items:center;gap:10px">
       <div id="userArea" class="user-area">
@@ -68,7 +73,7 @@
       </button>
     </div>
   </header>
-  <div class="announcement-bar"><div class="ann-track"><span>Santiago despacho 2 a 3 días hábiles • </span><span>Regiones envío 4 a 5 días hábiles • </span><span>Pedidos personalizados: cotización gratuita • </span><span>Soporte directo vía WhatsApp • </span><span>Santiago despacho 2 a 3 días hábiles • </span><span>Regiones envío 4 a 5 días hábiles • </span><span>Pedidos personalizados: cotización gratuita • </span><span>Soporte directo vía WhatsApp • </span></div></div>
+  <div class="announcement-bar"><div class="ann-track"><span>Santiago despacho 2 a 3 días hábiles • Regiones envío 4 a 5 días hábiles • Pedidos personalizados: cotización gratuita • Soporte directo vía WhatsApp • Santiago despacho 2 a 3 días hábiles • Regiones envío 4 a 5 días hábiles • Pedidos personalizados: cotización gratuita • Soporte directo vía WhatsApp • Santiago despacho 2 a 3 días hábiles • Regiones envío 4 a 5 días hábiles • Pedidos personalizados: cotización gratuita • Soporte directo vía WhatsApp • Santiago despacho 2 a 3 días hábiles • Regiones envío 4 a 5 días hábiles • Pedidos personalizados: cotización gratuita • Soporte directo vía WhatsApp • </span></div></div>
 
   <!-- Mini resumen carrito -->
   <section id="miniCart" style="max-width:1200px;margin:10px auto 0;padding:0 20px;display:none">
@@ -87,75 +92,84 @@
 
   <!-- Hero -->
   <section class="hero" id="hero">
-    <h2>Impresión 3D Personalizada</h2>
-    <p>Traemos tus ideas al mundo real y enviamos a todo Chile.</p>
-    
-  </section>
-
-  <!-- Beneficios -->
-  <section class="beneficios" id="beneficios">
-    <div class="item">
-      <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M20 8H4V6C4 4.9 4.9 4 6 4H18C19.1 4 20 4.9 20 6V8Z" fill="#6366f1" opacity="0.3"/>
-        <path d="M20 8V18C20 19.1 19.1 20 18 20H6C4.9 20 4 19.1 4 18V8M1 8H23M12 12V16M9 20L7 23M15 20L17 23" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      <h4>Envío a todo Chile</h4>
-      <p>Despachos rápidos</p>
+    <div class="hero-content">
+      <h2 class="hero-title">Impresión 3D Personalizada</h2>
+      <p class="hero-subtitle">Traemos tus ideas al mundo real y enviamos a todo Chile.</p>
+      <div class="hero-badges">
+        <span class="hero-badge">✨ Calidad Premium</span>
+        <span class="hero-badge">🚀 Envío Rápido</span>
+        <span class="hero-badge">💡 100% Personalizable</span>
+      </div>
     </div>
-    <div class="item">
-      <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" fill="#10b981" opacity="0.3"/>
-        <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <circle cx="8" cy="10" r="1" fill="#10b981"/>
-        <circle cx="12" cy="10" r="1" fill="#10b981"/>
-        <circle cx="16" cy="10" r="1" fill="#10b981"/>
-      </svg>
-      <h4>Contacto directo</h4>
-      <p>Pedidos por WhatsApp</p>
-    </div>
-    <div class="item">
-      <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="4" y="3" width="16" height="18" rx="2" fill="#f59e0b" opacity="0.3"/>
-        <path d="M12 6V10M12 14H12.01M8 18H16C17.1046 18 18 17.1046 18 16V8C18 6.89543 17.1046 6 16 6H8C6.89543 6 6 6.89543 6 8V16C6 17.1046 6.89543 18 8 18Z" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
-        <circle cx="12" cy="14" r="0.5" fill="#f59e0b"/>
-      </svg>
-      <h4>Chat en línea</h4>
-      <p>Consulta en tiempo real</p>
-    </div>
-    <div class="item">
-      <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" fill="#8b5cf6" opacity="0.3"/>
-        <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M14 2V8H20" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M12 18V12M9 15L12 12L15 15" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      <h4>Impresión 3D</h4>
-      <p>Calidad profesional</p>
-    </div>
+    <div class="hero-decoration"></div>
   </section>
 
   <!-- Productos (versión simplificada inicio) -->
   <section id="productos" class="productos">
-    <h3>Catálogo</h3>
+    <h3 class="section-title">Catálogo Destacado</h3>
+    <p class="section-subtitle">Descubre nuestros productos más populares de impresión 3D</p>
     <div class="grid" id="homeProductsGrid">
       <!-- Los productos se cargarán dinámicamente desde Firebase -->
     </div>
-    <p style="margin-top:18px"><a href="catalogo.html" class="btn outline" style="text-decoration:none">Ver catálogo completo →</a></p>
+    <p style="margin-top:30px;text-align:center">
+      <a href="catalogo.html" class="btn-ver-mas">
+        Ver catálogo completo 
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </a>
+    </p>
+  </section>
+
+  <!-- Beneficios -->
+  <section class="beneficios" id="beneficios">
+    <div class="beneficios-header">
+      <h3 class="section-title">¿Por qué elegirnos?</h3>
+      <p class="section-subtitle">Calidad, rapidez y atención personalizada en cada pedido</p>
+    </div>
+    <div class="beneficios-grid">
+      <div class="item">
+        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 8H4V6C4 4.9 4.9 4 6 4H18C19.1 4 20 4.9 20 6V8Z" fill="#6366f1" opacity="0.3"/>
+          <path d="M20 8V18C20 19.1 19.1 20 18 20H6C4.9 20 4 19.1 4 18V8M1 8H23M12 12V16M9 20L7 23M15 20L17 23" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <h4>Envío a todo Chile</h4>
+        <p>Despachos rápidos y seguros a todo el país</p>
+      </div>
+      <div class="item">
+        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" fill="#10b981" opacity="0.3"/>
+          <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="8" cy="10" r="1" fill="#10b981"/>
+          <circle cx="12" cy="10" r="1" fill="#10b981"/>
+          <circle cx="16" cy="10" r="1" fill="#10b981"/>
+        </svg>
+        <h4>Contacto directo</h4>
+        <p>Atención personalizada vía WhatsApp</p>
+      </div>
+      <div class="item">
+        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="3" width="16" height="18" rx="2" fill="#f59e0b" opacity="0.3"/>
+          <path d="M12 6V10M12 14H12.01M8 18H16C17.1046 18 18 17.1046 18 16V8C18 6.89543 17.1046 6 16 6H8C6.89543 6 6 6.89543 6 8V16C6 17.1046 6.89543 18 8 18Z" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="12" cy="14" r="0.5" fill="#f59e0b"/>
+        </svg>
+        <h4>Soporte en línea</h4>
+        <p>Resolvemos tus dudas en tiempo real</p>
+      </div>
+      <div class="item">
+        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" fill="#8b5cf6" opacity="0.3"/>
+          <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M14 2V8H20" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M12 18V12M9 15L12 12L15 15" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <h4>Calidad Premium</h4>
+        <p>Impresión 3D profesional garantizada</p>
+      </div>
+    </div>
   </section>
   <!-- Nosotros -->
   <section id="nosotros" class="nosotros"><h3>Sobre Mision3D</h3><p>Emprendimiento chileno de impresión 3D personalizada. Creamos desde piezas funcionales hasta figuras coleccionables y enviamos a todo Chile.</p></section>
-
-  <!-- Reseñas recientes -->
-  <section id="resenas" class="reviews-section">
-    <h3>Reseñas más recientes</h3>
-    <div class="reviews-wrapper">
-      <button class="reviews-nav prev" id="reviewsPrev" aria-label="Anterior">‹</button>
-      <div class="reviews-viewport">
-        <div class="reviews-track" id="reviewsTrack"></div>
-      </div>
-      <button class="reviews-nav next" id="reviewsNext" aria-label="Siguiente">›</button>
-    </div>
-  </section>
 
   <!-- Contacto -->
   <section id="contacto" class="contacto"><h3>Contáctanos</h3><p>Haz tus pedidos por WhatsApp o Instagram.</p><a href="https://wa.me/56950503585" class="btn whatsapp">WhatsApp</a><a href="https://instagram.com/mision3d.cl" class="btn instagram">Instagram</a></section>
@@ -467,6 +481,7 @@
 </script>
 <script src="ui-components.js"></script>
 <script src="validations.js"></script>
+<script src="animations.js"></script>
 <script src="script.js"></script>
 <script src="wishlist.js"></script>
 <script src="ux-enhancements.js"></script>
