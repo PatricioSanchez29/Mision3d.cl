@@ -95,9 +95,9 @@
 	background: #fff;
 	border: 1px solid #ccc;
 	border-radius: 8px;
-	box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+	box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 	min-width: 220px;
-	z-index: 100;
+	z-index: 10001;
 	font-size: 0.98rem;
 	max-height: 220px;
 	overflow-y: auto;
@@ -203,7 +203,7 @@ body.dark .reviews-section {background:#0f172a}
 body.dark .review-card {background:#1e293b;border-color:#334155}
 body.dark .footer {background:#0f172a}
 body.dark .toast {background:#334155}
-body.dark .search-suggestions {background:#1e293b;border-color:#334155}
+body.dark .search-suggestions {background:#1e293b;border-color:#334155;box-shadow:0 4px 12px rgba(0,0,0,0.4)}
 .footer-logo{height:70px;width:auto;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,.25))}
 @media (max-width:600px){.footer-logo{height:54px}}
 body.dark .footer-logo{filter:drop-shadow(0 2px 4px rgba(0,0,0,.55)) brightness(1.05)}
@@ -268,7 +268,7 @@ body.dark .view-btn.active{background:#6366f1;border-color:#6366f1;color:#fff}
 .catalog-controls select {padding:6px 10px;border-radius:8px;border:1px solid #d1d5db;background:#fff;font-size:.9rem}
 .result-count {font-size:.8rem;color:#555;margin-left:8px}
 .sr-only {position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-.header{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.1);position:sticky;top:0}
+.header{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.1);position:sticky;top:0;z-index:1000}
 .logo{color:#4f46e5}
 .logo-img{height:96px;width:auto;display:block;object-fit:contain;transition:height .25s}
  .logo-text{font-size:2.9rem;font-weight:800;background:linear-gradient(90deg,#6366f1,#06b6d4,#f59e0b);-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:1px}
