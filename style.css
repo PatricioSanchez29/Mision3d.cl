@@ -1036,3 +1036,44 @@ body.dark .faq-bg {opacity:.35}
 .pay-option input[type="radio"]:checked ~ .pay-content .pay-detail {
   display: block;
 }
+
+/* ===== RESPONSIVE MOBILE ===== */
+@media (max-width: 768px) {
+  .header { flex-wrap: wrap; padding: 10px 12px; gap: 10px; }
+  .logo { order: 1; }
+  .nav { order: 3; width: 100%; display: flex; justify-content: center; gap: 12px; padding-top: 8px; border-top: 1px solid #e5e7eb; }
+  .nav a { margin: 0; font-size: 0.9rem; }
+  .search-header { order: 2; margin-right: 8px; }
+  .search-header .search-bar { max-width: 180px !important; font-size: 0.85rem; }
+  .right-actions { order: 2; gap: 8px !important; }
+  .cart-btn { padding: 6px 10px; font-size: 0.9rem; }
+  .hero { padding: 50px 16px; }
+  .hero h2 { font-size: 1.8rem !important; }
+  .hero p { font-size: 1rem; }
+  .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)) !important; gap: 12px; padding: 12px; }
+  .card img { height: 160px !important; }
+  .card .name { font-size: 0.95rem; }
+  .card .price { font-size: 1.1rem; }
+  .card .desc { font-size: 0.85rem; }
+  .announcement-bar { font-size: 0.75rem; padding: 8px 0; }
+  .features { grid-template-columns: 1fr !important; gap: 20px; padding: 40px 16px; }
+  .feature h3 { font-size: 1.1rem; }
+  .feature p { font-size: 0.9rem; }
+  .cart { width: 90% !important; max-width: 350px; }
+  .cart-item { grid-template-columns: 60px 1fr auto !important; gap: 8px; }
+  .cart-item img { width: 60px; height: 60px; }
+  .cart-item .name { font-size: 0.85rem; }
+  .cart-item .qty button { padding: 4px 8px; font-size: 0.85rem; }
+  .user-area .user-badge { font-size: 0.8rem; padding: 4px 8px; }
+  #logoutBtn { font-size: 0.7rem; padding: 2px 6px; }
+}
+
+@media (max-width: 480px) {
+  .logo-img { height: 60px !important; }
+  .hero h2 { font-size: 1.5rem !important; }
+  .grid { grid-template-columns: 1fr 1fr !important; gap: 10px; }
+  .card { padding: 8px; }
+  .card img { height: 140px !important; }
+  .card .btns { flex-direction: column; gap: 6px; }
+  .cart { width: 95% !important; }
+}
