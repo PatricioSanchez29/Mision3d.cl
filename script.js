@@ -160,9 +160,9 @@ function showSearchSuggestions(text) {
   sugDiv.style.display = 'block';
   Array.from(sugDiv.children).forEach(div => {
     div.onclick = () => {
-      const si = document.getElementById('searchInput');
-      if(si) si.value = div.textContent;
-      renderCatalog(div.textContent);
+      const productId = div.dataset.id;
+      // Redirigir a la página del producto
+      window.location.href = `producto.html?id=${productId}`;
       sugDiv.innerHTML = '';
       sugDiv.style.display = 'none';
     };
@@ -636,6 +636,19 @@ document.addEventListener('DOMContentLoaded', ()=>{
     searchInput.addEventListener('keydown', e=>{
       if(e.key==='Enter'){
         e.preventDefault();
+        const txt = searchInput.value.trim().toLowerCase();
+        
+        // Si hay texto, buscar el primer producto que coincida
+        if (txt && window.PRODUCTS && window.PRODUCTS.length > 0) {
+          const match = window.PRODUCTS.find(p => p.name.toLowerCase().includes(txt));
+          if (match) {
+            // Redirigir a la página del producto
+            window.location.href = `producto.html?id=${match.id}`;
+            return;
+          }
+        }
+        
+        // Si no hay coincidencias, solo filtrar el catálogo
         renderCatalog(searchInput.value);
         const sugDiv = document.getElementById('searchSuggestions');
         if(sugDiv){ sugDiv.innerHTML = ''; sugDiv.style.display='none'; }
