@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: mision3d
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: FLOW_API_KEY
+        sync: false
+      - key: FLOW_SECRET_KEY
+        sync: false
+      - key: FLOW_API_URL
+        value: https://www.flow.cl/api
+      - key: CORS_ORIGIN
+        value: https://mision3d.onrender.com
+      - key: FIREBASE_DATABASE_URL
+        sync: false
+      - key: FIREBASE_CREDENTIALS_JSON
+        sync: false

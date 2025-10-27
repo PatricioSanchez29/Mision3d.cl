@@ -150,6 +150,25 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
+// ===== Health Check Endpoint para Render =====
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    memory: process.memoryUsage()
+  });
+});
+
+// Root endpoint
+app.get('/api', (req, res) => {
+  res.status(200).json({ 
+    message: 'Mision3D API', 
+    version: '1.0.0',
+    status: 'running' 
+  });
+});
+
 // Servir archivos estáticos del frontend (HTML, CSS, JS, imágenes)
 // Los archivos están en la carpeta padre (..)
 import path from 'path';
