@@ -252,16 +252,29 @@ function initRegions(){
 
 // Ejecutar al cargar
 document.addEventListener("DOMContentLoaded", ()=>{
-  // Verificar que haya productos en el carrito
-  const initialCart = JSON.parse(localStorage.getItem('cart') || '[]');
-  if (!initialCart || initialCart.length === 0) {
-    alert('Tu carrito está vacío. Serás redirigido al catálogo.');
-    window.location.href = 'catalogo.html';
-    return;
+  initRegions();
+  
+  // IMPORTANTE: Esperar a que script.js inicialice completamente
+  // Usamos un pequeño delay para asegurar que window.cart esté disponible
+  const checkCartAndRender = () => {
+    const currentCart = window.cart || JSON.parse(localStorage.getItem('cart') || '[]');
+    
+    if (!currentCart || currentCart.length === 0) {
+      alert('Tu carrito está vacío. Serás redirigido al catálogo.');
+      window.location.href = 'catalogo.html';
+      return;
+    }
+    
+    renderCheckoutSummary();
+  };
+  
+  // Ejecutar validación después de que script.js haya cargado
+  if (window.cart !== undefined) {
+    checkCartAndRender();
+  } else {
+    setTimeout(checkCartAndRender, 50);
   }
   
-  initRegions();
-  renderCheckoutSummary();
   // Conectar botón principal con confirmCheckout (definida en script.js)
   const btn = document.getElementById('btnConfirmOrder');
   if(btn){
