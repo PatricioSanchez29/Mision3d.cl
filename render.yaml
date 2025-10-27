@@ -14,10 +14,14 @@ services:
         value: 10000
       - key: FLOW_API_KEY
         sync: false
-      - key: FLOW_SECRET_KEY
+      - key: FLOW_SECRET
         sync: false
-      - key: FLOW_API_URL
+      - key: FLOW_BASE_URL
         value: https://www.flow.cl/api
+      - key: FLOW_RETURN_URL
+        value: https://mision3d-cl.onrender.com/flow/retorno
+      - key: FLOW_CONFIRM_URL
+        value: https://mision3d-cl.onrender.com/flow/confirm
       - key: CORS_ORIGIN
         value: https://mision3d.onrender.com
       - key: FIREBASE_DATABASE_URL

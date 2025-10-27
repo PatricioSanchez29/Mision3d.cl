@@ -16,18 +16,28 @@ const __dirname = dirname(__filename);
 
 dotenv.config();
 
+// ==== Compatibilidad de nombres de variables (shim) ====
+// Aceptar tanto FLOW_SECRET como FLOW_SECRET_KEY
+if (!process.env.FLOW_SECRET && process.env.FLOW_SECRET_KEY) {
+  process.env.FLOW_SECRET = process.env.FLOW_SECRET_KEY;
+}
+// Aceptar tanto FLOW_BASE_URL como FLOW_API_URL
+if (!process.env.FLOW_BASE_URL && process.env.FLOW_API_URL) {
+  process.env.FLOW_BASE_URL = process.env.FLOW_API_URL;
+}
+
 // Log de variables de entorno para debugging
 console.log("=== VERIFICACIÓN DE VARIABLES DE ENTORNO ===");
 console.log("🔑 FLOW_API_KEY existe:", !!process.env.FLOW_API_KEY);
-console.log("🔑 FLOW_SECRET_KEY existe:", !!process.env.FLOW_SECRET_KEY);
-console.log("🔑 FLOW_API_URL:", process.env.FLOW_API_URL || "NO CONFIGURADA");
+console.log("🔑 FLOW_SECRET existe:", !!process.env.FLOW_SECRET);
+console.log("🔑 FLOW_BASE_URL:", process.env.FLOW_BASE_URL || "NO CONFIGURADA");
 console.log("🔥 FIREBASE_DATABASE_URL existe:", !!process.env.FIREBASE_DATABASE_URL);
 console.log("🌍 NODE_ENV:", process.env.NODE_ENV || "development");
 console.log("=============================================");
 
-if (!process.env.FLOW_API_KEY || !process.env.FLOW_SECRET_KEY) {
+if (!process.env.FLOW_API_KEY || !process.env.FLOW_SECRET) {
   console.error("❌ ERROR: Faltan credenciales de Flow!");
-  console.error("Por favor configura FLOW_API_KEY y FLOW_SECRET_KEY en las variables de entorno de Render");
+  console.error("Por favor configura FLOW_API_KEY y FLOW_SECRET en las variables de entorno de Render");
 }
 
 // ===== Protección contra Replay Attacks =====
@@ -404,7 +414,9 @@ app.post("/api/payments/flow", paymentLimiter, async (req, res) => {
       console.log('[Flow] Respuesta completa:', JSON.stringify(data, null, 2));
       
       if (data.token) {
-        const flowUrl = `https://sandbox.flow.cl/app/web/pay.php?token=${data.token}`;
+        const isSandbox = /sandbox/.test(baseUrl);
+        const payHost = isSandbox ? 'https://sandbox.flow.cl' : 'https://flow.cl';
+        const flowUrl = `${payHost}/app/web/pay.php?token=${data.token}`;
         console.log('[Flow] Redirigiendo a:', flowUrl);
         
         // Guardar pedido en Firebase/REST con commerceOrder
