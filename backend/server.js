@@ -150,6 +150,13 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
+// Servir archivos estáticos del frontend (HTML, CSS, JS, imágenes)
+// Los archivos están en la carpeta padre (..)
+import path from 'path';
+const frontendPath = path.join(__dirname, '..');
+app.use(express.static(frontendPath));
+console.log('📂 Sirviendo frontend desde:', frontendPath);
+
 // ===== Helpers numéricos =====
 const toNum = (v) => Number(v) || 0;
 
@@ -261,6 +268,11 @@ console.log('   • Pagos: 20 req/5min');
 // ===== Healthcheck =====
 app.get("/api/health", (req, res) => {
   res.json({ ok: true, ts: Date.now() });
+});
+
+// Ruta raíz sirve index.html
+app.get("/", (req, res) => {
+  res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
 // ===== Endpoint Flow =====
