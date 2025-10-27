@@ -15,7 +15,20 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 dotenv.config();
-console.log("🔑 Flow API:", process.env.FLOW_API_KEY);
+
+// Log de variables de entorno para debugging
+console.log("=== VERIFICACIÓN DE VARIABLES DE ENTORNO ===");
+console.log("🔑 FLOW_API_KEY existe:", !!process.env.FLOW_API_KEY);
+console.log("🔑 FLOW_SECRET_KEY existe:", !!process.env.FLOW_SECRET_KEY);
+console.log("🔑 FLOW_API_URL:", process.env.FLOW_API_URL || "NO CONFIGURADA");
+console.log("🔥 FIREBASE_DATABASE_URL existe:", !!process.env.FIREBASE_DATABASE_URL);
+console.log("🌍 NODE_ENV:", process.env.NODE_ENV || "development");
+console.log("=============================================");
+
+if (!process.env.FLOW_API_KEY || !process.env.FLOW_SECRET_KEY) {
+  console.error("❌ ERROR: Faltan credenciales de Flow!");
+  console.error("Por favor configura FLOW_API_KEY y FLOW_SECRET_KEY en las variables de entorno de Render");
+}
 
 // ===== Protección contra Replay Attacks =====
 // Almacén temporal de tokens procesados (en producción usar Redis)
