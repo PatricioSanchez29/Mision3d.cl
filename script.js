@@ -43,6 +43,22 @@ function closeCart(){
   $('#overlay')?.classList.remove('show');
 }
 function add(id){
+  // Validar que el ID existe
+  if (!id) {
+    console.error('ID de producto inválido');
+    return;
+  }
+  
+  // Verificar que el producto existe en PRODUCTS
+  const prod = window.PRODUCTS?.find(x=>x.id===id);
+  if (!prod) {
+    console.error('Producto no encontrado:', id);
+    if (typeof showToast === 'function') {
+      showToast('Error: Producto no encontrado', 'error');
+    }
+    return;
+  }
+  
   let it = cart.find(x=>x.id===id);
   if(it) it.qty++;
   else cart.push({id, qty:1});
@@ -53,10 +69,10 @@ function add(id){
     window.animateCartButton();
   }
   
-  const prod = window.PRODUCTS?.find(x=>x.id===id);
-  if (prod && typeof showToast === 'function') {
+  if (typeof showToast === 'function') {
     showToast(`¡${prod.name} agregado al carrito!`, 'success');
   }
+  
   // GA4: add_to_cart
   try { if (window.gaEvent && prod) window.gaEvent('add_to_cart', { currency: 'CLP', value: prod.price || 0, items: [{ item_id: prod.id, item_name: prod.name, price: prod.price, quantity: 1 }] }); } catch {}
   openCart();
@@ -615,10 +631,27 @@ document.addEventListener('DOMContentLoaded', ()=>{
   $('#closeCart')?.addEventListener('click', closeCart);
   $('#overlay')?.addEventListener('click', closeCart);
   $('#checkout')?.addEventListener('click', ()=> {
-    if(cart.length===0) alert('Tu carrito está vacío');
-    else window.location.href = 'checkout.html';
+    if(cart.length===0) {
+      if (typeof showToast === 'function') {
+        showToast('Tu carrito está vacío. Agrega productos antes de continuar.', 'warning');
+      } else {
+        alert('Tu carrito está vacío');
+      }
+    } else {
+      window.location.href = 'checkout.html';
+    }
   });
-  $('#clearCart')?.addEventListener('click', ()=>{ cart=[]; save(); render(); badge(); });
+  $('#clearCart')?.addEventListener('click', ()=>{
+    if(cart.length > 0) {
+      cart=[]; 
+      save(); 
+      render(); 
+      badge();
+      if (typeof showToast === 'function') {
+        showToast('Carrito vaciado', 'info');
+      }
+    }
+  });
 
   // botón confirmar del modal clásico (si existiera)
   $('#confirmCheckout')?.addEventListener('click', confirmCheckout);
