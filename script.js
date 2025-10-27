@@ -181,7 +181,8 @@ window.PRODUCTS = window.PRODUCTS || [
   {id:'key', name:'Llavero',              price: 4990, img:'img/llavero.png',      stars:5, reviews:1, stock:'disponible',  category:'Accesorios',     dateAdded:'2025-09-12', discount:15},
 ];
 
-// Si existe una versión en localStorage, usarla
+// IMPORTANTE: Si existe una versión en localStorage Y NO se ha cargado desde Firebase,
+// usarla temporalmente (Firebase la sobrescribirá cuando cargue)
 try {
   const ls = localStorage.getItem('PRODUCTS');
   if (ls) {
@@ -200,6 +201,7 @@ try {
         dateAdded: p.dateAdded || new Date().toISOString().slice(0,10),
         discount: Number(p.discount ?? 0)
       }));
+      console.log('[script.js] Productos cargados desde localStorage:', window.PRODUCTS.length);
     }
   }
 } catch {}

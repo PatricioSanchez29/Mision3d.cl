@@ -30,9 +30,15 @@ async function loadProductsFromRTDB() {
       const data = snap.val();
       // {id:{...}} -> [{id,...}]
       window.PRODUCTS = Object.entries(data).map(([id, p]) => ({ id, ...p }));
-      console.log("✅ [Firebase] Productos cargados:", window.PRODUCTS.length);
+      
+      // IMPORTANTE: Actualizar localStorage para sincronizar con Firebase
+      localStorage.setItem('PRODUCTS', JSON.stringify(window.PRODUCTS));
+      
+      console.log("✅ [Firebase] Productos cargados y sincronizados:", window.PRODUCTS.length);
     } else {
       console.warn("⚠️ [Firebase] No hay productos en la base de datos");
+      // Si no hay productos en Firebase, limpiar localStorage
+      localStorage.removeItem('PRODUCTS');
     }
   } catch (err) {
     console.error("❌ [Firebase] Error cargando productos:", err);
