@@ -41,6 +41,21 @@
 .dark .product-main{background:#1f1f1f}
 .dark .product-thumb{background:#2a2a2a}
 .dark .shipping-box{background:#173d17;border-color:#236a23;color:#bfeabf}
+/* Secciones relacionadas */
+.related-section{max-width:1250px;margin:60px auto 40px;padding:0 20px}
+.related-section h2{font-size:1.5rem;margin-bottom:24px;color:#333}
+.related-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:20px}
+.related-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px;text-align:center;transition:transform .3s,box-shadow .3s;cursor:pointer}
+.related-card:hover{transform:translateY(-5px);box-shadow:0 8px 16px rgba(0,0,0,.1)}
+.related-card img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:8px;margin-bottom:12px}
+.related-card h3{font-size:1rem;margin:0 0 8px;color:#333}
+.related-card .price{font-size:1.1rem;font-weight:700;color:#e6462f;margin-bottom:10px;display:block}
+.related-card .btn-add{background:#e6462f;color:#fff;border:none;padding:8px 16px;border-radius:20px;font-size:.85rem;cursor:pointer;transition:.3s}
+.related-card .btn-add:hover{background:#c93722}
+.dark .related-section h2{color:#e2e8f0}
+.dark .related-card{background:#1e293b;border-color:#334155}
+.dark .related-card h3{color:#e2e8f0}
+@media (max-width:600px){.related-grid{grid-template-columns:repeat(2,1fr);gap:12px}.related-card{padding:12px}}
 </style>
 </head><body>
 <header class="topbar" style="padding:14px 26px;display:flex;align-items:center;gap:28px;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.06)">
@@ -225,5 +240,129 @@ function renderProductDetail(){
   };
 }
 </script>
+
+<!-- Productos relacionados -->
+<section class="related-section">
+  <h2>Los clientes que compraron esto también compraron</h2>
+  <div class="related-grid" id="relatedProducts"></div>
+</section>
+
+<!-- Vistos recientemente -->
+<section class="related-section">
+  <h2>Visto recientemente</h2>
+  <div class="related-grid" id="recentlyViewed"></div>
+</section>
+
+<script>
+// ===== GUARDAR PRODUCTO EN HISTORIAL DE VISTOS =====
+function saveToRecentlyViewed(productId) {
+  try {
+    let recent = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+    // Eliminar duplicados y agregar al inicio
+    recent = recent.filter(id => id !== productId);
+    recent.unshift(productId);
+    // Mantener solo los últimos 6
+    recent = recent.slice(0, 6);
+    localStorage.setItem('recentlyViewed', JSON.stringify(recent));
+  } catch (e) {
+    console.error('Error guardando historial:', e);
+  }
+}
+
+// ===== RENDERIZAR PRODUCTOS RELACIONADOS =====
+function renderRelatedProducts(currentProduct) {
+  const container = document.getElementById('relatedProducts');
+  if (!container || !window.PRODUCTS) return;
+  
+  // Filtrar productos de la misma categoría (excluyendo el actual)
+  let related = window.PRODUCTS.filter(p => 
+    p.category === currentProduct.category && p.id !== currentProduct.id
+  );
+  
+  // Si no hay suficientes, agregar productos aleatorios
+  if (related.length < 4) {
+    const others = window.PRODUCTS.filter(p => p.id !== currentProduct.id && !related.includes(p));
+    related = [...related, ...others.slice(0, 4 - related.length)];
+  }
+  
+  // Tomar solo 4 productos
+  related = related.slice(0, 4);
+  
+  if (related.length === 0) {
+    container.innerHTML = '<p style="color:#888;text-align:center">No hay productos relacionados disponibles</p>';
+    return;
+  }
+  
+  container.innerHTML = related.map(p => `
+    <div class="related-card" onclick="window.location.href='producto.html?id=${p.id}'">
+      <img src="${p.img || 'img/placeholder.png'}" alt="${p.name}">
+      <h3>${p.name}</h3>
+      <span class="price">$${(p.price || 0).toLocaleString('es-CL')}</span>
+      <button class="btn-add" onclick="event.stopPropagation(); if(window.add) window.add('${p.id}');">
+        Añadir a la cesta
+      </button>
+    </div>
+  `).join('');
+}
+
+// ===== RENDERIZAR VISTOS RECIENTEMENTE =====
+function renderRecentlyViewed(currentProductId) {
+  const container = document.getElementById('recentlyViewed');
+  if (!container || !window.PRODUCTS) return;
+  
+  try {
+    let recent = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+    // Filtrar el producto actual
+    recent = recent.filter(id => id !== currentProductId);
+    
+    const recentProducts = recent
+      .map(id => window.PRODUCTS.find(p => p.id === id))
+      .filter(p => p) // Eliminar productos que ya no existen
+      .slice(0, 4);
+    
+    if (recentProducts.length === 0) {
+      container.parentElement.style.display = 'none';
+      return;
+    }
+    
+    container.innerHTML = recentProducts.map(p => `
+      <div class="related-card" onclick="window.location.href='producto.html?id=${p.id}'">
+        <img src="${p.img || 'img/placeholder.png'}" alt="${p.name}">
+        <h3>${p.name}</h3>
+        <span class="price">$${(p.price || 0).toLocaleString('es-CL')}</span>
+        <button class="btn-add" onclick="event.stopPropagation(); if(window.add) window.add('${p.id}');">
+          Añadir a la cesta
+        </button>
+      </div>
+    `).join('');
+  } catch (e) {
+    console.error('Error renderizando vistos recientemente:', e);
+    container.parentElement.style.display = 'none';
+  }
+}
+
+// Llamar a las funciones cuando se cargue el producto
+document.addEventListener('DOMContentLoaded', () => {
+  // Esperar a que PRODUCTS esté disponible
+  const checkProducts = setInterval(() => {
+    if (window.PRODUCTS && window.PRODUCTS.length > 0) {
+      clearInterval(checkProducts);
+      const params = new URLSearchParams(window.location.search);
+      const productId = params.get('id');
+      const currentProduct = window.PRODUCTS.find(p => p.id === productId);
+      
+      if (currentProduct) {
+        saveToRecentlyViewed(productId);
+        renderRelatedProducts(currentProduct);
+        renderRecentlyViewed(productId);
+      }
+    }
+  }, 100);
+  
+  // Timeout de seguridad
+  setTimeout(() => clearInterval(checkProducts), 5000);
+});
+</script>
+
 <script type="module" src="firebase-rtdb.js"></script>
 </body></html>
