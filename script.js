@@ -522,17 +522,20 @@ function initReviewsCarousel(){
 /* ==================== Pago ==================== */
 // Base de API
 // - Producción: same-origin ('')
-// - Local: si servimos frontend desde el mismo backend (localhost con puerto presente) usamos same-origin ('')
-//          si abrimos el HTML desde otro puerto/servidor, usamos backend por defecto en 3001
+// - Local: si abrimos el frontend con Live Server (p.ej. 127.0.0.1:5500), enviar al backend en :3001
+//          si el backend sirve también el frontend (p.ej. :3000 o :3001), usar same-origin ('')
 const API_BASE = (function(){
   if (window.API_BASE_URL) return window.API_BASE_URL.replace(/\/$/, '');
   const isLocalHost = /localhost|127\.0\.0\.1/.test(location.hostname);
-  if (isLocalHost && location.port) {
-    // mismo origen (p.ej., backend sirviendo el frontend en :3001)
-    return '';
+  if (isLocalHost) {
+    const backendPorts = new Set(['3000','3001']);
+    // Si estamos en el mismo puerto del backend, usamos same-origin
+    if (backendPorts.has(String(location.port || ''))) return '';
+    // Si estamos en otro puerto (p.ej. Live Server 5500), apuntar al backend local por defecto
+    return 'http://localhost:3001';
   }
-  // fallback a backend local por defecto
-  return isLocalHost ? 'http://localhost:3001' : '';
+  // Producción: same-origin
+  return '';
 })();
 
 async function iniciarPago(payMethod, payload) {
@@ -542,6 +545,10 @@ async function iniciarPago(payMethod, payload) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
+    if (!res.ok) {
+      const errText = await res.text().catch(()=> '');
+      throw new Error(`Error HTTP ${res.status}: ${errText.slice(0,200)}`);
+    }
     const data = await res.json();
     if (data.url) {
       window.location.href = data.url; // redirige a Flow

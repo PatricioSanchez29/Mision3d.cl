@@ -1,12 +1,260 @@
-# Guía de Deployment con SSL para Producción
+# 🚀 Guía de Despliegue - Mision3D.cl
 
-## 📋 Requisitos Previos
+## ✅ Estado Actual del Proyecto
 
-1. **Servidor con Docker y Docker Compose instalados**
-2. **Dominio apuntando a tu servidor** (registros DNS A configurados)
-3. **Puerto 80 y 443 abiertos** en el firewall
-4. **Archivo `.env` configurado** (usa `.env.example` como plantilla)
-5. **Credenciales de Firebase** en `firebase-credentials.json` (opcional pero recomendado)
+- ✅ Backend funcionando en Render
+- ✅ Pagos Flow integrados (producción)
+- ✅ Firebase Realtime Database conectado
+- ✅ CORS configurado
+- ✅ Webhooks con validación de firma HMAC
+- ✅ Rate limiting activo
+- ✅ Protección anti-replay attacks
+
+---
+
+## 📋 Variables de Entorno en Render (Configuración Actual)
+
+### Verificar en Render Dashboard → Settings → Environment
+
+```env
+# Node
+NODE_ENV=production
+PORT=10000
+
+# Flow - PRODUCCIÓN (NO sandbox)
+FLOW_API_KEY=<tu-api-key-producción-flow>
+FLOW_SECRET=<tu-secret-producción-flow>
+FLOW_BASE_URL=https://www.flow.cl/api
+FLOW_RETURN_URL=https://mision3d.onrender.com/flow/retorno
+FLOW_CONFIRM_URL=https://mision3d.onrender.com/flow/confirm
+
+# CORS (actualizar cuando tengas dominio personalizado)
+CORS_ORIGIN=https://mision3d.onrender.com,https://www.mision3d.cl,https://mision3d.cl
+
+# Firebase
+FIREBASE_DATABASE_URL=https://mision3d-72b4a-default-rtdb.firebaseio.com
+
+# Email (opcional, para confirmaciones de pedidos)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=<tu-email@gmail.com>
+SMTP_PASS=<app-password-de-gmail>
+MAIL_FROM=Mision3D <tu-email@gmail.com>
+```
+
+---
+
+## 🌐 Conectar tu Dominio Personalizado a Render
+
+### Paso 1: Comprar un Dominio (si no tienes)
+
+**Opciones recomendadas en Chile:**
+- **[NIC Chile](https://www.nic.cl)** - Dominios `.cl` oficiales (~$7.000-10.000/año)
+- **[Namecheap](https://www.namecheap.com)** - Dominios internacionales (desde $8 USD/año)
+- **[Cloudflare Registrar](https://www.cloudflare.com/products/registrar/)** - Precio al costo, sin markup
+
+### Paso 2: Configurar Custom Domain en Render
+
+1. Ve a tu Dashboard de Render → Servicio "mision3d"
+2. Click en pestaña **Settings**
+3. Sección **Custom Domains** → Click **"Add Custom Domain"**
+4. Agregar ambos dominios:
+   - `mision3d.cl` (raíz)
+   - `www.mision3d.cl` (www)
+
+### Paso 3: Configurar DNS en tu Proveedor de Dominio
+
+Render te mostrará instrucciones específicas. Generalmente necesitas:
+
+**Para dominio raíz (mision3d.cl):**
+```
+Tipo: A
+Nombre: @ (o dejar vacío)
+Valor: <IP-de-Render-que-te-dan>
+TTL: 3600
+```
+
+**Para subdominio www (www.mision3d.cl):**
+```
+Tipo: CNAME
+Nombre: www
+Valor: mision3d.onrender.com
+TTL: 3600
+```
+
+### Paso 4: Esperar Propagación DNS
+- Tiempo típico: 15-60 minutos
+- Verifica propagación: https://dnschecker.org
+
+### Paso 5: SSL Automático (Let's Encrypt)
+- Render genera certificado SSL gratis automáticamente
+- Se activa cuando DNS está correcto
+- Renovación automática cada 90 días
+
+---
+
+## 🔧 Actualizar Variables Después de Conectar Dominio
+
+### 1. Actualizar CORS_ORIGIN en Render
+```env
+CORS_ORIGIN=https://www.mision3d.cl,https://mision3d.cl
+```
+
+### 2. Actualizar URLs de Flow
+```env
+FLOW_RETURN_URL=https://www.mision3d.cl/flow/retorno
+FLOW_CONFIRM_URL=https://www.mision3d.cl/flow/confirm
+```
+
+### 3. Actualizar en Dashboard de Flow
+1. Ir a https://www.flow.cl → Ingresar → Mis Datos
+2. Actualizar **"URL de Confirmación"** a: `https://www.mision3d.cl/flow/confirm`
+3. Guardar cambios
+
+### 4. Redeploy en Render
+- **Opción A:** Render Dashboard → Manual Deploy → "Deploy Latest Commit"
+- **Opción B:** Hacer `git push origin main` (auto-deploy si está habilitado)
+
+---
+
+## 📊 Verificar que Todo Funciona
+
+### 1. Health Check
+```bash
+curl https://www.mision3d.cl/health
+```
+**Respuesta esperada:**
+```json
+{"status":"ok","timestamp":"2025-10-27T...","uptime":12345.67,"memory":{...}}
+```
+
+### 2. API Info
+```bash
+curl https://www.mision3d.cl/api
+```
+**Respuesta esperada:**
+```json
+{"message":"Mision3D API","version":"1.0.0","status":"running"}
+```
+
+### 3. Probar Flujo de Pago Completo
+1. Hacer pedido de prueba desde tu sitio
+2. Verificar redirección a Flow
+3. Completar pago (puedes usar tarjetas de prueba si Flow lo permite)
+4. Verificar que retorna a tu sitio
+5. Revisar logs en Render para confirmar webhook recibido
+6. Verificar pedido guardado en Firebase
+
+### 4. Revisar Logs en Render
+- Dashboard → Logs (tiempo real)
+- Buscar: `[Flow Confirm] Pago confirmado`
+- Buscar: `[Firebase] Pedido creado`
+
+---
+
+## 🔒 Seguridad y Optimización
+
+### ✅ Ya Implementado
+- Rate limiting (API: 100/15min, Webhook: 10/min, Pagos: 20/5min)
+- Validación de firma HMAC en webhooks
+- Protección anti-replay attacks
+- Variables sensibles en .gitignore
+- CORS restrictivo
+
+### 🌟 Mejoras Opcionales
+
+#### Cloudflare (Gratis, muy recomendado)
+**Beneficios:**
+- DDoS protection
+- CDN global (sitio más rápido)
+- Caché inteligente
+- Analytics gratuito
+- SSL adicional (doble capa)
+
+**Cómo activar:**
+1. Crear cuenta en [Cloudflare](https://www.cloudflare.com)
+2. Agregar dominio mision3d.cl
+3. Cambiar nameservers en NIC Chile a los de Cloudflare
+4. En DNS de Cloudflare: activar proxy (nube naranja) para `@` y `www`
+5. SSL/TLS: modo "Full (strict)"
+
+---
+
+## 🎯 Checklist Pre-Lanzamiento
+
+### Código
+- [x] Frontend optimizado
+- [x] Backend con rate limiting
+- [x] Webhooks seguros
+- [x] Protección anti-replay
+- [x] Manejo de errores
+
+### Configuración
+- [x] Variables de entorno en producción
+- [ ] Dominio personalizado configurado
+- [ ] SSL activo
+- [ ] URLs de Flow actualizadas en Render
+- [ ] URLs de Flow actualizadas en dashboard Flow
+- [ ] CORS actualizado con dominio final
+
+### Testing
+- [x] Pago funciona en Render
+- [ ] Pago funciona en dominio final
+- [ ] Webhook recibe confirmaciones
+- [ ] Pedidos se guardan en Firebase
+- [ ] Página de retorno muestra estado
+
+### Legal (según normativa chilena)
+- [ ] Política de Privacidad
+- [ ] Términos y Condiciones
+- [ ] Política de Devoluciones
+- [ ] Información de contacto visible
+- [ ] RUT/Razón Social visible
+
+---
+
+## 🚨 Troubleshooting Común
+
+### SSL no se activa / "Sitio no seguro"
+- **Causa:** DNS no propagado
+- **Solución:** Esperar 1 hora, verificar en dnschecker.org
+
+### Flow devuelve 401 en producción
+- **Causa:** Credenciales sandbox en vez de producción
+- **Solución:** Actualizar FLOW_API_KEY y FLOW_SECRET con valores de producción
+
+### Error CORS después de cambiar dominio
+- **Causa:** CORS_ORIGIN desactualizado
+- **Solución:** Agregar nuevo dominio a CORS_ORIGIN, redeploy
+
+### Webhook no recibe confirmaciones
+- **Causa:** URL no actualizada en Flow
+- **Solución:** Actualizar en dashboard Flow → Mis Datos
+
+---
+
+## 📞 Soporte y Recursos
+
+- **Flow:** https://www.flow.cl/docs/ | soporte@flow.cl
+- **Render:** https://render.com/docs | https://community.render.com
+- **Firebase:** https://firebase.google.com/docs
+
+---
+
+## 🎉 Mejoras Futuras (Opcional)
+
+1. **Analytics:** Google Ads, Facebook Pixel, Hotjar
+2. **Marketing:** Email automation, WhatsApp notificaciones
+3. **Panel Admin:** Gestión de productos desde web
+4. **Performance:** CDN para imágenes, PWA
+5. **Features:** Cupones, tracking envíos, reviews
+
+---
+
+## 📦 Opción Alternativa: Docker (Auto-Hosting)
+
+Si prefieres hostear en tu propio servidor VPS en vez de Render:
 
 ---
 

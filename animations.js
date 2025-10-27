@@ -56,32 +56,36 @@ window.animateCartButton = animateCartButton;
 window.animateWishlistButton = animateWishlistButton;
 
 // ========== SKELETON LOADERS ==========
+// Evitar colisiones si ya existen en otros archivos (p.ej. ui-components.js)
+(() => {
+  // Crear skeleton loader para tarjetas de productos (scope local, no global)
+  const _createSkeletonCard = () => {
+    return `
+      <div class="skeleton-card">
+        <div class="skeleton skeleton-img"></div>
+        <div class="skeleton skeleton-title"></div>
+        <div class="skeleton skeleton-text"></div>
+        <div class="skeleton skeleton-text short"></div>
+        <div class="skeleton skeleton-price"></div>
+        <div class="skeleton skeleton-btn"></div>
+      </div>
+    `;
+  };
 
-// Crear skeleton loader para tarjetas de productos
-const createSkeletonCard = () => {
-  return `
-    <div class="skeleton-card">
-      <div class="skeleton skeleton-img"></div>
-      <div class="skeleton skeleton-title"></div>
-      <div class="skeleton skeleton-text"></div>
-      <div class="skeleton skeleton-text short"></div>
-      <div class="skeleton skeleton-price"></div>
-      <div class="skeleton skeleton-btn"></div>
-    </div>
-  `;
-};
+  // Mostrar skeletons mientras cargan los productos
+  const _showSkeletonLoaders = (containerId, count = 6) => {
+    const container = document.getElementById(containerId);
+    if (!container) return;
 
-// Mostrar skeletons mientras cargan los productos
-const showSkeletonLoaders = (containerId, count = 6) => {
-  const container = document.getElementById(containerId);
-  if (!container) return;
+    const skeletonHTML = Array(count).fill(_createSkeletonCard()).join('');
+    container.innerHTML = skeletonHTML;
+  };
 
-  const skeletonHTML = Array(count).fill(createSkeletonCard()).join('');
-  container.innerHTML = skeletonHTML;
-};
-
-// Exponer función globalmente
-window.showSkeletonLoaders = showSkeletonLoaders;
+  // Exponer globalmente SOLO si no existe
+  if (!window.showSkeletonLoaders) {
+    window.showSkeletonLoaders = _showSkeletonLoaders;
+  }
+})();
 
 // ========== EFECTO PARALLAX SUAVE EN HERO ==========
 

@@ -19,9 +19,9 @@ services:
       - key: FLOW_BASE_URL
         value: https://www.flow.cl/api
       - key: FLOW_RETURN_URL
-        value: https://mision3d-cl.onrender.com/flow/retorno
+        value: https://mision3d.onrender.com/flow/retorno
       - key: FLOW_CONFIRM_URL
-        value: https://mision3d-cl.onrender.com/flow/confirm
+        value: https://mision3d.onrender.com/flow/confirm
       - key: CORS_ORIGIN
         value: https://mision3d.onrender.com
       - key: FIREBASE_DATABASE_URL
