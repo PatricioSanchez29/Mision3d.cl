@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Checkout | Tienda3D</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="style.css">
+  <script>window.GA_MEASUREMENT_ID = window.GA_MEASUREMENT_ID || 'G-XXXXXXXXXX';</script>
+  <script src="consent.js"></script>
+  <style>
+    /* ============ TU CSS ORIGINAL ============ */
+    .checkout-layout{max-width:1200px;margin:0 auto;padding:30px 20px;display:grid;grid-template-columns:1fr 380px;gap:50px}
+    .checkout-form-panel h2{margin:0 0 22px;font-size:1.4rem}
+    .section-title{font-size:1.05rem;margin:28px 0 10px;font-weight:600}
+    .field-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
+    .field{display:flex;flex-direction:column;gap:4px}
+    .field label{font-size:.72rem;text-transform:uppercase;letter-spacing:.5px;color:#555;font-weight:600}
+    .field input, .field select{padding:12px 14px;border:1px solid #ccc;border-radius:8px;font-size:.9rem;background:#fff}
+    .summary{background:#fafafa;padding:24px 24px 28px;border-radius:14px;align-self:start;position:sticky;top:20px;box-shadow:0 2px 4px rgba(0,0,0,.04)}
+    .summary h3{margin:0 0 18px;font-size:1.1rem}
+    .summary-items{display:flex;flex-direction:column;gap:14px;margin-bottom:18px;max-height:300px;overflow:auto}
+    .sum-item{display:flex;gap:12px;align-items:center;font-size:.85rem}
+    .sum-item img{width:54px;height:54px;object-fit:cover;border-radius:8px;border:1px solid #eee}
+    .sum-item .qty-badge{position:absolute;top:-6px;right:-6px;background:#222;color:#fff;font-size:.65rem;font-weight:600;padding:4px 6px;border-radius:40px}
+    .sum-item-thumb{position:relative}
+    .price-line{display:flex;justify-content:space-between;font-size:.85rem;margin:4px 0}
+    .total-line{display:flex;justify-content:space-between;font-weight:700;margin-top:14px;font-size:1.05rem}
+    .discount-box{display:flex;gap:10px;margin:12px 0 10px}
+    .discount-box input{flex:1;padding:10px 12px;border:1px solid #ccc;border-radius:8px}
+    .btn-wide{width:100%;padding:16px 22px;border:none;border-radius:40px;background:#e6462f;color:#fff;font-weight:600;font-size:.95rem;cursor:pointer;transition:.3s;margin-top:18px}
+    .btn-wide:hover{background:#c83824}
+    .notice{display:flex;gap:10px;background:#f1faf1;border:1px solid #cbe8cb;padding:12px 14px;border-radius:10px;font-size:.75rem;color:#215721;margin-bottom:10px}
+    .note-danger{background:#fdf2f2;border:1px solid #f5c2c7;color:#a23131}
+    .inline{display:flex;align-items:center;gap:8px;margin:4px 0 12px;font-size:.75rem}
+    @media (max-width:980px){.checkout-layout{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<header class="topbar" style="padding:14px 26px;display:flex;align-items:center;gap:28px;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.06)">
+  <div style="flex:0 0 auto"><a href="index.html" style="text-decoration:none;font-weight:700;color:#e6462f;font-size:1.2rem">Tienda3D</a></div>
+</header>
+
+<main class="checkout-layout">
+  <div class="checkout-form-panel">
+    <h2>Contacto</h2>
+    <div class="field-grid">
+      <div class="field" style="grid-column:1/-1">
+        <label>Correo electrónico</label>
+        <input id="inputEmail" type="email" placeholder="correo@dominio.cl">
+      </div>
+    </div>
+
+    <div class="section-title">Entrega</div>
+    <div class="field-grid">
+      <div class="field"><label>Nombre</label><input id="inputName"></div>
+      <div class="field"><label>Apellidos</label><input id="inputApellido"></div>
+      <div class="field" style="grid-column:1/-1"><label>RUT</label><input id="inputRut"></div>
+      <div class="field" style="grid-column:1/-1"><label>Dirección</label><input id="inputDireccion" placeholder="Ej: Av. Providencia 1234"></div>
+      <div class="field" style="grid-column:1/-1"><label>Región</label><select id="inputRegion"><option value="">Selecciona región</option></select></div>
+      <div class="field"><label>Comuna</label><select id="inputComuna"><option value="">Selecciona comuna</option></select></div>
+      <div class="field" style="grid-column:1/-1"><label>Teléfono</label><input id="inputTelefono"></div>
+      <!-- Campo de método de envío removido visualmente; dejamos input oculto para compatibilidad -->
+      <input type="hidden" id="inputEnvio" value="">
+      <div class="field"><label>Código Postal</label><input id="inputPostal" placeholder="Opcional"></div>
+      <div class="field" style="grid-column:1/-1"><label>Notas</label><input id="inputNotes" placeholder="Indicaciones adicionales (opcional)"></div>
+    </div>
+    <!-- Nueva sección visual de métodos de envío -->
+    <div class="section-title" style="margin-top:30px">Métodos de envío</div>
+    <div id="shippingMethods" style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+      <label class="ship-option" id="shipPorPagarCard" style="display:flex;gap:14px;border:1px solid #d5d5d5;padding:14px 16px;border-radius:12px;cursor:pointer;align-items:flex-start;position:relative">
+        <input type="radio" name="shipMethod" value="porpagar" style="margin-top:5px" checked>
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:.85rem;line-height:1.2">Despacho a Regiones / Fuera de Santiago (Envío POR PAGAR)</div>
+          <div style="font-size:.7rem;color:#555;margin-top:4px">Starken / Chilexpress. Pagas el envío al recibir o retirar. No se suma al total aquí.</div>
+        </div>
+        <div style="font-size:.7rem;font-weight:600;color:#444;white-space:nowrap">POR PAGAR</div>
+      </label>
+      <label class="ship-option" id="shipSantiagoCard" style="display:flex;gap:14px;border:1px solid #d5d5d5;padding:16px 18px;border-radius:12px;cursor:pointer;align-items:flex-start;position:relative;opacity:.55">
+        <input type="radio" name="shipMethod" value="santiago" style="margin-top:5px" disabled>
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:.88rem;line-height:1.3">Envío Comunas de Santiago</div>
+          <div style="font-size:.7rem;color:#555;margin-top:4px">Disponible al seleccionar Región Metropolitana de Santiago.</div>
+        </div>
+        <div style="font-size:.8rem;font-weight:700;color:#222;white-space:nowrap">$2.990</div>
+      </label>
+    </div>
+    <button class="btn-wide" id="btnConfirmOrder">Confirmar pedido</button>
+    <div class="section-title" style="margin-top:34px">Método de pago</div>
+   <div class="section-title" style="margin-top:34px">Pago</div>
+<div id="paymentMethods" class="payment-options">
+  
+ <div id="paymentMethods">
+<div id="paymentMethods">
+
+  <!-- Transferencia Bancaria -->
+  <label class="pay-option">
+    <input type="radio" name="payMethod" value="transferencia">
+    <div class="pay-content">
+      <div class="pay-title">
+        <span>Transferencia Bancaria</span>
+        <div class="pay-icons">
+          
+        </div>
+      </div>
+      <!-- Mensaje que aparece al seleccionar -->
+      <div class="pay-detail">
+  <img src="img/browser-icon.svg" alt="Navegador">
+  <p>Una vez ordene el pedido, recibirá un correo con toda la información para transferir.</p>
+  <p><b>IMPORTANTE:</b> Debe transferir y enviarnos el comprobante al correo <a href="mailto:pgscasanova@gmail.com">pgscasanova@gmail.com</a><br>
+  indicando el número de su pedido. Envíe el comprobante para procesar su pedido.</p>
+  <p>Datos para transferir:<br>
+  Titular: Patricio Germán Sánchez Casanova<br>
+  RUT: 192252148<br>
+  Banco: Mercado Pago<br>
+  Tipo: Cuenta Vista<br>
+  N° Cuenta: 1034627294<br>
+  Email: pgscasanova@gmail.com</p>
+      </div>
+    </div>
+  </label>
+
+  <!-- Flow -->
+  <label class="pay-option">
+    <input type="radio" name="payMethod" value="flow" checked>
+    <div class="pay-content">
+      <div class="pay-title">
+        <span>Checkout Flow</span>
+        <div class="pay-icons">
+          <img src="img/Visa_Inc._logo.svg" alt="Visa">
+          <img src="img/Mastercard-logo.png" alt="MasterCard">
+          <img src="img/American_Express_logo.svg" alt="Amex">
+          <span class="more">+2</span>
+        </div>
+      </div>
+      <small>Transacciones seguras y protegidas.</small>
+
+      <!-- Mensaje que aparece al seleccionar -->
+      <div class="pay-detail">
+        <img src="img/browser-icon.svg" alt="Navegador">
+        <p>Después de hacer clic en “Pagar ahora”, serás redirigido a <b>Checkout Flow</b> para completar tu compra de forma segura.</p>
+      </div>
+    </div>
+  </label>
+
+</div>
+
+
+</div>
+
+
+</div>
+
+  <small style="display:block;font-size:.65rem;color:#555;margin-bottom:18px">Serás redirigido a la pasarela seleccionada.</small>
+  </div>
+
+  <aside class="summary">
+    <h3>Resumen</h3>
+    <div class="summary-items" id="summaryItems">
+      <p style="font-size:.8rem;color:#666">Carrito vacío</p>
+    </div>
+    <div class="discount-box" id="discountBox">
+      <input id="discountCode" placeholder="Código de descuento">
+      <button type="button" id="btnApplyDiscount" style="padding:10px 14px;border-radius:8px;border:none;background:#222;color:#fff;cursor:pointer;font-size:.7rem;font-weight:600">Aplicar</button>
+    </div>
+    <div class="price-line" style="display:none" id="lineSubtotal"><span>Subtotal</span><span id="subtotalValue">$0</span></div>
+    <div class="price-line" style="display:none" id="lineDiscount"><span>Descuento</span><span id="discountValue">-$0</span></div>
+    <div class="price-line" style="display:none" id="lineShipping"><span>Envío</span><span id="shippingValue">$0</span></div>
+    <div class="total-line"><span>Total</span><span>$0</span></div>
+  </aside>
+ </main>
+<script type="module" src="firebase-rtdb.js"></script>
+<script src="ui-components.js"></script>
+<script src="validations.js"></script>
+<script>
+  // Cambia esto por la URL pública de tu backend en Render o Railway
+  window.API_URL = "https://mision3d-api.onrender.com"; 
+</script>
+
+<script src="script.js"></script>
+</main>
+<script>
+// Fallback: si por algún motivo script.js no definió PRODUCTS (error de carga / ruta), definimos un mínimo
+if (typeof window.PRODUCTS === 'undefined') {
+  console.warn('[checkout] PRODUCTS indefinido, usando fallback mínimo');
+  window.PRODUCTS = [
+    {id:'f1', name:'Calendario Formula 1', price:12990, img:'img/calendario-f1.png'},
+    {id:'bey', name:'Caja Beyblade', price:12990, img:'img/caja-beyblade.png'},
+    {id:'pet', name:'Figura Mascota', price:24990, img:'img/mascota.png'},
+    {id:'poke', name:'Pokebola', price:6990, img:'img/pokebola.png'},
+    {id:'key', name:'Llavero', price:4990, img:'img/llavero.png'}
+  ];
+}
+// === Códigos de descuento ===
+const DISCOUNT_CODES = {
+  "BIENVENIDO10": { type:'percent', value:10, desc:'10% de descuento' },
+  "ENVIOGRATIS": { type:'freeshipping', value:0, desc:'Envío gratis' },
+  "MENOS2000": { type:'fixed', value:2000, desc:'Descuento de $2.000' }
+};
+
+function getAppliedDiscount(){
+  try { return JSON.parse(localStorage.getItem('discountApplied')||'null'); } catch(e){ return null; }
+}
+function setAppliedDiscount(obj){
+  if(!obj) localStorage.removeItem('discountApplied'); else localStorage.setItem('discountApplied', JSON.stringify(obj));
+}
+/* ============ REGIONES Y COMUNAS ============ */
+const REGIONES_COMUNAS_FALLBACK = {
+  "Arica y Parinacota": ["Arica", "Camarones", "Putre", "General Lagos"],
+  "Tarapacá": ["Iquique", "Alto Hospicio", "Pozo Almonte", "Camiña", "Colchane", "Huara", "Pica"],
+  "Antofagasta": ["Antofagasta", "Mejillones", "Sierra Gorda", "Taltal", "Calama", "Ollagüe", "San Pedro de Atacama", "Tocopilla", "María Elena"],
+  "Atacama": ["Copiapó", "Caldera", "Tierra Amarilla", "Chañaral", "Diego de Almagro", "Vallenar", "Alto del Carmen", "Freirina", "Huasco"],
+  "Coquimbo": ["La Serena", "Coquimbo", "Andacollo", "La Higuera", "Paiguano", "Vicuña", "Illapel", "Canela", "Los Vilos", "Salamanca", "Ovalle", "Combarbalá", "Monte Patria", "Punitaqui", "Río Hurtado"],
+  "Valparaíso": ["Valparaíso", "Viña del Mar", "Quilpué", "Villa Alemana", "Concón", "Quintero", "Puchuncaví", "Casablanca", "Juan Fernández", "San Antonio", "Cartagena", "El Tabo", "El Quisco", "Algarrobo", "Santo Domingo", "San Felipe", "Catemu", "Llaillay", "Panquehue", "Putaendo", "Santa María", "Los Andes", "Calle Larga", "Rinconada", "San Esteban", "La Ligua", "Cabildo", "Papudo", "Petorca", "Zapallar", "Quillota", "La Calera", "Hijuelas", "La Cruz", "Nogales", "Limache", "Olmué"],
+  "Metropolitana de Santiago": ["Cerrillos", "Cerro Navia", "Conchalí", "El Bosque", "Estación Central", "Huechuraba", "Independencia", "La Cisterna", "La Florida", "La Granja", "La Pintana", "La Reina", "Las Condes", "Lo Barnechea", "Lo Espejo", "Lo Prado", "Macul", "Maipú", "Ñuñoa", "Pedro Aguirre Cerda", "Peñalolén", "Providencia", "Pudahuel", "Quilicura", "Quinta Normal", "Recoleta", "Renca", "San Joaquín", "San Miguel", "San Ramón", "Vitacura", "Santiago", "Puente Alto", "Pirque", "San José de Maipo", "Colina", "Lampa", "Tiltil", "San Bernardo", "Buin", "Calera de Tango", "Paine", "Melipilla", "Alhué", "Curacaví", "María Pinto", "San Pedro", "Talagante", "El Monte", "Isla de Maipo", "Padre Hurtado", "Peñaflor"],
+  "O'Higgins": ["Rancagua", "Codegua", "Coinco", "Coltauco", "Doñihue", "Graneros", "Las Cabras", "Machalí", "Malloa", "Mostazal", "Olivar", "Peumo", "Pichidegua", "Quinta de Tilcoco", "Rengo", "Requínoa", "San Vicente", "Pichilemu", "La Estrella", "Litueche", "Marchihue", "Navidad", "Paredones", "San Fernando", "Chépica", "Chimbarongo", "Lolol", "Nancagua", "Palmilla", "Peralillo", "Placilla", "Pumanque", "Santa Cruz"],
+  "Maule": ["Talca", "Constitución", "Curepto", "Empedrado", "Maule", "Pelarco", "Pencahue", "Río Claro", "San Clemente", "San Rafael", "Cauquenes", "Chanco", "Pelluhue", "Curicó", "Hualañé", "Licantén", "Molina", "Rauco", "Romeral", "Sagrada Familia", "Teno", "Vichuquén", "Linares", "Colbún", "Longaví", "Parral", "Retiro", "San Javier", "Villa Alegre", "Yerbas Buenas"],
+  "Ñuble": ["Chillán", "Bulnes", "Chillán Viejo", "El Carmen", "Pemuco", "Pinto", "Quillón", "San Ignacio", "Yungay", "Cobquecura", "Coelemu", "Ninhue", "Portezuelo", "Quirihue", "Ránquil", "Treguaco", "San Carlos", "Coihueco", "Ñiquén", "San Fabián", "San Nicolás"],
+  "Biobío": ["Concepción", "Coronel", "Chiguayante", "Florida", "Hualqui", "Lota", "Penco", "San Pedro de la Paz", "Santa Juana", "Talcahuano", "Tomé", "Hualpén", "Lebu", "Arauco", "Cañete", "Contulmo", "Curanilahue", "Los Álamos", "Tirúa", "Los Ángeles", "Antuco", "Cabrero", "Laja", "Mulchén", "Nacimiento", "Negrete", "Quilaco", "Quilleco", "San Rosendo", "Santa Bárbara", "Tucapel", "Yumbel", "Alto Biobío"],
+  "La Araucanía": ["Temuco", "Carahue", "Cunco", "Curarrehue", "Freire", "Galvarino", "Gorbea", "Lautaro", "Loncoche", "Melipeuco", "Nueva Imperial", "Padre Las Casas", "Perquenco", "Pitrufquén", "Pucón", "Saavedra", "Teodoro Schmidt", "Toltén", "Vilcún", "Villarrica", "Cholchol", "Angol", "Collipulli", "Curacautín", "Ercilla", "Lonquimay", "Los Sauces", "Lumaco", "Purén", "Renaico", "Traiguén", "Victoria"],
+  "Los Ríos": ["Valdivia", "Corral", "Lanco", "Los Lagos", "Máfil", "Mariquina", "Paillaco", "Panguipulli", "La Unión", "Futrono", "Lago Ranco", "Río Bueno"],
+  "Los Lagos": ["Puerto Montt", "Calbuco", "Cochamó", "Fresia", "Frutillar", "Los Muermos", "Llanquihue", "Maullín", "Puerto Varas", "Castro", "Ancud", "Chonchi", "Curaco de Vélez", "Dalcahue", "Puqueldón", "Queilén", "Quellón", "Quemchi", "Quinchao", "Osorno", "Puerto Octay", "Purranque", "Puyehue", "Río Negro", "San Juan de la Costa", "San Pablo", "Chaitén", "Futaleufú", "Hualaihué", "Palena"],
+  "Aysén": ["Coyhaique", "Lago Verde", "Aysén", "Cisnes", "Guaitecas", "Cochrane", "O'Higgins", "Tortel", "Chile Chico", "Río Ibáñez"],
+  "Magallanes": ["Punta Arenas", "Laguna Blanca", "Río Verde", "San Gregorio", "Cabo de Hornos", "Antártica", "Porvenir", "Primavera", "Timaukel", "Natales", "Torres del Paine"]
+};
+
+function initRegions(){
+  const regionSel=document.getElementById('inputRegion');
+  const comunaSel=document.getElementById('inputComuna');
+  if(!regionSel||!comunaSel) return;
+
+  // Poblar regiones
+  regionSel.innerHTML='<option value="">Selecciona región</option>';
+  Object.keys(REGIONES_COMUNAS_FALLBACK).forEach(r=>{
+    const o=document.createElement('option');
+    o.value=r;
+    o.textContent=r;
+    regionSel.appendChild(o);
+  });
+
+  // Poblar comunas al elegir región
+  regionSel.onchange=function(){
+    const comunas=REGIONES_COMUNAS_FALLBACK[this.value]||[];
+    comunaSel.innerHTML='<option value="">Selecciona comuna</option>';
+    comunas.forEach(c=>{
+      const o=document.createElement('option');
+      o.value=c;
+      o.textContent=c;
+      comunaSel.appendChild(o);
+    });
+  };
+}
+
+// Ejecutar al cargar
+document.addEventListener("DOMContentLoaded", ()=>{
+  // Verificar que haya productos en el carrito
+  const initialCart = JSON.parse(localStorage.getItem('cart') || '[]');
+  if (!initialCart || initialCart.length === 0) {
+    alert('Tu carrito está vacío. Serás redirigido al catálogo.');
+    window.location.href = 'catalogo.html';
+    return;
+  }
+  
+  initRegions();
+  renderCheckoutSummary();
+  // Conectar botón principal con confirmCheckout (definida en script.js)
+  const btn = document.getElementById('btnConfirmOrder');
+  if(btn){
+    btn.addEventListener('click', (e)=>{
+      e.preventDefault();
+      if(typeof confirmCheckout === 'function'){
+        confirmCheckout();
+      } else {
+        alert('Función de checkout no disponible');
+      }
+    });
+  }
+  // Sincronizar radios de envío con el select oculto (para no reescribir confirmCheckout aún)
+  const envioSelectHidden = document.getElementById('inputEnvio');
+  if(envioSelectHidden) envioSelectHidden.style.display='none';
+  const shipRadios = document.querySelectorAll('input[name="shipMethod"]');
+  function syncShipping(){
+    const r = document.querySelector('input[name="shipMethod"]:checked');
+    if(!r) return;
+    if(envioSelectHidden){
+      // Mapear a los valores esperados por confirmCheckout
+      if(r.value==='santiago') envioSelectHidden.value='domicilio';
+      else if(r.value==='porpagar') envioSelectHidden.value='retiro'; // se interpretará sin costo
+      else envioSelectHidden.value='';
+    }
+    renderCheckoutSummary();
+  }
+  shipRadios.forEach(r=>r.addEventListener('change', syncShipping));
+// Eliminado fetch automático de prueba a Flow para evitar 500 al cargar.
+
+
+  // Activar opción Santiago si la región es Metropolitana de Santiago
+  const regionSel = document.getElementById('inputRegion');
+  function updateSantiagoAvailability(){
+    const card = document.getElementById('shipSantiagoCard');
+    const radio = card ? card.querySelector('input[type="radio"]') : null;
+    const porCard = document.getElementById('shipPorPagarCard');
+    const porRadio = porCard ? porCard.querySelector('input[type="radio"]') : null;
+    if(!card || !radio) return;
+    if(regionSel && regionSel.value === 'Metropolitana de Santiago'){
+      // Activar Santiago, desactivar Por Pagar
+      radio.disabled=false; card.style.opacity='1';
+      if(porRadio){ porRadio.disabled=true; porCard.style.opacity='.45'; }
+      // Seleccionar automáticamente Santiago si no lo está
+      radio.checked=true;
+    } else {
+      // Desactivar Santiago, reactivar Por Pagar
+      radio.disabled=true; card.style.opacity='.55';
+      radio.checked=false;
+      if(porRadio){ porRadio.disabled=false; porCard.style.opacity='1'; if(!document.querySelector('input[name="shipMethod"]:checked')) porRadio.checked=true; }
+    }
+    syncShipping();
+  }
+  if(regionSel){ regionSel.addEventListener('change', updateSantiagoAvailability); setTimeout(updateSantiagoAvailability,0); }
+  // Restaurar código aplicado
+  const stored = getAppliedDiscount();
+  if(stored){
+    const input = document.getElementById('discountCode');
+    if(input) input.value = stored.code;
+  }
+  const btnApply = document.getElementById('btnApplyDiscount');
+  if(btnApply){
+    btnApply.addEventListener('click', ()=>{
+      const code = document.getElementById('discountCode').value.trim().toUpperCase();
+      if(!code){ setAppliedDiscount(null); renderCheckoutSummary(); return; }
+      const data = DISCOUNT_CODES[code];
+      if(!data){
+        alert('Código inválido');
+        setAppliedDiscount(null);
+        renderCheckoutSummary();
+        return;
+      }
+      setAppliedDiscount({...data, code});
+      renderCheckoutSummary();
+    });
+  }
+  const envioSel = document.getElementById('inputEnvio');
+  if(envioSel){
+    envioSel.addEventListener('change', ()=>renderCheckoutSummary());
+  }
+  // Método de pago: no hace falta recalcular total, solo registrar selección
+  const payRadios = document.querySelectorAll('input[name="payMethod"]');
+  payRadios.forEach(r=>r.addEventListener('change',()=>{}));
+});
+
+// Renderizar resumen del carrito usando datos ya manejados en script.js
+function renderCheckoutSummary(){
+  const cont = document.getElementById('summaryItems');
+  const totalLine = document.querySelector('.total-line span:last-child');
+  if(!cont) return;
+  const cart = JSON.parse(localStorage.getItem('cart')||'[]');
+  if(!cart.length){
+    cont.innerHTML = '<p style="font-size:.8rem;color:#666">Carrito vacío</p>';
+    if(totalLine) totalLine.textContent = '$0';
+    return;
+  }
+  // Necesitamos PRODUCTS: si no existe en window (por orden de carga), abortar amable
+  if(typeof window.PRODUCTS === 'undefined'){
+    cont.innerHTML = '<p style="font-size:.75rem;color:#c00">No se pudieron cargar los productos (PRODUCTS indefinido)</p>';
+    return;
+  }
+  let html='';
+  let subtotal=0;
+  cart.forEach(it=>{
+    const p = PRODUCTS.find(pr=>String(pr.id)===String(it.id));
+    if(!p) return; // ignora items huérfanos
+    const sub = p.price * it.qty;
+    subtotal += sub;
+    html += `
+      <div class="sum-item">
+        <div class="sum-item-thumb"><img src="${p.img||'img/placeholder.png'}" alt="${p.name}"><span class="qty-badge">${it.qty}</span></div>
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:.78rem;margin-bottom:4px">${p.name}</div>
+          <div style="font-size:.7rem;color:#555">${it.qty} x ${p.price.toLocaleString('es-CL',{style:'currency',currency:'CLP'})}</div>
+        </div>
+        <div style="font-weight:600;font-size:.75rem">${sub.toLocaleString('es-CL',{style:'currency',currency:'CLP'})}</div>
+      </div>`;
+  });
+  cont.innerHTML = html;
+  
+  // Calcular envío basado en los radio buttons
+  const regionSel = document.getElementById('inputRegion');
+  const selectedShipMethod = document.querySelector('input[name="shipMethod"]:checked');
+  
+  let shipping = 0;
+  if (selectedShipMethod) {
+    if (selectedShipMethod.value === 'santiago') {
+      // Envío a Santiago: $2.990
+      shipping = 2990;
+    } else if (selectedShipMethod.value === 'domicilio') {
+      // Envío a domicilio (antiguo)
+      shipping = 2990;
+    } else {
+      // Por pagar o porpagar: shipping = 0 (no se suma aquí)
+      shipping = 0;
+    }
+  }
+  
+  let applied = getAppliedDiscount();
+  let discountAmount = 0;
+  if(applied){
+    switch(applied.type){
+      case 'percent': discountAmount = Math.round(subtotal * applied.value / 100); break;
+      case 'fixed': discountAmount = Math.min(subtotal, applied.value); break;
+      case 'freeshipping': shipping = 0; break;
+    }
+  }
+  const totalFinal = Math.max(0, subtotal - discountAmount + shipping);
+  // Mostrar líneas
+  const lineSubtotal = document.getElementById('lineSubtotal');
+  const subtotalValue = document.getElementById('subtotalValue');
+  const lineDiscount = document.getElementById('lineDiscount');
+  const discountValue = document.getElementById('discountValue');
+  const lineShipping = document.getElementById('lineShipping');
+  const shippingValue = document.getElementById('shippingValue');
+  if(lineSubtotal){ lineSubtotal.style.display='flex'; subtotalValue.textContent=subtotal.toLocaleString('es-CL',{style:'currency',currency:'CLP'}); }
+  if(lineShipping){ lineShipping.style.display='flex'; shippingValue.textContent=shipping.toLocaleString('es-CL',{style:'currency',currency:'CLP'}); }
+  if(applied){
+    if(lineDiscount){
+      lineDiscount.style.display='flex';
+      if(applied.type==='freeshipping') discountValue.textContent='Envío gratis'; else discountValue.textContent='-'+discountAmount.toLocaleString('es-CL',{style:'currency',currency:'CLP'});
+    }
+  } else {
+    if(lineDiscount){ lineDiscount.style.display='none'; }
+  }
+  if(totalLine) totalLine.textContent = totalFinal.toLocaleString('es-CL',{style:'currency',currency:'CLP'});
+}
+
+
+
+// Escuchar cambios en localStorage (otro tab modificó el carrito)
+window.addEventListener('storage', (e)=>{
+  if(e.key==='cart') renderCheckoutSummary();
+});
+
+
+
+
+
+
+</script>
+</script>
+</body>
+</html>

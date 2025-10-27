@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Panel de Administración | Tienda3D</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { background: #f7f7f7; }
+    .admin-panel { max-width: 900px; margin: 40px auto; background: #fff; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,.07); padding: 32px 28px; }
+    h1 { font-size: 2rem; margin-bottom: 18px; }
+    .tabs { display: flex; gap: 18px; margin-bottom: 24px; }
+    .tab { padding: 10px 22px; border-radius: 8px; background: #eee; cursor: pointer; font-weight: 600; }
+    .tab.active { background: #e6462f; color: #fff; }
+    .admin-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+    .admin-table th, .admin-table td { padding: 10px 8px; border-bottom: 1px solid #eee; text-align: left; }
+    .admin-table th { background: #fafafa; font-size: .98rem; }
+    .admin-table td img { width: 48px; height: 48px; object-fit: cover; border-radius: 8px; }
+    .btn { padding: 7px 16px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; }
+    .btn.edit { background: #f7b731; color: #fff; }
+    .btn.delete { background: #eb3b5a; color: #fff; }
+    .btn.add { background: #20bf6b; color: #fff; margin-bottom: 18px; }
+    .form-row { display: flex; gap: 14px; margin-bottom: 12px; }
+    .form-row label { flex: 1; display: flex; flex-direction: column; font-size: .95rem; }
+    .form-row input, .form-row textarea, .form-row select { padding: 8px 10px; border: 1px solid #ccc; border-radius: 6px; font-size: .97rem; }
+    .form-actions { display: flex; gap: 10px; }
+  </style>
+</head>
+<body>
+  <!-- Login -->
+  <div id="loginPanel" style="max-width:340px;margin:80px auto 0 auto;padding:32px 28px;background:#fff;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.07);display:none">
+    <h2 style="margin-bottom:18px">Acceso administrador</h2>
+    <form id="loginForm">
+      <label style="display:block;margin-bottom:12px;font-size:1rem">Contraseña:
+        <input id="adminPass" type="password" style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #ccc;font-size:1.1rem;margin-top:6px">
+      </label>
+      <button type="submit" class="btn add" style="width:100%">Entrar</button>
+      <div id="loginError" style="color:#c00;font-size:.95rem;margin-top:10px;display:none"></div>
+    </form>
+  </div>
+
+  <!-- Panel -->
+  <div class="admin-panel" style="display:none">
+    <h1>Panel de Administración</h1>
+    <div class="tabs">
+      <div class="tab active" id="tabProductos">Productos</div>
+      <div class="tab" id="tabPedidos">Pedidos</div>
+    </div>
+
+    <!-- Productos -->
+    <div id="productosPanel">
+      <button class="btn add" id="btnAddProducto">+ Agregar producto</button>
+      <table class="admin-table" id="productosTable">
+        <thead>
+          <tr><th>Imagen</th><th>Nombre</th><th>Precio</th><th>Stock</th><th>Categoría</th><th>Acciones</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <div id="productoFormWrap" style="display:none">
+          <script>window.GA_MEASUREMENT_ID = window.GA_MEASUREMENT_ID || 'G-XXXXXXXXXX';</script>
+          <script src="consent.js"></script>
+        <h3 id="formTitle">Agregar producto</h3>
+        <form id="productoForm">
+          <div class="form-row">
+            <label>Nombre<input id="prodName" required></label>
+            <label>Precio (CLP)<input id="prodPrice" type="number" min="0" required></label>
+          </div>
+          <div class="form-row">
+            <label>Imagen URL<input id="prodImg" required placeholder="img/archivo.png o https://..."></label>
+            <label>Stock
+              <select id="prodStock">
+                <option value="disponible">Disponible</option>
+                <option value="bajo">Bajo</option>
+              </select>
+            </label>
+          </div>
+          <div class="form-row">
+            <label>Categoría
+              <input id="prodCat" list="catList" placeholder="Ej: Calendarios">
+              <datalist id="catList"></datalist>
+            </label>
+            <label>Descuento (%)<input id="prodDiscount" type="number" min="0" max="90" value="0"></label>
+          </div>
+          <div class="form-row">
+            <label>Descripción<textarea id="prodDesc" rows="2" placeholder="Opcional"></textarea></label>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn add" id="btnSave">Guardar</button>
+            <button type="button" class="btn delete" id="cancelForm">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Pedidos -->
+    <div id="pedidosPanel" style="display:none">
+      <table class="admin-table" id="pedidosTable">
+        <thead>
+          <tr><th>ID</th><th>Cliente</th><th>Email</th><th>Total</th><th>Estado</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    /*********** CONFIG ***********/
+    const PASSWORD = "admin123";
+    const DB_ROOT = "https://mision3d-72b4a-default-rtdb.firebaseio.com"; // << tu RTDB
+    const money = v => Number(v||0).toLocaleString('es-CL',{style:'currency',currency:'CLP'});
+    const toNum  = v => Number(v)||0;
+
+    /*********** ESTADO ***********/
+    let PRODUCTS = [];                 // arreglo de productos {id, name, price, img, stock...}
+    let mapProductos = {};             // mapa id -> objeto
+    let editingId = null;              // id que se está editando
+
+    /*********** LOGIN ***********/
+    const loginPanel = document.getElementById('loginPanel');
+    const adminPanel = document.querySelector('.admin-panel');
+    adminPanel.style.display = 'none';
+    loginPanel.style.display = '';
+
+    document.getElementById('loginForm').onsubmit = (e)=>{
+      e.preventDefault();
+      const pass = document.getElementById('adminPass').value;
+      if(pass === PASSWORD){
+        loginPanel.style.display = 'none';
+        adminPanel.style.display = '';
+        initAdmin(); // carga datos al entrar
+      }else{
+        const err = document.getElementById('loginError');
+        err.textContent = 'Contraseña incorrecta'; err.style.display = '';
+      }
+    };
+
+    /*********** TABS ***********/
+    const tabProductos = document.getElementById('tabProductos');
+    const tabPedidos   = document.getElementById('tabPedidos');
+    const productosPanel = document.getElementById('productosPanel');
+    const pedidosPanel   = document.getElementById('pedidosPanel');
+    tabProductos.onclick = ()=>{
+      tabProductos.classList.add('active'); tabPedidos.classList.remove('active');
+      productosPanel.style.display=''; pedidosPanel.style.display='none';
+    };
+    tabPedidos.onclick = ()=>{
+      tabPedidos.classList.add('active'); tabProductos.classList.remove('active');
+      productosPanel.style.display='none'; pedidosPanel.style.display='';
+    };
+
+    /*********** DATA: Firebase (REST) ***********/
+    async function rtdbGetProductos(){
+      const r = await fetch(`${DB_ROOT}/productos.json`);
+      if(!r.ok) throw new Error('RTDB GET productos falló');
+      const data = await r.json() || {};
+      // data es un objeto { id: {name, price...}, ... }
+      mapProductos = data;
+      PRODUCTS = Object.entries(data).map(([id, p]) => ({ id, ...p }));
+    }
+
+    async function rtdbPutProducto(id, producto){
+      // Crea/actualiza /productos/{id}
+      const r = await fetch(`${DB_ROOT}/productos/${encodeURIComponent(id)}.json`, {
+        method: 'PUT',
+        headers: { 'Content-Type':'application/json' },
+        body: JSON.stringify(producto)
+      });
+      if(!r.ok){
+        const t = await r.text().catch(()=> '');
+        throw new Error(`RTDB PUT ${r.status} ${t}`);
+      }
+      return await r.json();
+    }
+
+    async function rtdbDeleteProducto(id){
+      const r = await fetch(`${DB_ROOT}/productos/${encodeURIComponent(id)}.json`, { method:'DELETE' });
+      if(!r.ok){
+        const t = await r.text().catch(()=> '');
+        throw new Error(`RTDB DELETE ${r.status} ${t}`);
+      }
+    }
+
+    /*********** UI Helpers ***********/
+    function showAdminToast(msg, type='success'){
+      let toast = document.getElementById('adminToast');
+      if(!toast){
+        toast = document.createElement('div');
+        toast.id = 'adminToast';
+        toast.style.position = 'fixed';
+        toast.style.bottom = '32px';
+        toast.style.left = '50%';
+        toast.style.transform = 'translateX(-50%)';
+        toast.style.background = (type==='success') ? '#20bf6b' : '#eb3b5a';
+        toast.style.color = '#fff';
+        toast.style.padding = '14px 32px';
+        toast.style.borderRadius = '8px';
+        toast.style.fontSize = '1.1rem';
+        toast.style.boxShadow = '0 2px 8px rgba(0,0,0,.12)';
+        toast.style.zIndex = 9999;
+        document.body.appendChild(toast);
+      }
+      toast.textContent = msg;
+      toast.style.display = '';
+      setTimeout(()=> toast.style.display='none', 1800);
+    }
+
+    function slugify(str){
+      return (str||'')
+        .toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+        .replace(/[^a-z0-9]+/g,'-')
+        .replace(/(^-|-$)/g,'')
+        .slice(0,40) || ('p-'+Date.now());
+    }
+
+    /*********** RENDER ***********/
+    function renderProductos(){
+      const tbody = document.querySelector('#productosTable tbody');
+      tbody.innerHTML = (PRODUCTS.length===0)
+        ? `<tr><td colspan="5" style="color:#888">Sin productos</td></tr>` : '';
+
+      PRODUCTS.forEach((p) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><img src="${p.img}" alt="img"></td>
+          <td>${p.name||''}</td>
+          <td>${money(p.price)}</td>
+          <td>${p.stock||''}</td>
+          <td>${p.category||'Otros'}</td>
+          <td>
+            <button class='btn edit' data-id='${p.id}'>Editar</button>
+            <button class='btn delete' data-id='${p.id}'>Eliminar</button>
+          </td>`;
+        tbody.appendChild(tr);
+      });
+
+      tbody.querySelectorAll('.edit').forEach(btn => btn.onclick = ()=> showForm(btn.dataset.id));
+      tbody.querySelectorAll('.delete').forEach(btn => btn.onclick = ()=> deleteProducto(btn.dataset.id));
+    }
+
+    function showForm(id=null){
+      editingId = id; // null = agregar
+      const wrap = document.getElementById('productoFormWrap');
+      const p = id ? (PRODUCTS.find(x=>x.id===id) || {}) :
+        { name:'', price:0, img:'', stock:'disponible', desc:'', category:'', discount:0 };
+
+      document.getElementById('formTitle').textContent = id ? 'Editar producto' : 'Agregar producto';
+      document.getElementById('prodName').value = p.name || '';
+      document.getElementById('prodPrice').value = p.price || 0;
+      document.getElementById('prodImg').value = p.img || '';
+      document.getElementById('prodStock').value = p.stock || 'disponible';
+      document.getElementById('prodDesc').value = p.desc || '';
+      document.getElementById('prodCat').value = p.category || '';
+      document.getElementById('prodDiscount').value = p.discount || 0;
+
+      wrap.style.display = '';
+    }
+    function hideForm(){ document.getElementById('productoFormWrap').style.display='none'; }
+
+    async function deleteProducto(id){
+      if(!confirm('¿Eliminar producto?')) return;
+      try{
+        await rtdbDeleteProducto(id);
+      }catch(err){
+        console.warn('[RTDB] DELETE falló, intento localStorage:', err);
+      }
+      // Actualiza estado local
+      PRODUCTS = PRODUCTS.filter(x=>x.id!==id);
+      delete mapProductos[id];
+      localStorage.setItem('PRODUCTS', JSON.stringify(PRODUCTS));
+      renderProductos();
+      showAdminToast('Producto eliminado', 'success');
+    }
+
+    /*********** EVENTOS UI ***********/
+    document.getElementById('cancelForm').onclick = hideForm;
+    document.getElementById('btnAddProducto').onclick = ()=> showForm(null);
+
+    document.getElementById('productoForm').onsubmit = async (e)=>{
+      e.preventDefault();
+      const btn = document.getElementById('btnSave');
+      btn.disabled = true; btn.textContent = 'Guardando...';
+
+      const data = {
+        name: document.getElementById('prodName').value.trim(),
+        price: toNum(document.getElementById('prodPrice').value),
+        img: document.getElementById('prodImg').value.trim(),
+        stock: document.getElementById('prodStock').value,
+        desc: document.getElementById('prodDesc').value.trim(),
+        category: document.getElementById('prodCat').value.trim(),
+        discount: toNum(document.getElementById('prodDiscount').value),
+        stars: toNum((mapProductos[editingId]?.stars) ?? 5),
+        reviews: toNum((mapProductos[editingId]?.reviews) ?? 0),
+        dateAdded: (mapProductos[editingId]?.dateAdded) || new Date().toISOString().slice(0,10)
+      };
+
+      if(!data.name || !data.img || data.price<0){
+        alert('Completa nombre, imagen y precio válido.'); btn.disabled=false; btn.textContent='Guardar'; return;
+      }
+
+      try{
+        // id: si edito uso el mismo; si no, genero por nombre
+        const id = editingId || slugify(data.name);
+
+        // Grabar en RTDB (PUT /productos/{id})
+        await rtdbPutProducto(id, data);
+
+        // Actualiza estado local
+        mapProductos[id] = data;
+        const idx = PRODUCTS.findIndex(x=>x.id===id);
+        if(idx>=0) PRODUCTS[idx] = { id, ...data };
+        else PRODUCTS.push({ id, ...data });
+
+        localStorage.setItem('PRODUCTS', JSON.stringify(PRODUCTS)); // cache local
+        renderProductos();
+        hideForm();
+        showAdminToast('Producto guardado correctamente', 'success');
+      }catch(err){
+        console.error('[RTDB] Guardar falló:', err);
+        // Fallback: guarda local si RTDB falla
+        const id = editingId || slugify(data.name);
+        const idx = PRODUCTS.findIndex(x=>x.id===id);
+        if(idx>=0) PRODUCTS[idx] = { id, ...data };
+        else PRODUCTS.push({ id, ...data });
+        localStorage.setItem('PRODUCTS', JSON.stringify(PRODUCTS));
+        renderProductos();
+        hideForm();
+        showAdminToast('Guardado local (sin conexión RTDB)', 'error');
+      }finally{
+        btn.disabled = false; btn.textContent = 'Guardar';
+        editingId = null;
+      }
+    };
+
+    /*********** INICIALIZACIÓN ***********/
+    async function initAdmin(){
+      // Carga desde RTDB con fallback a localStorage
+      try{
+        await rtdbGetProductos();
+        console.log('[Admin] Productos desde RTDB:', PRODUCTS.length);
+      }catch(err){
+        console.warn('[Admin] RTDB no disponible, usando localStorage:', err);
+        PRODUCTS = JSON.parse(localStorage.getItem('PRODUCTS')||'[]');
+        mapProductos = Object.fromEntries(PRODUCTS.map(p=>[p.id||slugify(p.name), {...p}]));
+      }
+      // Poblar datalist de categorías
+      const dl = document.getElementById('catList');
+      if(dl){
+        dl.innerHTML = '';
+        const cats = Array.from(new Set(PRODUCTS.map(p=>p.category).filter(Boolean)));
+        cats.forEach(c=>{
+          const opt = document.createElement('option');
+          opt.value = c; dl.appendChild(opt);
+        });
+      }
+      renderProductos();
+
+      // Pedidos pendiente (placeholder)
+      const tbody = document.querySelector('#pedidosTable tbody');
+      if(tbody) tbody.innerHTML = '<tr><td colspan="5">(Integración pendiente)</td></tr>';
+    }
+  </script>
+</body>
+</html>

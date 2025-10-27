@@ -1,0 +1,88 @@
+version: '3.9'
+
+# Docker Compose para PRODUCCIÓN con SSL (Let's Encrypt)
+# Uso: docker-compose -f docker-compose-ssl.yml up -d
+
+services:
+  # Backend Node.js (misma config de producción)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mision3d-backend
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - FLOW_API_KEY=${FLOW_API_KEY}
+      - FLOW_SECRET_KEY=${FLOW_SECRET_KEY}
+      - FLOW_API_URL=https://www.flow.cl/api
+      - CORS_ORIGIN=https://tudominio.cl,https://www.tudominio.cl
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - EMAIL_FROM=${EMAIL_FROM}
+      - RETURN_URL=https://tudominio.cl/checkout.html
+      - FIREBASE_DATABASE_URL=https://mision3d-72b4a-default-rtdb.firebaseio.com
+    volumes:
+      - ./firebase-credentials.json:/app/firebase-credentials.json:ro
+    networks:
+      - mision3d-net
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nginx con SSL (reverse proxy + frontend)
+  nginx:
+    image: nginx:alpine
+    container_name: mision3d-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # Frontend estático
+      - ./index.html:/var/www/html/index.html:ro
+      - ./catalogo.html:/var/www/html/catalogo.html:ro
+      - ./checkout.html:/var/www/html/checkout.html:ro
+      - ./login.html:/var/www/html/login.html:ro
+      - ./producto.html:/var/www/html/producto.html:ro
+      - ./style.css:/var/www/html/style.css:ro
+      - ./script.js:/var/www/html/script.js:ro
+      - ./robots.txt:/var/www/html/robots.txt:ro
+      - ./sitemap.xml:/var/www/html/sitemap.xml:ro
+      - ./img:/var/www/html/img:ro
+      # Nginx config con SSL
+      - ./nginx-ssl.conf:/etc/nginx/conf.d/default.conf:ro
+      # Certificados SSL (Let's Encrypt)
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
+      # Logs
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - backend
+    networks:
+      - mision3d-net
+
+  # Certbot para obtener/renovar certificados SSL
+  certbot:
+    image: certbot/certbot
+    container_name: mision3d-certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    # Renovar certificados cada 12 horas
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
+networks:
+  mision3d-net:
+    driver: bridge
+
+# Volúmenes nombrados (opcional, para persistencia)
+volumes:
+  certbot-conf:
+  certbot-www:

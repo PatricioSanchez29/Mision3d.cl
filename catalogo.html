@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Catálogo - Misión 3D</title>
+  <link rel="stylesheet" href="style.css" />
+  <script>window.GA_MEASUREMENT_ID = window.GA_MEASUREMENT_ID || 'G-XXXXXXXXXX';</script>
+  <script src="consent.js"></script>
+</head>
+<body>
+  <header class="header">
+    <h1 class="logo" style="margin:0;display:flex;align-items:center">
+      <a href="index.html" style="display:inline-flex;align-items:center;text-decoration:none">
+        <img src="img/Logo_Mision3d.jpg" alt="Misión 3D" class="logo-img" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-text',textContent:'Misión 3D'}));" />
+      </a>
+    </h1>
+    <nav class="nav">
+      <a href="index.html">Inicio</a>
+      <a href="catalogo.html" class="active">Catálogo</a>
+      <a href="index.html#contacto">Contacto</a>
+    </nav>
+    <div class="search-header">
+      <input type="text" id="searchInput" placeholder="Buscar producto..." class="search-bar" autocomplete="off" style="max-width:220px;width:100%;padding:8px 12px;border-radius:8px;border:1px solid #ccc;">
+      <div id="searchSuggestions" class="search-suggestions"></div>
+    </div>
+    <div class="right-actions" style="display:flex;align-items:center;gap:10px">
+      <div id="userArea" class="user-area">
+        <a href="login.html" id="loginLink" class="btn small outline">Ingresar</a>
+      </div>
+      <button class="cart-btn" id="openCart" aria-label="Abrir carrito">🛒 <span id="cartCount">0</span></button>
+    </div>
+  </header>
+  <div class="announcement-bar"><div class="ann-track"><span>Santiago despacho 2 a 3 días hábiles • </span><span>Regiones envío 4 a 5 días hábiles • </span><span>Pedidos personalizados: cotización gratuita • </span><span>Soporte directo vía WhatsApp • </span></div></div>
+  <section class="catalog-wrap" id="productos">
+    <nav class="breadcrumbs"><a href="index.html">Inicio</a> <span class="crumb-sep">›</span> <span>Productos</span></nav>
+    <h2 class="catalog-title">Productos</h2>
+    <div class="catalog-layout">
+      <aside class="catalog-sidebar">
+        <div class="filter-block">
+          <div class="filter-title">Precio <button class="collapse" data-target="priceFilters">−</button></div>
+          <div id="priceFilters" class="filter-content">
+            <label class="price-field">$<input type="number" id="priceMin" placeholder="Desde" min="0"></label>
+            <label class="price-field">$<input type="number" id="priceMax" placeholder="Hasta" min="0"></label>
+          </div>
+        </div>
+        <div class="filter-block">
+          <div class="filter-title">Disponibilidad <button class="collapse" data-target="stockFilters">−</button></div>
+          <div id="stockFilters" class="filter-content">
+            <label class="chk"><input type="radio" name="stockFilter" value="all" checked> Todos</label>
+            <label class="chk"><input type="radio" name="stockFilter" value="disponible"> En stock</label>
+            <label class="chk"><input type="radio" name="stockFilter" value="bajo"> Stock bajo</label>
+          </div>
+        </div>
+      </aside>
+      <main class="catalog-main">
+        <div class="catalog-controls-advanced">
+          <div class="left">
+            <div class="label-small">Ordenar por</div>
+            <select id="sortSelect" class="sort-select">
+              <option value="name-asc">Alfabéticamente A-Z</option>
+              <option value="name-desc">Alfabéticamente Z-A</option>
+              <option value="price-asc">Precio menor a mayor</option>
+              <option value="price-desc">Precio mayor a menor</option>
+              <option value="rating-desc" selected>Mejor valoración</option>
+              <option value="newest">Más nuevo</option>
+            </select>
+          </div>
+          <div class="middle" id="categoryChips"></div>
+          <div class="right">
+            <div class="compare-toggle"><label>Comparar <input type="checkbox" id="compareToggle"></label></div>
+            <div class="view-toggle">
+              <button id="viewGrid" class="view-btn active" title="Vista grid">▦</button>
+              <button id="viewList" class="view-btn" title="Vista lista">☰</button>
+            </div>
+          </div>
+        </div>
+        <div class="result-count" id="resultCount"></div>
+        <div class="grid catalog-grid" id="catalogGrid"></div>
+      </main>
+    </div>
+  </section>
+  <footer class="footer">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+      <img src="img/Logo_Mision3d.jpg" alt="Misión 3D" class="footer-logo" />
+      <p style="margin:0;font-size:.85rem">&copy; 2025 Misión 3D</p>
+      <p style="margin:0;font-size:.8rem;color:#888">
+        <a href="privacidad.html" style="color:inherit;text-decoration:none">Política de Privacidad</a> • 
+        <a href="terminos.html" style="color:inherit;text-decoration:none">Términos y Condiciones</a>
+      </p>
+    </div>
+  </footer>
+  <aside id="cartDrawer" class="cart">
+    <div class="cart-header"><h3>Tu carrito</h3><button id="closeCart">✕</button></div>
+    <div id="cartAddedMsg" class="cart-added-msg"></div>
+    <div id="cartItems" class="cart-items"></div>
+    <div class="cart-footer"><div class="totals"><span>Total:</span><strong id="cartTotal">$0</strong></div><button id="checkout" class="btn primary">Finalizar compra</button><button id="clearCart" class="btn outline">Vaciar</button></div>
+  </aside>
+  <div id="overlay" class="overlay"></div>
+  <div id="checkoutModal" class="modal"><div class="modal-content"> <!-- Reutilizamos el mismo checkout -->
+    <h3>Entrega</h3>
+    <form id="checkoutForm" class="checkout-form">
+      <div class="form-row">
+        <label>Método de envío:<br><select id="inputEnvio"><option value="retiro">Retiro en taller (sin costo)</option><option value="domicilio">Envío a domicilio (Santiago, $2.990)</option></select></label>
+        <label>Nombre:<br><input id="inputName" autocomplete="name"></label>
+        <label>Apellidos:<br><input id="inputApellido" autocomplete="family-name"></label>
+      </div>
+      <div class="form-row"><label>RUT (Obligatorio):<br><input id="inputRut" autocomplete="off"></label></div>
+      <div class="form-row"><label>Dirección:<br><input id="inputDireccion" autocomplete="street-address"></label></div>
+      <div class="form-row"><label>Agregar Nota (Personalización producto):<br><input id="inputNotes" autocomplete="off"></label></div>
+      <div class="form-row"><label>Código postal (opcional):<br><input id="inputPostal" autocomplete="postal-code"></label></div>
+      <div class="form-row">
+        <label>Región:<br><select id="inputRegion"><option value="">Selecciona región</option></select></label>
+        <label>Comuna:<br><select id="inputComuna"><option value="">Selecciona comuna</option></select></label>
+      </div>
+      <div class="form-row"><label>Teléfono:<br><input id="inputTelefono" autocomplete="tel"></label></div>
+      <div class="modal-actions"><button type="button" id="confirmCheckout" class="btn primary">Confirmar</button><button type="button" id="cancelCheckout" class="btn outline">Cancelar</button></div>
+    </form>
+  </div></div>
+  <div id="toast" class="toast">¡Producto agregado al carrito!</div>
+  <script src="ui-components.js"></script>
+  <script src="validations.js"></script>
+  <script src="script.js"></script>
+<script type="module" src="firebase-rtdb.js"></script>
+</body>
+</html>

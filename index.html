@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mision3D - Tienda</title>
+  <link rel="stylesheet" href="style.css"/>
+  <script>window.GA_MEASUREMENT_ID = 'G-XXXXXXXXXX';</script>
+  <script src="consent.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Misión 3D",
+    "url": "https://tudominio.cl/",
+    "logo": "https://tudominio.cl/img/Logo_Mision3d.jpg",
+    "sameAs": []
+  }
+  </script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <h1 class="logo" style="margin:0;display:flex;align-items:center">
+      <a href="#" style="display:inline-flex;align-items:center;text-decoration:none">
+        <img src="img/Logo_Mision3d.jpg" alt="Misión 3D" class="logo-img" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-text',textContent:'Misión 3D'}));" />
+      </a>
+    </h1>
+    <nav class="nav">
+      <a href="catalogo.html" id="navCatalog">Catálogo</a>
+      <a href="#nosotros">Nosotros</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
+    <div class="search-header">
+      <input type="text" id="searchInput" placeholder="Buscar producto..." class="search-bar" autocomplete="off" style="max-width:220px;width:100%;padding:8px 12px;border-radius:8px;border:1px solid #ccc;">
+      <div id="searchSuggestions" class="search-suggestions"></div>
+    </div>
+    <div class="right-actions" style="display:flex;align-items:center;gap:10px">
+      <div id="userArea" class="user-area">
+        <a href="login.html" id="loginLink" class="btn small outline">Ingresar</a>
+      </div>
+      <button class="cart-btn" id="openCart" aria-label="Abrir carrito">
+        🛒 <span id="cartCount">0</span>
+      </button>
+    </div>
+  </header>
+  <div class="announcement-bar"><div class="ann-track"><span>Santiago despacho 2 a 3 días hábiles • </span><span>Regiones envío 4 a 5 días hábiles • </span><span>Pedidos personalizados: cotización gratuita • </span><span>Soporte directo vía WhatsApp • </span><span>Santiago despacho 2 a 3 días hábiles • </span><span>Regiones envío 4 a 5 días hábiles • </span><span>Pedidos personalizados: cotización gratuita • </span><span>Soporte directo vía WhatsApp • </span></div></div>
+
+  <!-- Mini resumen carrito -->
+  <section id="miniCart" style="max-width:1200px;margin:10px auto 0;padding:0 20px;display:none">
+    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:12px 16px;display:flex;flex-direction:column;gap:10px;box-shadow:0 2px 4px rgba(0,0,0,.05)">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+        <strong style="font-size:.9rem;letter-spacing:.5px">Tu Carrito</strong>
+        <button id="miniCartToggle" style="background:#4f46e5;color:#fff;border:none;padding:4px 10px;border-radius:16px;font-size:.65rem;cursor:pointer">Ver todo</button>
+      </div>
+      <div id="miniCartItems" style="display:flex;flex-direction:column;gap:8px;max-height:170px;overflow:auto"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:.75rem;margin-top:4px">
+        <span id="miniCartCount" style="color:#555"></span>
+        <div style="display:flex;align-items:center;gap:10px"><strong id="miniCartTotal" style="font-size:.85rem">$0</strong><button id="miniCartCheckout" style="background:#e6462f;color:#fff;border:none;padding:6px 12px;border-radius:20px;font-size:.65rem;cursor:pointer">Checkout</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Hero -->
+  <section class="hero" id="hero">
+    <h2>Impresión 3D Personalizada</h2>
+    <p>Traemos tus ideas al mundo real y enviamos a todo Chile.</p>
+    
+  </section>
+
+  <!-- Beneficios -->
+  <section class="beneficios" id="beneficios">
+    <div class="item"><img src="img/envio.png" alt="Envío"><h4>Envío a todo Chile</h4><p>Despachos rápidos</p></div>
+    <div class="item"><img src="img/contacto.png" alt="Contacto"><h4>Contacto directo</h4><p>Pedidos por WhatsApp</p></div>
+    <div class="item"><img src="img/chat.png" alt="Chat"><h4>Chat en línea</h4><p>Consulta en tiempo real</p></div>
+    <div class="item"><img src="img/impresion.png" alt="Impresión"><h4>Impresión 3D</h4><p>Calidad profesional</p></div>
+  </section>
+
+  <!-- Productos (versión simplificada inicio) -->
+  <section id="productos" class="productos">
+    <h3>Catálogo</h3>
+    <div class="grid">
+  <div class="card"><a href="producto.html?id=f1" class="prod-link"><img src="img/calendario-f1.png" alt="Calendario F1"></a><h4><a href="producto.html?id=f1" class="prod-link">Calendario Formula 1</a></h4><p>Calendario 3D con circuitos</p><strong class="price">$12.990</strong><button class="add" data-id="f1">Agregar</button></div>
+  <div class="card"><a href="producto.html?id=bey" class="prod-link"><img src="img/caja-beyblade.png" alt="Caja Beyblade"></a><h4><a href="producto.html?id=bey" class="prod-link">Caja Beyblade</a></h4><p>Personalizable con tu nombre</p><strong class="price">$12.990</strong><button class="add" data-id="bey">Agregar</button></div>
+  <div class="card"><a href="producto.html?id=pet" class="prod-link"><img src="img/mascota.png" alt="Figura Mascota"></a><h4><a href="producto.html?id=pet" class="prod-link">Figura Mascota</a></h4><p>Tu mascota en 3D</p><strong class="price">$24.990</strong><button class="add" data-id="pet">Agregar</button></div>
+  <div class="card"><a href="producto.html?id=poke" class="prod-link"><img src="img/pokebola.png" alt="Pokebola"></a><h4><a href="producto.html?id=poke" class="prod-link">Pokebola</a></h4><p>Pokebola coleccionable</p><strong class="price">$6.990</strong><button class="add" data-id="poke">Agregar</button></div>
+  <div class="card"><a href="producto.html?id=key" class="prod-link"><img src="img/llavero.png" alt="Llavero"></a><h4><a href="producto.html?id=key" class="prod-link">Llavero</a></h4><p>Personalizado con tu logo</p><strong class="price">$4.990</strong><button class="add" data-id="key">Agregar</button></div>
+    </div>
+    <p style="margin-top:18px"><a href="catalogo.html" class="btn outline" style="text-decoration:none">Ver catálogo completo →</a></p>
+  </section>
+
+  <!-- Nosotros -->
+  <section id="nosotros" class="nosotros"><h3>Sobre Mision3D</h3><p>Emprendimiento chileno de impresión 3D personalizada. Creamos desde piezas funcionales hasta figuras coleccionables y enviamos a todo Chile.</p></section>
+
+  <!-- Reseñas recientes -->
+  <section id="resenas" class="reviews-section">
+    <h3>Reseñas más recientes</h3>
+    <div class="reviews-wrapper">
+      <button class="reviews-nav prev" id="reviewsPrev" aria-label="Anterior">‹</button>
+      <div class="reviews-viewport">
+        <div class="reviews-track" id="reviewsTrack"></div>
+      </div>
+      <button class="reviews-nav next" id="reviewsNext" aria-label="Siguiente">›</button>
+    </div>
+  </section>
+
+  <!-- Contacto -->
+  <section id="contacto" class="contacto"><h3>Contáctanos</h3><p>Haz tus pedidos por WhatsApp o Instagram.</p><a href="https://wa.me/56950503585" class="btn whatsapp">WhatsApp</a><a href="https://instagram.com/mision3d.cl" class="btn instagram">Instagram</a></section>
+
+  <!-- Preguntas Frecuentes -->
+  <section id="faq" class="faq-section">
+    <div class="faq-bg"><img src="img/impresion.png" alt="" aria-hidden="true" /></div>
+    <div class="faq-inner">
+      <h2>Preguntas Frecuentes</h2>
+      <div class="faq-category">Importante</div>
+      <ul class="faq-list" id="faqList">
+        <li class="faq-item">
+          <div class="faq-q"><span class="icon">🕒</span><span>¿Cuánto demora mi pedido?</span><span class="faq-toggle">▾</span></div>
+          <div class="faq-a"><p>Depende de la complejidad y cantidad. Piezas simples: 2 a 3 días hábiles. Proyectos personalizados o grandes: 5 a 10 días. Siempre te mantenemos informado del avance.</p></div>
+        </li>
+        <li class="faq-item">
+          <div class="faq-q"><span class="icon">🚚</span><span>¿Hacen envíos? ¿Cuánto cuesta?</span><span class="faq-toggle">▾</span></div>
+          <div class="faq-a"><p>Realizamos envíos a todo Chile vía couriers confiables. En Santiago ofrecemos entrega a domicilio fija y también retiro en taller sin costo. El valor regional depende del peso y destino.</p></div>
+        </li>
+        <li class="faq-item">
+          <div class="faq-q"><span class="icon">🎨</span><span>¿Puedo pedir algo personalizado?</span><span class="faq-toggle">▾</span></div>
+          <div class="faq-a"><p>Sí. Puedes enviarnos tu idea, referencia o modelo. Si necesitas diseño 3D desde cero, evaluamos el trabajo adicional y te enviamos una cotización antes de imprimir.</p></div>
+        </li>
+        <li class="faq-item">
+            <div class="faq-q"><span class="icon">🧼</span><span>¿Cómo cuido mi impresión 3D?</span><span class="faq-toggle">▾</span></div>
+            <div class="faq-a"><p>Mantén lejos de calor extremo (>60°C si es PLA). Límpiala con un paño seco o levemente húmedo sin solventes. Evita golpes o presión en piezas delgadas.</p></div>
+        </li>
+        <li class="faq-item">
+          <div class="faq-q"><span class="icon">↩️</span><span>¿Puedo devolver un producto?</span><span class="faq-toggle">▾</span></div>
+          <div class="faq-a"><p>Productos personalizados no tienen devolución salvo falla de fabricación. Si hubo un error nuestro, re-imprimimos o devolvemos el dinero.</p></div>
+        </li>
+        <li class="faq-item">
+          <div class="faq-q"><span class="icon">🐾</span><span>¿Hacen modelos de mascotas?</span><span class="faq-toggle">▾</span></div>
+          <div class="faq-a"><p>¡Sí! Con fotos de buena calidad podemos crear una figura estilizada. También ofrecemos pintura básica con costo adicional.</p></div>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+        <!-- Filtro SVG oculto para eliminar fondo claro -->
+        <svg width="0" height="0" style="position:absolute"><filter id="removeWhite" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  -1 -1 -1 1 0"/></filter></svg>
+        <img src="img/Logo_Mision3d.jpg" alt="Misión 3D" class="footer-logo remove-white" />
+      <p style="margin:0;font-size:.85rem">&copy; 2025 <span class="sr-only">Misión 3D</span> Todos los derechos reservados.</p>
+      <p style="margin:0;font-size:.8rem;color:#888">
+        <a href="privacidad.html" style="color:inherit;text-decoration:none">Política de Privacidad</a> • 
+        <a href="terminos.html" style="color:inherit;text-decoration:none">Términos y Condiciones</a>
+      </p>
+    </div>
+  </footer>
+
+  <!-- Carrito -->
+  <aside id="cartDrawer" class="cart">
+    <div class="cart-header"><h3>Tu carrito</h3><button id="closeCart">✕</button></div>
+  <div id="cartAddedMsg" class="cart-added-msg"></div>
+  <div id="cartItems" class="cart-items"></div>
+    <div class="cart-footer">
+      <div class="totals"><span>Total:</span><strong id="cartTotal">$0</strong></div>
+      <button id="checkout" class="btn primary">Finalizar compra</button>
+      <button id="clearCart" class="btn outline">Vaciar</button>
+    </div>
+  </aside>
+  <div id="overlay" class="overlay"></div>
+
+  <!-- Modal de datos -->
+  <div id="checkoutModal" class="modal">
+    <div class="modal-content">
+      <h3>Entrega</h3>
+      <form id="checkoutForm" class="checkout-form">
+        <div class="form-row">
+          <label>Método de envío:<br>
+            <select id="inputEnvio">
+              <option value="retiro">Retiro en taller (sin costo)</option>
+              <option value="domicilio">Envío a domicilio (Santiago, $2.990)</option>
+            </select>
+          </label>
+          <label>Nombre:<br><input id="inputName" autocomplete="name"></label>
+          <label>Apellidos:<br><input id="inputApellido" autocomplete="family-name"></label>
+        </div>
+        <div class="form-row">
+          <label>RUT (Obligatorio):<br><input id="inputRut" autocomplete="off"></label>
+        </div>
+        <div class="form-row">
+          <label>Dirección:<br><input id="inputDireccion" autocomplete="street-address"></label>
+        </div>
+        <div class="form-row">
+          <label>Agregar Nota (Personalización producto):<br><input id="inputNotes" autocomplete="off"></label>
+        </div>
+        <div class="form-row">
+          <label>Código postal (opcional):<br><input id="inputPostal" autocomplete="postal-code"></label>
+        </div>
+        <div class="form-row">
+          <label>Región:<br>
+            <select id="inputRegion">
+              <option value="">Selecciona región</option>
+            </select>
+          </label>
+          <label>Comuna:<br>
+            <select id="inputComuna">
+              <option value="">Selecciona comuna</option>
+            </select>
+          </label>
+        </div>
+        <div class="form-row">
+          <label>Teléfono:<br><input id="inputTelefono" autocomplete="tel"></label>
+        </div>
+        <div class="modal-actions">
+          <button type="button" id="confirmCheckout" class="btn primary">Confirmar</button>
+          <button type="button" id="cancelCheckout" class="btn outline">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- (Se ha migrado el login a login.html) -->
+
+  <!-- Toast de notificación -->
+  <div id="toast" class="toast">¡Producto agregado al carrito!</div>
+  <script src="script.js"></script>
+  <script>
+    // FAQ toggle
+    document.addEventListener('DOMContentLoaded',()=>{
+      const faqList=document.getElementById('faqList');
+      if(!faqList) return;
+      faqList.querySelectorAll('.faq-item').forEach(item=>{
+        const q=item.querySelector('.faq-q');
+        q.addEventListener('click',()=>{
+          const open=item.classList.toggle('open');
+          if(open){
+            // cerrar otros
+            faqList.querySelectorAll('.faq-item').forEach(o=>{if(o!==item) o.classList.remove('open')});
+          }
+        });
+      });
+    });
+
+    // Procesar logo footer para hacer fondo blanco transparente (runtime, sin editar archivo original)
+    document.addEventListener('DOMContentLoaded',()=>{
+      const logo = document.querySelector('.footer-logo');
+      if(!logo) return;
+      function makeTransparent(){
+        try {
+          const w = logo.naturalWidth; const h = logo.naturalHeight;
+          if(!w || !h) return; // imagen no lista
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(logo,0,0);
+          const imgData = ctx.getImageData(0,0,w,h);
+            const d = imgData.data;
+            for(let i=0;i<d.length;i+=4){
+              const r=d[i],g=d[i+1],b=d[i+2];
+              // píxeles muy claros -> transparente
+              if(r>240 && g>240 && b>240){ d[i+3]=0; }
+            }
+          ctx.putImageData(imgData,0,0);
+          logo.src = canvas.toDataURL('image/png');
+          logo.classList.remove('remove-white'); // ya no necesitamos filtro
+        } catch(err){ /* silencioso */ }
+      }
+      if(logo.complete) makeTransparent(); else logo.onload = makeTransparent;
+    });
+  </script>
+  <script src="script.js"></script>
+
+<!-- Firebase RTDB (módulos) -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+  import { getDatabase, ref, get, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
+
+  // ⚙️ Configuración: usa tu databaseURL
+  const firebaseConfig = {
+    databaseURL: "https://mision3d-72b4a-default-rtdb.firebaseio.com/"
+  };
+
+  // Inicializa
+  const app = initializeApp(firebaseConfig);
+  const db  = getDatabase(app);
+
+  // 👉 Cargar productos desde RTDB y renderizar catálogo
+  async function cargarProductosDesdeRTDB() {
+    try {
+      const snap = await get(ref(db, "productos"));
+      if (snap.exists()) {
+        const data = snap.val();
+        // Convierte {id:{...}} -> [{id,...}]
+        window.PRODUCTS = Object.entries(data).map(([id, p]) => ({ id, ...p }));
+      } else {
+        console.warn("No hay productos en RTDB. Uso fallback local si existe.");
+        // Si no hay nada en RTDB, mantenemos lo que ya tengas en script.js
+      }
+      // Tu función de pintado ya existe en script.js
+      if (typeof window.renderCatalog === "function") renderCatalog("");
+    } catch (err) {
+      console.error("Error cargando productos:", err);
+      // Si falla la conexión, dejamos los PRODUCTS locales
+      if (typeof window.renderCatalog === "function") renderCatalog("");
+    }
+  }
+
+  // Llama al cargar inicio
+  cargarProductosDesdeRTDB();
+
+  // 👉 Guardar pedido en RTDB desde checkout.html (si esa página está abierta)
+  // Nos “enganchamos” al botón Confirmar si existe en el DOM.
+  document.addEventListener("DOMContentLoaded", () => {
+    const btnConfirm = document.getElementById("btnConfirmOrder");
+    if (!btnConfirm) return; // esta línea corre en index y en otras páginas también
+
+    btnConfirm.addEventListener("click", async () => {
+      // Lee campos del checkout (todos existen en tu checkout.html):contentReference[oaicite:3]{index=3}
+      const pedido = {
+        email:       document.getElementById("inputEmail")?.value?.trim() || "",
+        nombre:      document.getElementById("inputName")?.value?.trim() || "",
+        apellidos:   document.getElementById("inputApellido")?.value?.trim() || "",
+        rut:         document.getElementById("inputRut")?.value?.trim() || "",
+        direccion:   document.getElementById("inputDireccion")?.value?.trim() || "",
+        region:      document.getElementById("inputRegion")?.value || "",
+        comuna:      document.getElementById("inputComuna")?.value || "",
+        telefono:    document.getElementById("inputTelefono")?.value?.trim() || "",
+        postal:      document.getElementById("inputPostal")?.value?.trim() || "",
+        notas:       document.getElementById("inputNotes")?.value?.trim() || "",
+        // método de envío visible en la UI (por pagar / santiago)
+        envio:       (document.querySelector('input[name="shipMethod"]:checked')?.value) || (document.getElementById("inputEnvio")?.value) || "",
+        // método de pago (si agregas radios como en tu UI de pago):contentReference[oaicite:4]{index=4}
+        pago:        (document.querySelector('input[name="payMethod"]:checked')?.value) || "",
+        // Carrito (intenta leer de localStorage, con fallback)
+        items:       (() => { try { return JSON.parse(localStorage.getItem("cart") || "[]"); } catch { return []; } })(),
+        totalCLP:    (() => {
+                        // si ya calculas total en el sidebar, podrías leerlo del DOM; aquí hacemos sumatoria
+                        const items = JSON.parse(localStorage.getItem("cart") || "[]");
+                        return items.reduce((s, it) => s + (it.price * (it.qty || 1)), 0);
+                      })(),
+        estado:      "pendiente",
+        createdAt:   serverTimestamp()
+      };
+
+      try {
+        const refNuevo = await push(ref(db, "pedidos"), pedido);
+        alert("✅ Pedido registrado. ID: " + refNuevo.key + "\nTe contactaremos por correo/WhatsApp.");
+        // Limpia carrito si quieres:
+        localStorage.removeItem("cart");
+        window.location.href = "index.html";
+      } catch (e) {
+        console.error(e);
+        alert("❌ Hubo un problema registrando el pedido. Intenta nuevamente.");
+      }
+    });
+  });
+</script>
+<script src="ui-components.js"></script>
+<script src="validations.js"></script>
+<script src="script.js"></script>
+<script type="module" src="firebase-rtdb.js"></script>
+</body>
+</html>

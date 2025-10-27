@@ -1,0 +1,11 @@
+node_modules/
+npm-debug.log*
+yarn-error.log
+*.log
+.DS_Store
+# Do NOT bake credentials into the image
+firebase-credentials.json
+.env
+.env*
+coverage/
+.tmp/

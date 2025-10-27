@@ -1,0 +1,6 @@
+# Robots config
+User-agent: *
+Disallow: /backend/
+Disallow: /admin.html
+Allow: /
+Sitemap: https://mision3d.cl/sitemap.xml
