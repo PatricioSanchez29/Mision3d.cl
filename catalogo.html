@@ -67,6 +67,8 @@
             </select>
           </div>
           <div class="middle" id="categoryChips"></div>
+          <!-- Slider de precios -->
+          <div id="priceSliderContainer"></div>
           <div class="right">
             <div class="compare-toggle"><label>Comparar <input type="checkbox" id="compareToggle"></label></div>
             <div class="view-toggle">
@@ -121,6 +123,24 @@
   <script src="ui-components.js"></script>
   <script src="validations.js"></script>
   <script src="script.js"></script>
+  <script src="ux-enhancements.js"></script>
+  <script>
+    // Inicializar slider de precios cuando los productos estén cargados
+    document.addEventListener('productsReady', () => {
+      if (typeof window.initPriceSlider === 'function') {
+        window.initPriceSlider('#priceSliderContainer');
+      }
+    });
+    
+    // Función para aplicar filtro de precio
+    window.applyPriceFilter = function(min, max) {
+      window.priceMin = min;
+      window.priceMax = max;
+      if (typeof window.renderCatalog === 'function') {
+        window.renderCatalog(document.getElementById('searchInput')?.value || '');
+      }
+    };
+  </script>
 <script type="module" src="firebase-rtdb.js"></script>
 </body>
 </html>
