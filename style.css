@@ -730,10 +730,10 @@ body.dark .search-suggestions {background:#1e293b;border-color:#334155;box-shado
 @media (max-width:600px){.footer-logo{height:54px}}
 body.dark .footer-logo{filter:drop-shadow(0 2px 4px rgba(0,0,0,.55)) brightness(1.05);background:#fff}
 /* Announcement bar */
-.announcement-bar{background:linear-gradient(90deg,#6d28d9,#9333ea);color:#fff;font-size:.8rem;font-weight:500;letter-spacing:.5px;overflow:hidden;white-space:nowrap;position:sticky;top:0;z-index:40}
+.announcement-bar{background:linear-gradient(90deg,#06b6d4,#0891b2,#0e7490);color:#fff;font-size:.8rem;font-weight:500;letter-spacing:.5px;overflow:hidden;white-space:nowrap;position:sticky;top:0;z-index:40}
 .ann-track{display:inline-block;padding:6px 0;animation:marquee 28s linear infinite}
 @keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
-body.dark .announcement-bar{background:linear-gradient(90deg,#4c1d95,#6d28d9)}
+body.dark .announcement-bar{background:linear-gradient(90deg,#0891b2,#0e7490)}
 
 /* Nuevo catálogo avanzado */
 .catalog-wrap{padding:50px 24px 70px;max-width:1400px;margin:0 auto}
@@ -973,7 +973,7 @@ body.dark .login-form input{background:#1e293b;color:#e2e8f0;border-color:#33415
   font-size: 2.5rem;
   font-weight: 800;
   margin: 0 0 12px;
-  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  background: linear-gradient(135deg, #06b6d4, #0891b2);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -992,20 +992,20 @@ body.dark .login-form input{background:#1e293b;color:#e2e8f0;border-color:#33415
   align-items: center;
   gap: 8px;
   padding: 14px 32px;
-  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  background: linear-gradient(135deg, #06b6d4, #0891b2);
   color: #fff;
   border-radius: 50px;
   text-decoration: none;
   font-weight: 600;
   font-size: 1rem;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(139,92,246,0.3);
+  box-shadow: 0 4px 12px rgba(6,182,212,0.3);
 }
 
 .btn-ver-mas:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(139,92,246,0.4);
-  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  box-shadow: 0 8px 20px rgba(6,182,212,0.4);
+  background: linear-gradient(135deg, #0891b2, #0e7490);
 }
 
 .btn-ver-mas svg {
@@ -1109,7 +1109,7 @@ body.dark .login-form input{background:#1e293b;color:#e2e8f0;border-color:#33415
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, rgba(139,92,246,0.08), rgba(236,72,153,0.08));
+  background: linear-gradient(135deg, rgba(6,182,212,0.08), rgba(8,145,178,0.08));
   opacity: 0;
   transition: opacity 0.4s;
 }
@@ -1120,8 +1120,8 @@ body.dark .login-form input{background:#1e293b;color:#e2e8f0;border-color:#33415
 
 .beneficios .item:hover{
   transform:translateY(-10px);
-  box-shadow:0 16px 32px rgba(139,92,246,0.18);
-  border-color:#8b5cf6;
+  box-shadow:0 16px 32px rgba(6,182,212,0.18);
+  border-color:#06b6d4;
 }
 
 .beneficios svg{
@@ -1134,7 +1134,7 @@ body.dark .login-form input{background:#1e293b;color:#e2e8f0;border-color:#33415
 
 .beneficios .item:hover svg{
   transform:scale(1.15) rotate(5deg);
-  filter:drop-shadow(0 8px 16px rgba(139,92,246,0.3));
+  filter:drop-shadow(0 8px 16px rgba(6,182,212,0.3));
 }
 
 .beneficios img{width:50px;margin-bottom:8px}
@@ -1148,7 +1148,7 @@ body.dark .login-form input{background:#1e293b;color:#e2e8f0;border-color:#33415
 }
 
 .beneficios .item:hover h4 {
-  background:linear-gradient(135deg, #8b5cf6, #ec4899);
+  background:linear-gradient(135deg, #06b6d4, #0891b2);
   -webkit-background-clip:text;
   background-clip:text;
   color:transparent;
