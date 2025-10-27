@@ -202,6 +202,10 @@ body.dark .modal-content {background:#1e293b;color:#e2e8f0}
 body.dark .reviews-section {background:#0f172a}
 body.dark .review-card {background:#1e293b;border-color:#334155}
 body.dark .footer {background:#0f172a}
+body.dark .beneficios {background:#1e293b}
+body.dark .beneficios h4 {color:#e2e8f0}
+body.dark .beneficios p {color:#cbd5e1}
+body.dark .beneficios .item:hover {box-shadow:0 8px 16px rgba(0,0,0,0.4)}
 body.dark .toast {background:#334155}
 body.dark .search-suggestions {background:#1e293b;border-color:#334155;box-shadow:0 4px 12px rgba(0,0,0,0.4)}
 .footer-logo{height:70px;width:auto;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,.25))}
@@ -303,7 +307,13 @@ body.dark .login-form input{background:#1e293b;color:#e2e8f0;border-color:#33415
 .nosotros,.contacto{padding:40px 20px;text-align:center}
 .footer{background:#111;color:#fff;text-align:center;padding:14px}
 .beneficios{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:20px;text-align:center;padding:30px 20px;background:#fff}
+.beneficios .item{display:flex;flex-direction:column;align-items:center;gap:8px;padding:20px;border-radius:12px;transition:transform 0.3s,box-shadow 0.3s}
+.beneficios .item:hover{transform:translateY(-5px);box-shadow:0 8px 16px rgba(0,0,0,0.1)}
+.beneficios svg{width:80px;height:80px;margin-bottom:8px;transition:transform 0.3s}
+.beneficios .item:hover svg{transform:scale(1.1)}
 .beneficios img{width:50px;margin-bottom:8px}
+.beneficios h4{margin:0;font-size:1.1rem;color:#333}
+.beneficios p{margin:0;font-size:0.9rem;color:#666}
 .cart{position:fixed;top:0;right:-380px;width:340px;height:100%;background:#fff;box-shadow:-4px 0 12px rgba(0,0,0,.2);display:flex;flex-direction:column;transition:right .3s;z-index:10000}
 .cart.open{right:0}
 .cart-header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid #eee}
