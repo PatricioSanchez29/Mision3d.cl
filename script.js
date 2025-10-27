@@ -520,11 +520,19 @@ function initReviewsCarousel(){
 }
 
 /* ==================== Pago ==================== */
-// Base de API: en prod usamos same-origin (proxy Nginx); en dev, localhost:3000
+// Base de API
+// - Producción: same-origin ('')
+// - Local: si servimos frontend desde el mismo backend (localhost con puerto presente) usamos same-origin ('')
+//          si abrimos el HTML desde otro puerto/servidor, usamos backend por defecto en 3001
 const API_BASE = (function(){
   if (window.API_BASE_URL) return window.API_BASE_URL.replace(/\/$/, '');
-  const isLocal = /localhost|127\.0\.0\.1|\:5500/.test(location.host);
-  return isLocal ? 'http://localhost:3000' : '';
+  const isLocalHost = /localhost|127\.0\.0\.1/.test(location.hostname);
+  if (isLocalHost && location.port) {
+    // mismo origen (p.ej., backend sirviendo el frontend en :3001)
+    return '';
+  }
+  // fallback a backend local por defecto
+  return isLocalHost ? 'http://localhost:3001' : '';
 })();
 
 async function iniciarPago(payMethod, payload) {
