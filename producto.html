@@ -294,15 +294,38 @@ function renderRelatedProducts(currentProduct) {
   }
   
   container.innerHTML = related.map(p => `
-    <div class="related-card" onclick="window.location.href='producto.html?id=${p.id}'">
+    <div class="related-card" data-product-id="${p.id}">
       <img src="${p.img || 'img/placeholder.png'}" alt="${p.name}">
       <h3>${p.name}</h3>
       <span class="price">$${(p.price || 0).toLocaleString('es-CL')}</span>
-      <button class="btn-add" onclick="event.stopPropagation(); if(window.add) window.add('${p.id}');">
+      <button class="btn-add" data-id="${p.id}">
         Añadir a la cesta
       </button>
     </div>
   `).join('');
+  
+  // Agregar event listeners después de renderizar
+  container.querySelectorAll('.related-card').forEach(card => {
+    const productId = card.dataset.productId;
+    const btn = card.querySelector('.btn-add');
+    
+    // Click en la card para ir al producto
+    card.addEventListener('click', (e) => {
+      if (!e.target.closest('.btn-add')) {
+        window.location.href = `producto.html?id=${productId}`;
+      }
+    });
+    
+    // Click en el botón para agregar al carrito
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (typeof window.add === 'function') {
+        window.add(productId);
+      } else {
+        console.error('Función add() no disponible');
+      }
+    });
+  });
 }
 
 // ===== RENDERIZAR VISTOS RECIENTEMENTE =====
@@ -326,15 +349,38 @@ function renderRecentlyViewed(currentProductId) {
     }
     
     container.innerHTML = recentProducts.map(p => `
-      <div class="related-card" onclick="window.location.href='producto.html?id=${p.id}'">
+      <div class="related-card" data-product-id="${p.id}">
         <img src="${p.img || 'img/placeholder.png'}" alt="${p.name}">
         <h3>${p.name}</h3>
         <span class="price">$${(p.price || 0).toLocaleString('es-CL')}</span>
-        <button class="btn-add" onclick="event.stopPropagation(); if(window.add) window.add('${p.id}');">
+        <button class="btn-add" data-id="${p.id}">
           Añadir a la cesta
         </button>
       </div>
     `).join('');
+    
+    // Agregar event listeners después de renderizar
+    container.querySelectorAll('.related-card').forEach(card => {
+      const productId = card.dataset.productId;
+      const btn = card.querySelector('.btn-add');
+      
+      // Click en la card para ir al producto
+      card.addEventListener('click', (e) => {
+        if (!e.target.closest('.btn-add')) {
+          window.location.href = `producto.html?id=${productId}`;
+        }
+      });
+      
+      // Click en el botón para agregar al carrito
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (typeof window.add === 'function') {
+          window.add(productId);
+        } else {
+          console.error('Función add() no disponible');
+        }
+      });
+    });
   } catch (e) {
     console.error('Error renderizando vistos recientemente:', e);
     container.parentElement.style.display = 'none';

@@ -702,6 +702,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
   window.cart = cart;
   window.save = save;
   window.badge = badge;
+  window.add = add;
+  window.qty = qty;
   window.openCart = openCart;
   window.render = render;
   // Exponer confirmCheckout para uso desde checkout.html
