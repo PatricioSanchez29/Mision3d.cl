@@ -119,13 +119,48 @@
     </div>
   </section>
   <footer class="footer">
-    <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
-      <img src="img/Logo_Mision3d.jpg" alt="Misión 3D" class="footer-logo" />
-      <p style="margin:0;font-size:.85rem">&copy; 2025 Misión 3D</p>
-      <p style="margin:0;font-size:.8rem;color:#888">
-        <a href="privacidad.html" style="color:inherit;text-decoration:none">Política de Privacidad</a> • 
-        <a href="terminos.html" style="color:inherit;text-decoration:none">Términos y Condiciones</a>
-      </p>
+    <div class="container" style="max-width: 1200px;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 40px; margin-bottom: 30px;">
+        <div>
+          <img src="img/Logo_Mision3d.jpg" alt="Misión 3D" class="footer-logo remove-white" style="width: 120px; margin-bottom: 15px;" />
+          <p style="color: #888; font-size: 0.9rem; line-height: 1.6;">
+            Impresión 3D personalizada<br>
+            Transforma tus ideas en realidad
+          </p>
+        </div>
+        
+        <div>
+          <h4 style="margin-bottom: 15px; color: #0052cc;">Contacto</h4>
+          <p style="margin: 8px 0; font-size: 0.9rem;">
+            📧 <a href="mailto:mision3d.cl@gmail.com" style="color: inherit; text-decoration: none;">mision3d.cl@gmail.com</a>
+          </p>
+          <p style="margin: 8px 0; font-size: 0.9rem;">
+            📍 Igualdad 4522, La Florida<br>
+            <span style="margin-left: 20px;">Santiago, Chile</span>
+          </p>
+          <p style="margin: 8px 0; font-size: 0.9rem;">
+            🕐 Lunes a viernes, 9:00 - 18:00 hrs
+          </p>
+        </div>
+        
+        <div>
+          <h4 style="margin-bottom: 15px; color: #0052cc;">Información Legal</h4>
+          <p style="margin: 8px 0; font-size: 0.9rem;">
+            <strong>RUT:</strong> 19.225.214-8
+          </p>
+          <p style="margin: 8px 0; font-size: 0.9rem;">
+            Patricio Germán Sánchez Casanova
+          </p>
+          <p style="margin-top: 20px;">
+            <a href="privacidad.html" style="color: #0052cc; text-decoration: none; margin-right: 15px;">Privacidad</a>
+            <a href="terminos.html" style="color: #0052cc; text-decoration: none;">Términos</a>
+          </p>
+        </div>
+      </div>
+      
+      <div style="text-align: center; padding-top: 20px; border-top: 1px solid #333;">
+        <p style="margin:0;font-size:.85rem;color:#888">&copy; 2025 Misión 3D - Todos los derechos reservados</p>
+      </div>
     </div>
   </footer>
   <aside id="cartDrawer" class="cart">
@@ -226,3 +261,4 @@
 <script type="module" src="firebase-rtdb.js"></script>
 </body>
 </html>
+
