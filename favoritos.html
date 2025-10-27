@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mis Favoritos | Misión 3D</title>
+  <link rel="stylesheet" href="style.css">
+  <script>window.GA_MEASUREMENT_ID = window.GA_MEASUREMENT_ID || 'G-XXXXXXXXXX';</script>
+  <script src="consent.js"></script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <!-- Botón Hamburguesa (solo móvil) -->
+    <button class="hamburger-btn" id="hamburgerBtn" aria-label="Abrir menú">
+      <div class="hamburger-icon">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </button>
+
+    <h1 class="logo" style="margin:0;display:flex;align-items:center">
+      <a href="index.html" style="display:inline-flex;align-items:center;text-decoration:none">
+        <img src="img/Logo_Mision3d.jpg" alt="Misión 3D" class="logo-img" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-text',textContent:'Misión 3D'}));" />
+      </a>
+    </h1>
+    <nav class="nav">
+      <a href="catalogo.html" id="navCatalog">Catálogo</a>
+      <a href="index.html#nosotros">Nosotros</a>
+      <a href="index.html#contacto">Contacto</a>
+    </nav>
+    <div class="search-header">
+      <input type="text" id="searchInput" placeholder="Buscar producto..." class="search-bar" autocomplete="off" style="max-width:220px;width:100%;padding:8px 12px;border-radius:8px;border:1px solid #ccc;">
+      <div id="searchSuggestions" class="search-suggestions"></div>
+    </div>
+    <div class="right-actions" style="display:flex;align-items:center;gap:10px">
+      <div id="userArea" class="user-area">
+        <a href="login.html" id="loginLink" class="btn small outline">Ingresar</a>
+      </div>
+      <button id="wishlistBtn" onclick="window.location.href='favoritos.html'" title="Mis Favoritos">
+        ❤️
+        <span id="wishlistCount">0</span>
+      </button>
+      <button class="cart-btn" id="openCart" aria-label="Abrir carrito">
+        🛒 <span id="cartCount">0</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Banner de anuncios -->
+  <div class="announcement-bar">
+    <div class="marquee">
+      <span>🎉 Envío gratis en compras sobre $50.000 • Regiones envío 4 a 5 días hábiles • Pedidos personalizados: cotización gratuita • Soporte directo vía WhatsApp 🎉</span>
+    </div>
+  </div>
+
+  <!-- Contenido principal -->
+  <main class="wishlist-page">
+    <h1>Mis Favoritos</h1>
+    <div id="wishlistGrid" class="grid"></div>
+  </main>
+
+  <!-- Carrito lateral -->
+  <div class="cart" id="cartDrawer">
+    <div class="cart-header">
+      <h3>Carrito</h3>
+      <button id="closeCart" style="background:none;border:none;font-size:1.5rem;cursor:pointer">×</button>
+    </div>
+    <div class="cart-items" id="cartItems"></div>
+    <div class="cart-footer">
+      <strong>Total: <span id="cartTotal">$0</span></strong>
+      <button class="btn primary" id="checkout" style="width:100%;margin-top:10px">Finalizar compra</button>
+      <button id="clearCart" style="background:#dc2626;color:#fff;border:none;padding:8px;border-radius:6px;cursor:pointer;margin-top:8px;width:100%">Vaciar carrito</button>
+    </div>
+  </div>
+
+  <!-- Overlay -->
+  <div class="overlay" id="overlay"></div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast">¡Producto agregado al carrito!</div>
+
+  <!-- Cookie Consent Banner -->
+  <div id="cookie-banner" class="cookie-banner" style="display:none">
+    <div class="cookie-content">
+      <p><strong>🍪 Usamos cookies</strong> para mejorar tu experiencia. Al continuar navegando, aceptas nuestra 
+        <a href="privacidad.html" style="color:#fff;text-decoration:underline">política de privacidad</a>.
+      </p>
+      <div class="cookie-buttons">
+        <button id="cookie-accept" class="cookie-btn accept">Aceptar</button>
+        <button id="cookie-reject" class="cookie-btn reject">Rechazar</button>
+        <button id="cookie-close" class="cookie-btn close" title="Cerrar">×</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="ui-components.js"></script>
+  <script src="validations.js"></script>
+  <script src="script.js"></script>
+  <script src="ux-enhancements.js"></script>
+  <script src="wishlist.js"></script>
+  <script src="mobile-menu.js"></script>
+  <script type="module" src="firebase-rtdb.js"></script>
+</body>
+</html>

@@ -10,6 +10,15 @@
 </head>
 <body>
   <header class="header">
+    <!-- Botón Hamburguesa (solo móvil) -->
+    <button class="hamburger-btn" id="hamburgerBtn" aria-label="Abrir menú">
+      <div class="hamburger-icon">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </button>
+
     <h1 class="logo" style="margin:0;display:flex;align-items:center">
       <a href="index.html" style="display:inline-flex;align-items:center;text-decoration:none">
         <img src="img/Logo_Mision3d.jpg" alt="Misión 3D" class="logo-img" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-text',textContent:'Misión 3D'}));" />
@@ -21,7 +30,18 @@
       <a href="index.html#contacto">Contacto</a>
     </nav>
     <div class="search-header">
-      <input type="text" id="searchInput" placeholder="Buscar producto..." class="search-bar" autocomplete="off" style="max-width:220px;width:100%;padding:8px 12px;border-radius:8px;border:1px solid #ccc;">
+      <div class="advanced-search-bar">
+        <select id="headerCategorySelect" class="category-select">
+          <option value="all">Todas las categorías</option>
+        </select>
+        <input type="text" id="searchInput" placeholder="¿Qué estás buscando?" class="search-input" autocomplete="off">
+        <button type="button" id="headerSearchBtn" class="search-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+        </button>
+      </div>
       <div id="searchSuggestions" class="search-suggestions"></div>
     </div>
     <div class="right-actions" style="display:flex;align-items:center;gap:10px">
@@ -56,7 +76,22 @@
       <main class="catalog-main">
         <div class="catalog-controls-advanced">
           <div class="left">
-            <div class="label-small">Ordenar por</div>
+            <!-- Dropdown de Categorías -->
+            <div class="category-dropdown-wrapper">
+              <div class="custom-select" id="categorySelect">
+                <div class="select-trigger">
+                  <span id="selectedCategory">Todas las categorías</span>
+                  <span class="arrow">▼</span>
+                </div>
+                <div class="select-dropdown">
+                  <input type="text" class="category-search" placeholder="🔍 Buscar categoría..." id="categorySearchInput">
+                  <div class="select-options" id="categoryOptions">
+                    <!-- Las opciones se generarán dinámicamente -->
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <select id="sortSelect" class="sort-select">
               <option value="name-asc">Alfabéticamente A-Z</option>
               <option value="name-desc">Alfabéticamente Z-A</option>
@@ -66,9 +101,6 @@
               <option value="newest">Más nuevo</option>
             </select>
           </div>
-          <div class="middle" id="categoryChips"></div>
-          <!-- Slider de precios -->
-          <div id="priceSliderContainer"></div>
           <div class="right">
             <div class="compare-toggle"><label>Comparar <input type="checkbox" id="compareToggle"></label></div>
             <div class="view-toggle">
@@ -122,25 +154,70 @@
   <div id="toast" class="toast">¡Producto agregado al carrito!</div>
   <script src="ui-components.js"></script>
   <script src="validations.js"></script>
+  <script src="category-dropdown.js"></script>
   <script src="script.js"></script>
+  <script src="wishlist.js"></script>
   <script src="ux-enhancements.js"></script>
   <script>
-    // Inicializar slider de precios cuando los productos estén cargados
+    // Inicializar componentes cuando los productos estén cargados
     document.addEventListener('productsReady', () => {
-      if (typeof window.initPriceSlider === 'function') {
-        window.initPriceSlider('#priceSliderContainer');
+      // Reconstruir opciones del dropdown cuando los productos estén listos
+      if (typeof window.buildCategoryOptions === 'function') {
+        window.buildCategoryOptions();
+      }
+      
+      // Leer parámetro de búsqueda de la URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const searchQuery = urlParams.get('search');
+      if (searchQuery) {
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+          searchInput.value = searchQuery;
+          if (typeof window.renderCatalog === 'function') {
+            window.renderCatalog(searchQuery);
+          }
+        }
       }
     });
     
-    // Función para aplicar filtro de precio
-    window.applyPriceFilter = function(min, max) {
-      window.priceMin = min;
-      window.priceMax = max;
-      if (typeof window.renderCatalog === 'function') {
-        window.renderCatalog(document.getElementById('searchInput')?.value || '');
+    // Conectar búsqueda del header - esperar a que todo esté listo
+    document.addEventListener('DOMContentLoaded', () => {
+      const searchInput = document.getElementById('searchInput');
+      
+      if (searchInput) {
+        console.log('🔍 Event listeners de búsqueda agregados');
+        
+        // Búsqueda mientras escribe
+        searchInput.addEventListener('input', (e) => {
+          console.log('📝 Input event:', e.target.value);
+          if (typeof window.renderCatalog === 'function') {
+            window.renderCatalog(e.target.value);
+          }
+          // También mostrar sugerencias si la función existe
+          if (typeof window.showSearchSuggestions === 'function') {
+            window.showSearchSuggestions(e.target.value);
+          }
+        });
+        
+        // Búsqueda al presionar Enter
+        searchInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            console.log('⏎ Enter presionado con:', searchInput.value);
+            if (typeof window.renderCatalog === 'function') {
+              window.renderCatalog(searchInput.value);
+            }
+          }
+        });
+      } else {
+        console.warn('⚠️ searchInput no encontrado');
       }
-    };
+    });
   </script>
+<script src="header-search.js"></script>
+<script src="advanced-search.js"></script>
+<script src="quick-view.js"></script>
+<script src="mobile-menu.js"></script>
 <script type="module" src="firebase-rtdb.js"></script>
 </body>
 </html>

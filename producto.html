@@ -59,6 +59,15 @@
 </style>
 </head><body>
 <header class="topbar" style="padding:14px 26px;display:flex;align-items:center;gap:28px;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.06)">
+  <!-- Botón Hamburguesa (solo móvil) -->
+  <button class="hamburger-btn" id="hamburgerBtn" aria-label="Abrir menú" style="margin-right:8px">
+    <div class="hamburger-icon">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </button>
+
   <div style="flex:0 0 auto"><a href="index.html" style="text-decoration:none;font-weight:700;color:#e6462f;font-size:1.2rem">Tienda3D</a></div>
   <nav style="display:flex;gap:18px;font-size:.9rem;flex:1 1 auto">
     <a href="catalogo.html">Catálogo</a>
@@ -410,6 +419,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
+<script src="wishlist.js"></script>
 <script src="ux-enhancements.js"></script>
+<script src="mobile-menu.js"></script>
 <script type="module" src="firebase-rtdb.js"></script>
 </body></html>

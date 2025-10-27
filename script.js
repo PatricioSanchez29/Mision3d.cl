@@ -224,27 +224,30 @@ function applySort(list){
   }
 }
 
-function buildCategoryChips(){
-  const cont = document.getElementById('categoryChips');
-  if(!cont) return;
-  if (!window.PRODUCTS || !Array.isArray(window.PRODUCTS)) {
-    console.warn('PRODUCTS no disponible para categorías');
-    return;
-  }
-  const cats = ['all', ...Array.from(new Set(window.PRODUCTS.map(p=>p.category)))];
-  cont.innerHTML = cats.map(c=>`<span class="chip" data-cat="${c}">${c==='all'?'Todos':c}</span>`).join('');
-  cont.querySelectorAll('.chip').forEach(ch=>{
-    ch.onclick=()=>{
-      currentCategory = ch.dataset.cat;
-      cont.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
-      ch.classList.add('active');
-      renderCatalog($('#searchInput')?.value||'');
-    };
-  });
-  cont.querySelector('.chip[data-cat="all"]')?.classList.add('active');
-}
+// buildCategoryChips - YA NO SE USA, reemplazado por category-dropdown.js
+// function buildCategoryChips(){
+//   const cont = document.getElementById('categoryChips');
+//   if(!cont) return;
+//   if (!window.PRODUCTS || !Array.isArray(window.PRODUCTS)) {
+//     console.warn('PRODUCTS no disponible para categorías');
+//     return;
+//   }
+//   const cats = ['all', ...Array.from(new Set(window.PRODUCTS.map(p=>p.category)))];
+//   cont.innerHTML = cats.map(c=>`<span class="chip" data-cat="${c}">${c==='all'?'Todos':c}</span>`).join('');
+//   cont.querySelectorAll('.chip').forEach(ch=>{
+//     ch.onclick=()=>{
+//       currentCategory = ch.dataset.cat;
+//       cont.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
+//       ch.classList.add('active');
+//       renderCatalog($('#searchInput')?.value||'');
+//     };
+//   });
+//   cont.querySelector('.chip[data-cat="all"]')?.classList.add('active');
+// }
 
 function renderCatalog(filterText = ""){
+  console.log('🔄 renderCatalog llamado con filterText:', filterText);
+  
   const grid = document.getElementById('catalogGrid') || document.querySelector('.catalog-grid') || document.querySelector('.grid.catalog-grid');
   if (!grid) return;
   
@@ -280,12 +283,33 @@ function renderCatalog(filterText = ""){
     const txt = filterText.trim().toLowerCase();
     productos = productos.filter(p => p.name.toLowerCase().includes(txt));
   }
-  if(currentCategory !== 'all') {
-    productos = productos.filter(p=>p.category===currentCategory);
+  
+  // Filtrar por categoría (usar dropdown si existe, sino usar chips)
+  let categoryToFilter = currentCategory;
+  if (typeof window.getSelectedCategory === 'function') {
+    categoryToFilter = window.getSelectedCategory();
   }
+  
+  console.log('🔍 Filtrando por categoría:', categoryToFilter, 'Total productos antes:', productos.length);
+  
+  if(categoryToFilter && categoryToFilter !== 'all') {
+    productos = productos.filter(p => {
+      if (!p.category) return false;
+      // Soportar múltiples categorías separadas por coma
+      const cats = p.category.split(',').map(c => c.trim());
+      return cats.includes(categoryToFilter);
+    });
+    console.log('📊 Productos después del filtro de categoría:', productos.length);
+  }
+  
   productos = applySort(productos);
-  if(priceMin!=null) productos = productos.filter(p=>p.price >= priceMin);
-  if(priceMax!=null) productos = productos.filter(p=>p.price <= priceMax);
+  
+  // Filtro de precio deshabilitado
+  // console.log('💰 Filtros de precio - Min:', priceMin, 'Max:', priceMax);
+  // if(priceMin!=null) productos = productos.filter(p=>p.price >= priceMin);
+  // if(priceMax!=null) productos = productos.filter(p=>p.price <= priceMax);
+  // console.log('💵 Productos después del filtro de precio:', productos.length);
+  
   if(stockFilter!=='all') productos = productos.filter(p=>p.stock===stockFilter);
 
   grid.innerHTML = "";
@@ -596,20 +620,31 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   render();               // carrito lateral
   renderCatalog();        // catálogo
-  buildCategoryChips();   // chips categorías
+  // buildCategoryChips();   // chips categorías - DESHABILITADO, usando dropdown
   renderReviews();        // reseñas
 
-  // Filtros catálogo
-  const priceMinInput = document.getElementById('priceMin');
-  const priceMaxInput = document.getElementById('priceMax');
-  [priceMinInput, priceMaxInput].forEach(inp=>{
-    if(!inp) return;
-    inp.addEventListener('input', ()=>{
-      priceMin = priceMinInput?.value ? parseInt(priceMinInput.value) : null;
-      priceMax = priceMaxInput?.value ? parseInt(priceMaxInput.value) : null;
+  // Filtros de precio deshabilitados
+  // const priceMinInput = document.getElementById('priceMin');
+  // const priceMaxInput = document.getElementById('priceMax');
+  // [priceMinInput, priceMaxInput].forEach(inp=>{
+  //   if(!inp) return;
+  //   inp.addEventListener('input', ()=>{
+  //     priceMin = priceMinInput?.value ? parseInt(priceMinInput.value) : null;
+  //     priceMax = priceMaxInput?.value ? parseInt(priceMaxInput.value) : null;
+  //     renderCatalog($('#searchInput')?.value||'');
+  //   });
+  // });
+  
+  // Selector de ordenamiento
+  const sortSelect = document.getElementById('sortSelect');
+  if(sortSelect) {
+    sortSelect.addEventListener('change', (e) => {
+      currentSort = e.target.value;
+      console.log('🔄 Ordenamiento cambiado a:', currentSort);
       renderCatalog($('#searchInput')?.value||'');
     });
-  });
+  }
+  
   document.querySelectorAll('input[name="stockFilter"]').forEach(r=>{
     r.addEventListener('change', ()=>{
       const sel = document.querySelector('input[name="stockFilter"]:checked');
@@ -625,35 +660,57 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
   const searchInput = document.getElementById('searchInput');
   if (searchInput) {
+    // Detectar si estamos en index.html o catalogo.html
+    const isIndexPage = window.location.pathname.includes('index.html') || window.location.pathname === '/';
+    
     searchInput.addEventListener('input', e => {
-      renderCatalog(e.target.value);
-      showSearchSuggestions(e.target.value);
+      const searchText = e.target.value.trim();
+      
+      if (isIndexPage) {
+        // En index.html, solo mostrar sugerencias
+        showSearchSuggestions(searchText);
+      } else {
+        // En catalogo.html, filtrar productos
+        renderCatalog(searchText);
+        showSearchSuggestions(searchText);
+      }
     });
+    
     searchInput.addEventListener('blur', ()=>{
       setTimeout(()=>{
         const sugDiv = document.getElementById('searchSuggestions');
         if(sugDiv){ sugDiv.innerHTML = ''; sugDiv.style.display = 'none'; }
       },200);
     });
+    
     searchInput.addEventListener('keydown', e=>{
       if(e.key==='Enter'){
         e.preventDefault();
         const txt = searchInput.value.trim().toLowerCase();
         
-        // Si hay texto, buscar el primer producto que coincida
-        if (txt && window.PRODUCTS && window.PRODUCTS.length > 0) {
-          const match = window.PRODUCTS.find(p => p.name.toLowerCase().includes(txt));
-          if (match) {
-            // Redirigir a la página del producto
-            window.location.href = `producto.html?id=${match.id}`;
-            return;
+        if (isIndexPage) {
+          // En index.html, redirigir al catálogo con búsqueda
+          if (txt) {
+            window.location.href = `catalogo.html?search=${encodeURIComponent(txt)}`;
+          } else {
+            window.location.href = 'catalogo.html';
           }
+        } else {
+          // En catalogo.html, buscar y redirigir al producto o filtrar
+          if (txt && window.PRODUCTS && window.PRODUCTS.length > 0) {
+            const match = window.PRODUCTS.find(p => p.name.toLowerCase().includes(txt));
+            if (match) {
+              // Redirigir a la página del producto
+              window.location.href = `producto.html?id=${match.id}`;
+              return;
+            }
+          }
+          
+          // Si no hay coincidencias, solo filtrar el catálogo
+          renderCatalog(searchInput.value);
+          const sugDiv = document.getElementById('searchSuggestions');
+          if(sugDiv){ sugDiv.innerHTML = ''; sugDiv.style.display='none'; }
         }
-        
-        // Si no hay coincidencias, solo filtrar el catálogo
-        renderCatalog(searchInput.value);
-        const sugDiv = document.getElementById('searchSuggestions');
-        if(sugDiv){ sugDiv.innerHTML = ''; sugDiv.style.display='none'; }
       }
     });
   }

@@ -154,42 +154,68 @@ window.initPriceSlider = function(containerSelector = '#priceSliderContainer') {
   const maxValue = container.querySelector('#maxValue');
   const track = container.querySelector('#sliderTrack');
   
-  function updateSlider() {
+  let debounceTimer;
+  
+  function updateSlider(applyFilterImmediately = false) {
     let min = parseInt(minRange.value);
     let max = parseInt(maxRange.value);
     
     // Evitar que se crucen
     if (min > max - 1000) {
-      if (this.id === 'minRange') {
+      if (this && this.id === 'minRange') {
         min = max - 1000;
         minRange.value = min;
-      } else {
+      } else if (this && this.id === 'maxRange') {
         max = min + 1000;
         maxRange.value = max;
       }
     }
     
-    // Actualizar valores mostrados
+    // Actualizar valores mostrados INMEDIATAMENTE
     minValue.textContent = `$${min.toLocaleString('es-CL')}`;
     maxValue.textContent = `$${max.toLocaleString('es-CL')}`;
     
-    // Actualizar track visual
+    // Actualizar track visual INMEDIATAMENTE
     const percentMin = ((min - minPrice) / (maxPrice - minPrice)) * 100;
     const percentMax = ((max - minPrice) / (maxPrice - minPrice)) * 100;
     track.style.left = percentMin + '%';
     track.style.width = (percentMax - percentMin) + '%';
     
-    // Aplicar filtro si existe la función
-    if (typeof window.applyPriceFilter === 'function') {
-      window.applyPriceFilter(min, max);
+    // Aplicar filtro
+    if (applyFilterImmediately) {
+      // Aplicar inmediatamente (usado en inicialización)
+      if (typeof window.applyPriceFilter === 'function') {
+        window.applyPriceFilter(min, max);
+      }
+    } else {
+      // Aplicar con debounce para mejor performance durante el arrastre
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        console.log('💰 Aplicando filtro de precio:', min, '-', max);
+        if (typeof window.applyPriceFilter === 'function') {
+          window.applyPriceFilter(min, max);
+        }
+      }, 500); // 500ms de espera
     }
   }
   
+  // Event listeners para input (mientras arrastra)
   minRange.addEventListener('input', updateSlider);
   maxRange.addEventListener('input', updateSlider);
   
-  // Inicializar
-  updateSlider.call(minRange);
+  // Event listeners para change (cuando suelta)
+  minRange.addEventListener('change', function() {
+    updateSlider.call(this, true); // Aplicar inmediatamente al soltar
+  });
+  maxRange.addEventListener('change', function() {
+    updateSlider.call(this, true); // Aplicar inmediatamente al soltar
+  });
+  
+  // Inicializar sin aplicar filtro
+  const percentMin = 0;
+  const percentMax = 100;
+  track.style.left = percentMin + '%';
+  track.style.width = (percentMax - percentMin) + '%';
 };
 
 // ===== MEJOR ANIMACIÓN PARA TOAST =====
