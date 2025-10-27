@@ -47,27 +47,38 @@
   // Banner UI
   function injectStyles(){
     if (document.getElementById('cookie-style')) return;
-    var css = '\n#cookie-banner{position:fixed;left:16px;right:16px;bottom:16px;background:#0f172a;color:#e2e8f0;border:1px solid #334155;border-radius:12px;padding:14px 16px;display:flex;gap:14px;align-items:center;z-index:9999;box-shadow:0 8px 30px rgba(0,0,0,.25)}\n#cookie-banner .msg{flex:1;font-size:.88rem;line-height:1.4}\n#cookie-banner .actions{display:flex;gap:10px}\n#cookie-banner button{cursor:pointer;border-radius:10px;padding:10px 14px;font-weight:600;border:1px solid #334155}#cookie-accept{background:#16a34a;color:#fff;border:none}#cookie-deny{background:#0b1220;color:#e2e8f0}\n@media (max-width:560px){#cookie-banner{flex-direction:column;align-items:flex-start}}';
+    var css = '\n#cookie-banner{position:fixed;left:16px;right:16px;bottom:16px;background:#0f172a;color:#e2e8f0;border:1px solid #334155;border-radius:12px;padding:14px 16px;display:flex;gap:14px;align-items:center;z-index:9999;box-shadow:0 8px 30px rgba(0,0,0,.25)}\n#cookie-banner .msg{flex:1;font-size:.88rem;line-height:1.4}\n#cookie-banner .actions{display:flex;gap:10px}\n#cookie-banner button{cursor:pointer;border-radius:10px;padding:10px 14px;font-weight:600;border:1px solid #334155}#cookie-accept{background:#16a34a;color:#fff;border:none}#cookie-deny{background:#0b1220;color:#e2e8f0}#cookie-close{background:transparent;border:none;color:#94a3b8;font-size:1.2rem;padding:0;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer}\n@media (max-width:560px){#cookie-banner{flex-direction:column;align-items:flex-start}}';
     var st = document.createElement('style'); st.id='cookie-style'; st.textContent = css; document.head.appendChild(st);
   }
   function showBanner(){
     injectStyles();
     if (document.getElementById('cookie-banner')) return;
     var wrap = document.createElement('div'); wrap.id='cookie-banner';
-    wrap.innerHTML = '<div class="msg">Usamos cookies para analítica (Google Analytics 4). Puedes aceptar o rechazar.</div>'+
+    wrap.innerHTML = '<button id="cookie-close" title="Cerrar">✕</button><div class="msg">Usamos cookies para analítica (Google Analytics 4). Puedes aceptar o rechazar.</div>'+
       '<div class="actions"><button id="cookie-deny">Rechazar</button><button id="cookie-accept">Aceptar</button></div>';
     document.body.appendChild(wrap);
     document.getElementById('cookie-accept').onclick = grantConsent;
     document.getElementById('cookie-deny').onclick = denyConsent;
+    document.getElementById('cookie-close').onclick = function(){ 
+      hideBanner();
+      // Guardar como "no decidido" para que no vuelva a aparecer en esta sesión
+      sessionStorage.setItem('cookieBannerDismissed', 'true');
+    };
   }
   function hideBanner(){ var b=document.getElementById('cookie-banner'); if(b) b.remove(); }
 
   // Initialize based on stored choice
   try {
     var stored = JSON.parse(localStorage.getItem('cookieConsent')||'null');
+    var dismissed = sessionStorage.getItem('cookieBannerDismissed');
     if (stored && stored.analytics === 'granted') { loadGA(); }
-    else if (!stored) { if (document.readyState==='loading') document.addEventListener('DOMContentLoaded', showBanner); else showBanner(); }
-  } catch { showBanner(); }
+    else if (!stored && !dismissed) { 
+      if (document.readyState==='loading') document.addEventListener('DOMContentLoaded', showBanner); 
+      else showBanner(); 
+    }
+  } catch { 
+    if (!sessionStorage.getItem('cookieBannerDismissed')) showBanner(); 
+  }
 
   // Expose event helper
   window.gaEvent = function(name, params){
