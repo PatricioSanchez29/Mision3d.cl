@@ -332,15 +332,15 @@ app.post("/api/payments/flow", paymentLimiter, async (req, res) => {
       return res.status(400).json({ error: "items vacíos" });
     }
 
-    const apiKey     = process.env.FLOW_API_KEY;
-    const secret     = process.env.FLOW_SECRET;
-    const commerceId = process.env.FLOW_COMMERCE_ID;
+  const apiKey     = process.env.FLOW_API_KEY;
+  const secret     = process.env.FLOW_SECRET;
+  const commerceId = process.env.FLOW_COMMERCE_ID; // opcional
     const returnUrl  = process.env.FLOW_RETURN_URL;
     const confirmUrl = process.env.FLOW_CONFIRM_URL;
     const baseUrl    = process.env.FLOW_BASE_URL || "https://sandbox.flow.cl/api";
 
-    if (!apiKey || !secret || !commerceId) {
-      return res.status(500).json({ error: "Faltan credenciales Flow (FLOW_API_KEY/FLOW_SECRET/FLOW_COMMERCE_ID)" });
+    if (!apiKey || !secret) {
+      return res.status(500).json({ error: "Faltan credenciales Flow (FLOW_API_KEY/FLOW_SECRET)" });
     }
     if (!returnUrl || !confirmUrl) {
       return res.status(500).json({ error: "Faltan URLs (FLOW_RETURN_URL/FLOW_CONFIRM_URL)" });
@@ -391,13 +391,14 @@ app.post("/api/payments/flow", paymentLimiter, async (req, res) => {
     const params = {
       apiKey,
       commerceOrder: "ORD-" + Date.now(),
-      commerceId,
       amount: total,
       subject: "Compra Mision3D",
       email: payer?.email || "cliente@example.com",
       urlConfirmation: confirmUrl,
       urlReturn: returnUrl
     };
+    // Incluir commerceId solo si está configurado
+    if (commerceId) params.commerceId = commerceId;
 
     console.log('[Flow] Params enviados:', params);
 
