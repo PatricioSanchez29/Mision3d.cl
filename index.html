@@ -113,16 +113,11 @@
   <!-- Productos (versión simplificada inicio) -->
   <section id="productos" class="productos">
     <h3>Catálogo</h3>
-    <div class="grid">
-  <div class="card"><a href="producto.html?id=f1" class="prod-link"><img src="img/calendario-f1.png" alt="Calendario F1"></a><h4><a href="producto.html?id=f1" class="prod-link">Calendario Formula 1</a></h4><p>Calendario 3D con circuitos</p><strong class="price">$12.990</strong><button class="add" data-id="f1">Agregar</button></div>
-  <div class="card"><a href="producto.html?id=bey" class="prod-link"><img src="img/caja-beyblade.png" alt="Caja Beyblade"></a><h4><a href="producto.html?id=bey" class="prod-link">Caja Beyblade</a></h4><p>Personalizable con tu nombre</p><strong class="price">$12.990</strong><button class="add" data-id="bey">Agregar</button></div>
-  <div class="card"><a href="producto.html?id=pet" class="prod-link"><img src="img/mascota.png" alt="Figura Mascota"></a><h4><a href="producto.html?id=pet" class="prod-link">Figura Mascota</a></h4><p>Tu mascota en 3D</p><strong class="price">$24.990</strong><button class="add" data-id="pet">Agregar</button></div>
-  <div class="card"><a href="producto.html?id=poke" class="prod-link"><img src="img/pokebola.png" alt="Pokebola"></a><h4><a href="producto.html?id=poke" class="prod-link">Pokebola</a></h4><p>Pokebola coleccionable</p><strong class="price">$6.990</strong><button class="add" data-id="poke">Agregar</button></div>
-  <div class="card"><a href="producto.html?id=key" class="prod-link"><img src="img/llavero.png" alt="Llavero"></a><h4><a href="producto.html?id=key" class="prod-link">Llavero</a></h4><p>Personalizado con tu logo</p><strong class="price">$4.990</strong><button class="add" data-id="key">Agregar</button></div>
+    <div class="grid" id="homeProductsGrid">
+      <!-- Los productos se cargarán dinámicamente desde Firebase -->
     </div>
     <p style="margin-top:18px"><a href="catalogo.html" class="btn outline" style="text-decoration:none">Ver catálogo completo →</a></p>
   </section>
-
   <!-- Nosotros -->
   <section id="nosotros" class="nosotros"><h3>Sobre Mision3D</h3><p>Emprendimiento chileno de impresión 3D personalizada. Creamos desde piezas funcionales hasta figuras coleccionables y enviamos a todo Chile.</p></section>
 
@@ -326,17 +321,70 @@
         const data = snap.val();
         // Convierte {id:{...}} -> [{id,...}]
         window.PRODUCTS = Object.entries(data).map(([id, p]) => ({ id, ...p }));
+        
+        // Renderizar productos en la página de inicio (máximo 5)
+        renderHomeProducts(window.PRODUCTS.slice(0, 5));
       } else {
         console.warn("No hay productos en RTDB. Uso fallback local si existe.");
-        // Si no hay nada en RTDB, mantenemos lo que ya tengas en script.js
+        // Si no hay nada en RTDB, usar productos del fallback en script.js
+        if (window.PRODUCTS && window.PRODUCTS.length > 0) {
+          renderHomeProducts(window.PRODUCTS.slice(0, 5));
+        }
       }
-      // Tu función de pintado ya existe en script.js
+      // Tu función de pintado ya existe en script.js (para catalogo.html)
       if (typeof window.renderCatalog === "function") renderCatalog("");
     } catch (err) {
       console.error("Error cargando productos:", err);
-      // Si falla la conexión, dejamos los PRODUCTS locales
+      // Si falla la conexión, usar productos locales si existen
+      if (window.PRODUCTS && window.PRODUCTS.length > 0) {
+        renderHomeProducts(window.PRODUCTS.slice(0, 5));
+      }
       if (typeof window.renderCatalog === "function") renderCatalog("");
     }
+  }
+  
+  // Función para renderizar productos en la página de inicio
+  function renderHomeProducts(products) {
+    const grid = document.getElementById('homeProductsGrid');
+    if (!grid) return;
+    
+    if (!products || products.length === 0) {
+      grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#888">No hay productos disponibles</p>';
+      return;
+    }
+    
+    grid.innerHTML = products.map(p => {
+      const desc = p.name.includes('Calendario') ? 'Calendario 3D con circuitos' :
+                   p.name.includes('Beyblade') ? 'Personalizable con tu nombre' :
+                   p.name.includes('Mascota') ? 'Tu mascota en 3D' :
+                   p.name.includes('Pokebola') ? 'Pokebola coleccionable' : 
+                   'Personalizado con tu logo';
+      
+      const price = p.price ? `$${p.price.toLocaleString('es-CL')}` : 'Consultar';
+      
+      return `
+        <div class="card">
+          <a href="producto.html?id=${p.id}" class="prod-link">
+            <img src="${p.img || 'img/placeholder.png'}" alt="${p.name}">
+          </a>
+          <h4>
+            <a href="producto.html?id=${p.id}" class="prod-link">${p.name}</a>
+          </h4>
+          <p>${desc}</p>
+          <strong class="price">${price}</strong>
+          <button class="add" data-id="${p.id}">Agregar</button>
+        </div>
+      `;
+    }).join('');
+    
+    // Conectar eventos de los botones "Agregar"
+    grid.querySelectorAll('.add').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (typeof window.add === 'function') {
+          window.add(btn.dataset.id);
+        }
+      });
+    });
   }
 
   // Llama al cargar inicio
