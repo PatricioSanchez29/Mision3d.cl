@@ -32,7 +32,22 @@
     .notice{display:flex;gap:10px;background:#f1faf1;border:1px solid #cbe8cb;padding:12px 14px;border-radius:10px;font-size:.75rem;color:#215721;margin-bottom:10px}
     .note-danger{background:#fdf2f2;border:1px solid #f5c2c7;color:#a23131}
     .inline{display:flex;align-items:center;gap:8px;margin:4px 0 12px;font-size:.75rem}
-    @media (max-width:980px){.checkout-layout{grid-template-columns:1fr}}
+    @media (max-width:980px){
+      .checkout-layout{
+        grid-template-columns:1fr;
+        display:flex;
+        flex-direction:column;
+      }
+      .summary{
+        order:-1;
+        position:relative;
+        top:0;
+        margin-bottom:20px;
+      }
+      .checkout-form-panel{
+        order:1;
+      }
+    }
   </style>
 </head>
 <body>

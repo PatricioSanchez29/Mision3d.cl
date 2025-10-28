@@ -389,6 +389,10 @@
         // IMPORTANTE: Actualizar localStorage para que coincida con Firebase
         localStorage.setItem('PRODUCTS', JSON.stringify(window.PRODUCTS));
         
+        // Disparar evento de productos listos
+        document.dispatchEvent(new Event('productsReady'));
+        console.log('✅ Productos cargados desde Firebase. Evento productsReady disparado.');
+        
         // Renderizar productos en la página de inicio (máximo 5)
         renderHomeProducts(window.PRODUCTS.slice(0, 5));
       } else {
@@ -397,6 +401,8 @@
         localStorage.removeItem('PRODUCTS');
         // Si no hay nada en RTDB, usar productos del fallback en script.js
         if (window.PRODUCTS && window.PRODUCTS.length > 0) {
+          document.dispatchEvent(new Event('productsReady'));
+          console.log('✅ Usando productos fallback. Evento productsReady disparado.');
           renderHomeProducts(window.PRODUCTS.slice(0, 5));
         }
       }
@@ -406,6 +412,8 @@
       console.error("Error cargando productos:", err);
       // Si falla la conexión, usar productos locales si existen
       if (window.PRODUCTS && window.PRODUCTS.length > 0) {
+        document.dispatchEvent(new Event('productsReady'));
+        console.log('✅ Error en Firebase, usando productos fallback. Evento productsReady disparado.');
         renderHomeProducts(window.PRODUCTS.slice(0, 5));
       }
       if (typeof window.renderCatalog === "function") renderCatalog("");

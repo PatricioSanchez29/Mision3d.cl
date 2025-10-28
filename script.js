@@ -828,6 +828,76 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
   }
   renderUser();
+  
+  // Listener para selector de categorías del header
+  const headerCategorySelect = document.getElementById('headerCategorySelect');
+  if (headerCategorySelect) {
+    // Llenar opciones de categorías
+    function fillHeaderCategories() {
+      if (!window.PRODUCTS || window.PRODUCTS.length === 0) {
+        console.log('⏳ Esperando productos para llenar selector de categorías...');
+        setTimeout(fillHeaderCategories, 200);
+        return;
+      }
+      
+      console.log('📦 Productos disponibles:', window.PRODUCTS.length);
+      
+      const categoriesSet = new Set();
+      window.PRODUCTS.forEach(product => {
+        if (product.category) {
+          const cats = product.category.split(',').map(c => c.trim());
+          cats.forEach(cat => {
+            if (cat) categoriesSet.add(cat);
+          });
+        }
+      });
+      
+      const categories = Array.from(categoriesSet).sort();
+      
+      console.log('🏷️ Categorías encontradas:', categories);
+      
+      // Mantener la opción "Todas las categorías"
+      headerCategorySelect.innerHTML = '<option value="all">Todas las categorías</option>';
+      
+      categories.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat;
+        option.textContent = cat;
+        headerCategorySelect.appendChild(option);
+      });
+      
+      console.log('✅ Selector de categorías del header llenado');
+    }
+    
+    // Intentar llenar inmediatamente
+    fillHeaderCategories();
+    
+    // También escuchar el evento productsReady si existe
+    document.addEventListener('productsReady', () => {
+      console.log('📢 Evento productsReady detectado');
+      fillHeaderCategories();
+    });
+    
+    // Listener para cambios
+    headerCategorySelect.addEventListener('change', (e) => {
+      const selectedCategory = e.target.value;
+      console.log('🔄 Categoría seleccionada:', selectedCategory);
+      
+      currentCategory = selectedCategory;
+      
+      // Si estamos en la página de catálogo, filtrar
+      if (window.location.pathname.includes('catalogo.html') || document.getElementById('catalogGrid')) {
+        renderCatalog($('#searchInput')?.value || '');
+      } else {
+        // Si estamos en index, redirigir al catálogo
+        if (selectedCategory === 'all') {
+          window.location.href = 'catalogo.html';
+        } else {
+          window.location.href = `catalogo.html?category=${encodeURIComponent(selectedCategory)}`;
+        }
+      }
+    });
+  }
 });
 
 

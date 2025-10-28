@@ -78,10 +78,6 @@
         <button class="drawer-close" aria-label="Cerrar menú">×</button>
       </div>
 
-      <div class="drawer-search">
-        <input type="text" placeholder="Buscar productos..." id="drawerSearchInput">
-      </div>
-
       <div class="drawer-content">
         <nav class="drawer-nav">
           <a href="index.html">
@@ -106,33 +102,9 @@
           </a>
         </nav>
       </div>
-
-      <div class="drawer-user">
-        <a href="login.html" class="btn outline small" id="drawerLoginBtn">
-          👤 Ingresar
-        </a>
-        <button class="btn small" onclick="toggleDarkMode()" style="background: #334155; color: #fff;">
-          🌙 Modo Oscuro
-        </button>
-      </div>
     `;
 
     document.body.appendChild(drawer);
-
-    // Conectar búsqueda del drawer con la búsqueda principal
-    const drawerSearchInput = drawer.querySelector('#drawerSearchInput');
-    if (drawerSearchInput && typeof window.showSearchSuggestions === 'function') {
-      drawerSearchInput.addEventListener('input', (e) => {
-        window.showSearchSuggestions(e.target.value);
-      });
-
-      drawerSearchInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter' && e.target.value.trim()) {
-          const searchQuery = e.target.value.trim();
-          window.location.href = `catalogo.html?search=${encodeURIComponent(searchQuery)}`;
-        }
-      });
-    }
   }
 
   /**
