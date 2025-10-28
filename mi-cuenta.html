@@ -33,6 +33,16 @@
     .badge.gray { background:#f3f4f6; color:#374151; }
     .badge.green { background:#dcfce7; color:#166534; }
 
+    .fav-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap:16px; margin-top:12px; }
+    .fav-card { background:#fff; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden; position:relative; }
+    .fav-card img { width:100%; height:180px; object-fit:cover; }
+    .fav-card-body { padding:12px; }
+    .fav-card-body h4 { margin:0 0 6px; font-size:14px; color:#111827; }
+    .fav-card-body p { margin:4px 0; font-size:13px; color:#6b7280; }
+    .fav-remove { position:absolute; top:8px; right:8px; background:#fff; border:none; border-radius:50%; width:32px; height:32px; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,.15); }
+    .fav-remove:hover { background:#fee2e2; color:#dc2626; }
+    .fav-empty { text-align:center; padding:40px; color:#6b7280; }
+
     .details-grid { display:grid; grid-template-columns: 1fr 1fr; gap:14px; }
     .details-grid .box { background:#f9fafb; padding:14px; border-radius:10px; border:1px solid #e5e7eb; }
     .box h3 { margin:0 0 8px; font-size:14px; color:#111827; }
@@ -123,8 +133,8 @@
     </div>
 
     <div id="tab-wishlist" class="card" style="display:none">
-      <div class="card-body">
-        <p>Revisa y gestiona tus favoritos en <a href="favoritos.html">favoritos.html</a>.</p>
+      <div class="card-body" id="wishlistBody">
+        <p style="color:#6b7280">Cargando favoritos...</p>
       </div>
     </div>
   </div>
@@ -153,6 +163,7 @@
         document.getElementById('tab-orders').style.display = id==='orders'?'block':'none';
         document.getElementById('tab-details').style.display = id==='details'?'block':'none';
         document.getElementById('tab-wishlist').style.display = id==='wishlist'?'block':'none';
+        if(id === 'wishlist') loadWishlist();
       });
     });
 
@@ -176,7 +187,7 @@
         const data = await resp.json();
         const pedidos = Array.isArray(data.pedidos)? data.pedidos : [];
         if(pedidos.length === 0){
-          tbody.innerHTML = `<tr><td colspan="6" style="color:#6b7280">No encontramos pedidos asociados a tu correo.</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="6" style="color:#6b7280; text-align:center; padding:40px;">No tienes pedidos aún. <a href="catalogo.html">Explorar productos</a></td></tr>`;
           return;
         }
         tbody.innerHTML = pedidos.map((p,i)=>{
@@ -195,10 +206,69 @@
         }).join('');
       }catch(err){
         console.error('Error cargando pedidos:', err);
-        tbody.innerHTML = `<tr><td colspan="6" style="color:#b91c1c">Error al cargar tus pedidos. Intenta más tarde.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="color:#6b7280; text-align:center; padding:40px;">No tienes pedidos aún.</td></tr>`;
       }
     }
     loadOrders();
+
+    // Cargar favoritos
+    function loadWishlist(){
+      const container = document.getElementById('wishlistBody');
+      try{
+        const wl = JSON.parse(localStorage.getItem('wishlist')||'[]');
+        if(wl.length === 0){
+          container.innerHTML = `<div class="fav-empty">💔 No tienes favoritos aún.<br><a href="catalogo.html">Explorar productos</a></div>`;
+          return;
+        }
+        // Cargar productos (asumimos window.PRODUCTS si está disponible, sino fallback)
+        let products = [];
+        if(window.PRODUCTS && Array.isArray(window.PRODUCTS)){
+          products = window.PRODUCTS;
+        } else {
+          // Fallback: intentar cargar datos.json (si está accesible)
+          fetch('datos.json').then(r=>r.json()).then(data=>{
+            products = data?.products || [];
+            renderFavs(wl, products, container);
+          }).catch(()=>{
+            container.innerHTML = `<p style="color:#b91c1c">No se pudieron cargar los productos.</p>`;
+          });
+          return;
+        }
+        renderFavs(wl, products, container);
+      }catch(err){
+        console.error('Error cargando favoritos:', err);
+        container.innerHTML = `<p style="color:#b91c1c">Error al cargar favoritos.</p>`;
+      }
+    }
+
+    function renderFavs(wl, products, container){
+      const favProds = wl.map(id => products.find(p=>p.id===id)).filter(Boolean);
+      if(favProds.length === 0){
+        container.innerHTML = `<div class="fav-empty">Los productos favoritos ya no están disponibles.<br><a href="catalogo.html">Explorar catálogo</a></div>`;
+        return;
+      }
+      const html = favProds.map(p => {
+        const price = p.price ? `$${p.price.toLocaleString('es-CL')}` : 'Consultar';
+        return `<div class="fav-card">
+          <button class="fav-remove" onclick="removeFav('${p.id}')" title="Quitar de favoritos">✕</button>
+          <img src="${p.img||'img/placeholder.png'}" alt="${p.name}" />
+          <div class="fav-card-body">
+            <h4>${p.name}</h4>
+            <p>${price}</p>
+            <a href="producto.html?id=${p.id}" style="color:#0ea5e9; font-size:13px;">Ver producto</a>
+          </div>
+        </div>`;
+      }).join('');
+      container.innerHTML = `<div class="fav-grid">${html}</div>`;
+    }
+
+    window.removeFav = function(id){
+      let wl = JSON.parse(localStorage.getItem('wishlist')||'[]');
+      wl = wl.filter(x => x !== id);
+      localStorage.setItem('wishlist', JSON.stringify(wl));
+      document.getElementById('favCountTab').textContent = wl.length;
+      loadWishlist();
+    }
   </script>
   <script src="script.js"></script>
 </body>
