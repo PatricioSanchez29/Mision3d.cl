@@ -240,10 +240,11 @@ function flowSign(params, secret) {
 
 // ===== Email (multi-proveedor: SMTP | SendGrid | Resend) =====
 // Selección por VARIABLE: EMAIL_PROVIDER = smtp | sendgrid | resend
+// Autodetección: si no está EMAIL_PROVIDER, se infiere por variables presentes
 // Variables por proveedor:
-// - smtp: SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASS, MAIL_FROM
-// - sendgrid: SENDGRID_API_KEY, MAIL_FROM
-// - resend: RESEND_API_KEY, MAIL_FROM
+// - smtp: SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASS, MAIL_FROM | EMAIL_FROM
+// - sendgrid: SENDGRID_API_KEY, MAIL_FROM | EMAIL_FROM
+// - resend: RESEND_API_KEY, MAIL_FROM | EMAIL_FROM
 // Normaliza HTML de correos para evitar problemas de codificación en clientes (Gmail, Outlook)
 function normalizeEmailHtml(html) {
   if (typeof html !== 'string') return html;
@@ -268,8 +269,15 @@ let sendEmail = async ({ to, subject, html, text }) => {
 };
 
 (() => {
-  const provider = (process.env.EMAIL_PROVIDER || '').toLowerCase().trim();
-  const from = process.env.MAIL_FROM || process.env.SMTP_USER;
+  // Inferir proveedor si no está definido explícitamente
+  let provider = (process.env.EMAIL_PROVIDER || '').toLowerCase().trim();
+  if (!provider) {
+    if (process.env.RESEND_API_KEY) provider = 'resend';
+    else if (process.env.SENDGRID_API_KEY) provider = 'sendgrid';
+    else if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) provider = 'smtp';
+  }
+  // Permitir EMAIL_FROM como alias de MAIL_FROM
+  const from = process.env.MAIL_FROM || process.env.EMAIL_FROM || process.env.SMTP_USER || 'Misión 3D <no-reply@mision3d.cl>';
 
   try {
     if (provider === 'sendgrid') {
@@ -324,7 +332,7 @@ let sendEmail = async ({ to, subject, html, text }) => {
       };
       console.log('📧 SMTP listo para enviar correos');
     } else if (!provider) {
-      console.log('ℹ️ EMAIL_PROVIDER no definido y SMTP no configurado; los correos se omitirán');
+      console.log('ℹ️ EMAIL_PROVIDER no definido y SMTP/SendGrid/Resend no configurados; los correos se omitirán');
     }
   } catch (e) {
     console.warn('⚠️ No se pudo inicializar proveedor de email:', e?.message);
