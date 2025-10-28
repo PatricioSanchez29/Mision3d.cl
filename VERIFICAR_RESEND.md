@@ -105,7 +105,6 @@ Value: mision3d_test_2025
    - Debería llegar en segundos
    - Remitente: `Misión 3D <onboarding@resend.dev>`
 
----
 
 **Opción B: Usando PowerShell (Windows)**
 
@@ -121,15 +120,14 @@ $body = @{
     html = "<h1>¡Funciona!</h1><p>Resend configurado correctamente.</p>"
 } | ConvertTo-Json
 
-Invoke-RestMethod -Uri "https://mision3d.onrender.com/api/test-email" -Method Post -Headers $headers -Body $body
+Invoke-RestMethod -Uri "https://mision3d-cl.onrender.com/api/test-email" -Method Post -Headers $headers -Body $body
 ```
 
----
 
 **Opción C: Usando cURL (Git Bash / Linux / Mac)**
 
 ```bash
-curl -X POST https://mision3d.onrender.com/api/test-email \
+curl -X POST https://mision3d-cl.onrender.com/api/test-email \
   -H "Content-Type: application/json" \
   -H "x-test-key: mision3d_test_2025" \
   -d '{
