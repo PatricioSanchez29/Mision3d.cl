@@ -125,23 +125,6 @@
  <div id="paymentMethods">
 <div id="paymentMethods">
 
-  <!-- Transferencia Bancaria -->
-  <label class="pay-option">
-    <input type="radio" name="payMethod" value="transferencia">
-    <div class="pay-content">
-      <div class="pay-title">
-        <span>Transferencia Bancaria</span>
-        <div class="pay-icons">
-          
-        </div>
-      </div>
-      <!-- Mensaje que aparece al seleccionar -->
-      <div class="pay-detail">
-  <img src="img/browser-icon.svg" alt="Navegador">
-  <p>Una vez ordene el pedido, recibirá un correo con toda la información para transferir.</p>
-      </div>
-    </div>
-  </label>
 
   <!-- Flow -->
   <label class="pay-option">
@@ -150,15 +133,14 @@
       <div class="pay-title">
         <span>Checkout Flow</span>
         <div class="pay-icons">
-          <img src="img/Visa_Inc._logo.svg" alt="Visa">
-          <img src="img/Mastercard-logo.png" alt="MasterCard">
-          <img src="img/American_Express_logo.svg" alt="Amex">
+          <!--#include file="img/_logos_flow.html" -->
+          <img src="img/Visa_Inc._logo.svg" alt="Visa" style="height:22px;vertical-align:middle;margin-right:2px;">
+          <img src="img/Mastercard-logo.png" alt="MasterCard" style="height:22px;vertical-align:middle;margin-right:2px;">
+          <img src="img/American_Express_logo.svg" alt="Amex" style="height:22px;vertical-align:middle;margin-right:2px;">
           <span class="more">+2</span>
         </div>
       </div>
       <small>Transacciones seguras y protegidas.</small>
-
-      <!-- Mensaje que aparece al seleccionar -->
       <div class="pay-detail">
         <img src="img/browser-icon.svg" alt="Navegador">
         <p>Después de hacer clic en “Pagar ahora”, serás redirigido a <b>Checkout Flow</b> para completar tu compra de forma segura.</p>
@@ -173,9 +155,11 @@
       <div class="pay-title">
         <span>Webpay Plus (Transbank)</span>
         <div class="pay-icons">
-          <img src="img/Visa_Inc._logo.svg" alt="Visa">
-          <img src="img/Mastercard-logo.png" alt="MasterCard">
-          <span class="more">+ Redcompra</span>
+          <!--#include file="img/_logos_webpay.html" -->
+          <img src="img/Visa_Inc._logo.svg" alt="Visa" style="height:22px;vertical-align:middle;margin-right:2px;">
+          <img src="img/Mastercard-logo.png" alt="MasterCard" style="height:22px;vertical-align:middle;margin-right:2px;">
+          <img src="img/American_Express_logo.svg" alt="Amex" style="height:22px;vertical-align:middle;margin-right:2px;">
+          <span class="more">+2</span>
         </div>
       </div>
       <small>Tarjetas débito/crédito, cuotas. Integración oficial Transbank.</small>
@@ -186,21 +170,24 @@
     </div>
   </label>
 
-  <!-- Khipu (transferencia inmediata) -->
+
+
+  <!-- Transferencia Bancaria -->
   <label class="pay-option">
-    <input type="radio" name="payMethod" value="khipu">
+    <input type="radio" name="payMethod" value="transferencia">
     <div class="pay-content">
       <div class="pay-title">
-        <span>Khipu (Transferencia inmediata)</span>
+        <span>Transferencia Bancaria</span>
+        <div class="pay-icons"></div>
       </div>
-      <small>Transferencia bancaria con confirmación automática.</small>
       <div class="pay-detail">
         <img src="img/browser-icon.svg" alt="Navegador">
-        <p>Serás llevado a <b>Khipu</b> para autorizar la transferencia desde tu banco.</p>
+        <p>Una vez ordene el pedido, recibirá un correo con toda la información para transferir.</p>
       </div>
     </div>
   </label>
 
+  
 </div>
 
 
@@ -232,7 +219,7 @@
 <script src="validations.js"></script>
 <script>
   // Cambia esto por la URL pública de tu backend en Render o Railway
-  window.API_URL = "https://mision3d-api.onrender.com"; 
+  window.API_BASE_URL = "https://mision3d-api.onrender.com";
 </script>
 
 <script src="script.js"></script>
