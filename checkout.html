@@ -92,10 +92,19 @@
         </div>
         <div style="font-size:.8rem;font-weight:700;color:#222;white-space:nowrap">$2.990</div>
       </label>
+      <!-- Nuevo: Retiro en tienda/la Florida (gratis) -->
+      <label class="ship-option" id="shipRetiroCard" style="display:flex;gap:14px;border:1px solid #d5d5d5;padding:14px 16px;border-radius:12px;cursor:pointer;align-items:flex-start;position:relative">
+        <input type="radio" name="shipMethod" value="retiro" style="margin-top:5px">
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:.85rem;line-height:1.2">Retiro gratis en La Florida</div>
+          <div style="font-size:.7rem;color:#555;margin-top:4px">Coordinamos por correo/WhatsApp. Dirección y horario al confirmar el pedido.</div>
+        </div>
+        <div style="font-size:.8rem;font-weight:700;color:#0a7a0a;white-space:nowrap">GRATIS</div>
+      </label>
     </div>
     <button class="btn-wide" id="btnConfirmOrder">Confirmar pedido</button>
     <div class="section-title" style="margin-top:34px">Método de pago</div>
-   <div class="section-title" style="margin-top:34px">Pago</div>
+   
 <div id="paymentMethods" class="payment-options">
   
  <div id="paymentMethods">
@@ -115,15 +124,6 @@
       <div class="pay-detail">
   <img src="img/browser-icon.svg" alt="Navegador">
   <p>Una vez ordene el pedido, recibirá un correo con toda la información para transferir.</p>
-  <p><b>IMPORTANTE:</b> Debe transferir y enviarnos el comprobante al correo <a href="mailto:mision3d.cl@gmail.com">mision3d.cl@gmail.com</a><br>
-  indicando el número de su pedido. Envíe el comprobante para procesar su pedido.</p>
-  <p>Datos para transferir:<br>
-  Titular: Patricio Germán Sánchez Casanova<br>
-  RUT: 192252148<br>
-  Banco: Mercado Pago<br>
-  Tipo: Cuenta Vista<br>
-  N° Cuenta: 1034627294<br>
-  Email: mision3d.cl@gmail.com</p>
       </div>
     </div>
   </label>
@@ -304,10 +304,8 @@ document.addEventListener("DOMContentLoaded", ()=>{
     const r = document.querySelector('input[name="shipMethod"]:checked');
     if(!r) return;
     if(envioSelectHidden){
-      // Mapear a los valores esperados por confirmCheckout
-      if(r.value==='santiago') envioSelectHidden.value='domicilio';
-      else if(r.value==='porpagar') envioSelectHidden.value='retiro'; // se interpretará sin costo
-      else envioSelectHidden.value='';
+      // Mantener el mismo valor seleccionado; confirmCheckout maneja santiago/retiro/porpagar
+      envioSelectHidden.value = r.value;
     }
     renderCheckoutSummary();
   }
@@ -318,22 +316,26 @@ document.addEventListener("DOMContentLoaded", ()=>{
   // Activar opción Santiago si la región es Metropolitana de Santiago
   const regionSel = document.getElementById('inputRegion');
   function updateSantiagoAvailability(){
-    const card = document.getElementById('shipSantiagoCard');
-    const radio = card ? card.querySelector('input[type="radio"]') : null;
+    const santiagoCard = document.getElementById('shipSantiagoCard');
+    const santiagoRadio = santiagoCard ? santiagoCard.querySelector('input[type="radio"]') : null;
     const porCard = document.getElementById('shipPorPagarCard');
     const porRadio = porCard ? porCard.querySelector('input[type="radio"]') : null;
-    if(!card || !radio) return;
+    const retiroCard = document.getElementById('shipRetiroCard');
+    const retiroRadio = retiroCard ? retiroCard.querySelector('input[type="radio"]') : null;
+    if(!santiagoRadio || !porRadio || !retiroRadio) return;
+
     if(regionSel && regionSel.value === 'Metropolitana de Santiago'){
-      // Activar Santiago, desactivar Por Pagar
-      radio.disabled=false; card.style.opacity='1';
-      if(porRadio){ porRadio.disabled=true; porCard.style.opacity='.45'; }
-      // Seleccionar automáticamente Santiago si no lo está
-      radio.checked=true;
+      // En Santiago: permitir "Santiago" y "Retiro"; desactivar Por Pagar
+      santiagoRadio.disabled = false; santiagoCard.style.opacity = '1';
+      retiroRadio.disabled = false; retiroCard.style.opacity = '1';
+      porRadio.disabled = true; porCard.style.opacity = '.45';
+      // Seleccionar por defecto Retiro gratis
+      retiroRadio.checked = true;
     } else {
-      // Desactivar Santiago, reactivar Por Pagar
-      radio.disabled=true; card.style.opacity='.55';
-      radio.checked=false;
-      if(porRadio){ porRadio.disabled=false; porCard.style.opacity='1'; if(!document.querySelector('input[name="shipMethod"]:checked')) porRadio.checked=true; }
+      // Fuera de Santiago: solo Por Pagar
+      santiagoRadio.disabled = true; santiagoCard.style.opacity = '.55'; santiagoRadio.checked = false;
+      retiroRadio.disabled = true; retiroCard.style.opacity = '.55'; retiroRadio.checked = false;
+      porRadio.disabled = false; porCard.style.opacity = '1'; porRadio.checked = true;
     }
     syncShipping();
   }
@@ -416,6 +418,10 @@ function renderCheckoutSummary(){
     } else if (selectedShipMethod.value === 'domicilio') {
       // Envío a domicilio (antiguo)
       shipping = 2990;
+    } else if (selectedShipMethod.value === 'retiro') {
+      shipping = 0;
+    } else if (selectedShipMethod.value === 'porpagar') {
+      shipping = 0;
     } else {
       // Por pagar o porpagar: shipping = 0 (no se suma aquí)
       shipping = 0;

@@ -1810,9 +1810,6 @@ body.dark .faq-bg {opacity:.35}
 .pay-option:hover {
   border-color: #999;
 }
-.pay-option input:checked + .pay-content {
-  border-left: 4px solid #0070f3;
-}
 .pay-content {
   flex: 1;
 }

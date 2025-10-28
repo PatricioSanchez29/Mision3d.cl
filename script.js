@@ -563,8 +563,25 @@ async function iniciarPago(payMethod, payload) {
     }
   } else if (payMethod === 'mercadopago') {
     alert("MercadoPago todavía no está conectado en este flujo 🚧");
-  } else if (payMethod === 'manual') {
-    alert("Pago manual seleccionado. Te contactaremos por WhatsApp.");
+  } else if (payMethod === 'transferencia' || payMethod === 'manual') {
+    // Generar número de pedido aleatorio (8 dígitos)
+    const orderNumber = Math.floor(10000000 + Math.random() * 90000000);
+    
+    // Guardar información del pedido en localStorage
+    const orderData = {
+      orderNumber,
+      date: new Date().toISOString(),
+      payload,
+      status: 'pending_transfer'
+    };
+    localStorage.setItem(`order_${orderNumber}`, JSON.stringify(orderData));
+    
+    // Limpiar carrito
+    cart = [];
+    save();
+    
+    // Redirigir a página de confirmación con número de pedido
+    window.location.href = `confirmacion-transferencia.html?order=${orderNumber}`;
   } else {
     alert("Selecciona un método de pago válido.");
   }
