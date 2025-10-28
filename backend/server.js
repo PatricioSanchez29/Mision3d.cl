@@ -1296,25 +1296,44 @@ Misión 3D - Impresión 3D Profesional
 Soporte: soporte@mision3d.cl
     `;
 
-    const sendResult = await sendEmail({
-      to: email,
-      subject: "🔒 Recuperación de Contraseña - Misión 3D",
-      html,
-      text
-    });
+    // Enviar correo de recuperación
+    try {
+      const sendResult = await sendEmail({
+        to: email,
+        subject: "🔒 Recuperación de Contraseña - Misión 3D",
+        html,
+        text
+      });
 
-    console.log(`✅ Correo de recuperación enviado a: ${email}`);
-    res.json({ 
-      success: true, 
-      message: "Correo de recuperación enviado",
-      // En desarrollo, devolver el token para testing
-      provider: global.__EMAIL_PROVIDER_ACTIVE__,
-      ...(isDevelopment && { token: resetToken, resetUrl })
-    });
+      console.log(`✅ Correo de recuperación enviado a: ${email}`, sendResult);
+      
+      res.json({ 
+        success: true, 
+        message: "Correo de recuperación enviado",
+        provider: global.__EMAIL_PROVIDER_ACTIVE__,
+        // En desarrollo, devolver el token para testing
+        ...(isDevelopment && { token: resetToken, resetUrl })
+      });
+    } catch (emailError) {
+      console.error("❌ Error enviando correo de recuperación:", emailError);
+      // Si el correo falla, aún devolvemos success para no revelar si el email existe
+      // pero log el error
+      res.json({ 
+        success: true, 
+        message: "Si el correo existe, recibirás instrucciones de recuperación",
+        warning: "Email delivery failed",
+        detail: emailError?.message || String(emailError),
+        provider: global.__EMAIL_PROVIDER_ACTIVE__
+      });
+    }
 
   } catch (error) {
-    console.error("❌ Error enviando correo de recuperación:", error?.message || error);
-    res.status(500).json({ success: false, error: "Error al enviar correo", detail: error?.message || String(error) });
+    console.error("❌ Error en endpoint de recuperación:", error);
+    res.status(500).json({ 
+      success: false, 
+      error: "Error al procesar solicitud", 
+      detail: error?.message || String(error) 
+    });
   }
 });
 
