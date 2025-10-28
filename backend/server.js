@@ -364,13 +364,16 @@ app.get("/api/health", (req, res) => {
 app.post('/api/test-email', async (req, res) => {
   try {
     const key = req.headers['x-test-key'];
+    // Normalizar para evitar errores por espacios o mayúsculas/minúsculas
+    const expected = (process.env.TEST_EMAIL_KEY || '').trim();
+    const provided = (typeof key === 'string' ? key : String(key || '')).trim();
     // Si TEST_EMAIL_KEY está configurado, validarlo
-    if (process.env.TEST_EMAIL_KEY && key !== process.env.TEST_EMAIL_KEY) {
-      console.log('[Test Email] Auth failed. Expected:', process.env.TEST_EMAIL_KEY?.substring(0,8)+'...', 'Got:', key?.substring(0,8)+'...');
+    if (expected && provided !== expected) {
+      console.log('[Test Email] Auth failed. Expected:', expected.substring(0,8)+'...', 'Got:', provided.substring(0,8)+'...');
       return res.status(401).json({ error: 'unauthorized' });
     }
     // Si no está configurado, advertir pero permitir (solo para desarrollo)
-    if (!process.env.TEST_EMAIL_KEY) {
+    if (!expected) {
       console.warn('⚠️ [Test Email] TEST_EMAIL_KEY no configurado, endpoint sin protección');
     }
     const { to, subject = 'Prueba de correo', html = '<p>Prueba OK</p>', text } = req.body || {};
