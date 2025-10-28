@@ -134,19 +134,41 @@ function render(highlightId, addedName){
           <div>${p.name}</div>
           <div>${money(p.price)} c/u</div>
           <div class="qty">
-            <button>-</button><span>${it.qty}</span><button>+</button>
+            <button>-</button><input type="number" min="1" value="${it.qty}" style="width:45px;text-align:center;border:1px solid #ddd;border-radius:4px;padding:4px;margin:0 4px;"><button>+</button>
             <button style="margin-left:6px">🗑️</button>
           </div>
         </div>
         <strong>${money(sub)}</strong>`;
       // Botones: [0] menos, [1] más, [2] borrar
       const btns = e.querySelectorAll('.qty button');
+      const qtyInput = e.querySelector('.qty input');
       const bm = btns[0];
       const bp = btns[1];
       const bd = btns[2];
       if (bm) bm.onclick = () => qty(it.id, -1);
       if (bp) bp.onclick = () => qty(it.id, 1);
       if (bd) bd.onclick = () => del(it.id);
+      if (qtyInput) {
+        qtyInput.onchange = () => {
+          const newQty = parseInt(qtyInput.value);
+          if (newQty > 0) {
+            const cartItem = cart.find(x => x.id === it.id);
+            if (cartItem) {
+              cartItem.qty = newQty;
+              save();
+              render();
+              badge();
+            }
+          } else {
+            qtyInput.value = it.qty;
+          }
+        };
+        qtyInput.onkeypress = (e) => {
+          if (e.key === 'Enter') {
+            qtyInput.blur();
+          }
+        };
+      }
       c.appendChild(e);
     });
   }
@@ -159,11 +181,7 @@ function showSearchSuggestions(text) {
   const sugDiv = document.getElementById('searchSuggestions');
   if (!sugDiv) return;
   
-  // Verificar que PRODUCTS esté disponible
-  if (!window.PRODUCTS || !Array.isArray(window.PRODUCTS)) {
-    console.warn('PRODUCTS no está disponible aún');
-    return;
-  }
+  if (!window.PRODUCTS || !Array.isArray(window.PRODUCTS)) return;
   
   const txt = (text||'').trim().toLowerCase();
   if (!txt) {
@@ -223,7 +241,6 @@ try {
         dateAdded: p.dateAdded || new Date().toISOString().slice(0,10),
         discount: Number(p.discount ?? 0)
       }));
-      console.log('[script.js] Productos cargados desde localStorage:', window.PRODUCTS.length);
     }
   }
 } catch {}
@@ -268,14 +285,11 @@ function applySort(list){
 // }
 
 function renderCatalog(filterText = ""){
-  console.log('🔄 renderCatalog llamado con filterText:', filterText);
-  
   const grid = document.getElementById('catalogGrid') || document.querySelector('.catalog-grid') || document.querySelector('.grid.catalog-grid');
   if (!grid) return;
   
   // Verificar que PRODUCTS esté disponible
   if (!window.PRODUCTS || !Array.isArray(window.PRODUCTS) || window.PRODUCTS.length === 0) {
-    console.warn('PRODUCTS no está disponible o está vacío');
     grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#888">Cargando productos...</p>';
     return;
   }
@@ -312,25 +326,15 @@ function renderCatalog(filterText = ""){
     categoryToFilter = window.getSelectedCategory();
   }
   
-  console.log('🔍 Filtrando por categoría:', categoryToFilter, 'Total productos antes:', productos.length);
-  
   if(categoryToFilter && categoryToFilter !== 'all') {
     productos = productos.filter(p => {
       if (!p.category) return false;
-      // Soportar múltiples categorías separadas por coma
       const cats = p.category.split(',').map(c => c.trim());
       return cats.includes(categoryToFilter);
     });
-    console.log('📊 Productos después del filtro de categoría:', productos.length);
   }
   
   productos = applySort(productos);
-  
-  // Filtro de precio deshabilitado
-  // console.log('💰 Filtros de precio - Min:', priceMin, 'Max:', priceMax);
-  // if(priceMin!=null) productos = productos.filter(p=>p.price >= priceMin);
-  // if(priceMax!=null) productos = productos.filter(p=>p.price <= priceMax);
-  // console.log('💵 Productos después del filtro de precio:', productos.length);
   
   if(stockFilter!=='all') productos = productos.filter(p=>p.stock===stockFilter);
 
@@ -532,6 +536,7 @@ const API_BASE = (function(){
     // Si estamos en el mismo puerto del backend, usamos same-origin
     if (backendPorts.has(String(location.port || ''))) return '';
     // Si estamos en otro puerto (p.ej. Live Server 5500), apuntar al backend local por defecto
+    // Preferimos 3001 (puerto actual del backend)
     return 'http://localhost:3001';
   }
   // Producción: same-origin

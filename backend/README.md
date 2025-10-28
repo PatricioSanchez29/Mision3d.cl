@@ -138,3 +138,38 @@ npm start
 Listo para extender con persistencia o panel admin. Cualquier mejora que quieras me dices y la agrego.
 # Mision3d.cl
 # Mision3d.cl
+
+## 14. Arranque local y puertos (Windows/Dev)
+
+Hay dos formas de levantar el proyecto en local:
+
+- Opción A (recomendada): abrir todo desde el backend (sirve también el frontend)
+  - Variables: copia `.env.example` a `.env` y ajusta lo mínimo (FLOW_* si vas a probar Flow).
+  - Arranca: `npm run dev` (o `npm start`) dentro de `backend/`.
+  - Navega a: http://localhost:3000 (el backend sirve los HTML/CSS/JS de la carpeta padre).
+
+- Opción B: abrir el frontend con Live Server (p.ej. http://127.0.0.1:5500) y backend aparte
+  - En este repo el backend escucha por defecto en `PORT=3000`.
+  - El frontend detecta si NO está en el mismo puerto y por defecto usa `http://localhost:3000` para la API.
+  - Si quieres usar otro puerto, define `PORT=3001` (u otro) y expón una variable global antes de cargar `script.js`:
+    ```html
+    <script>window.API_BASE_URL = 'http://localhost:3001';</script>
+    <script src="script.js"></script>
+    ```
+
+### Error común: EADDRINUSE (puerto en uso)
+Si `npm start` falla con EADDRINUSE es porque el puerto ya está ocupado.
+
+- Cambia de puerto iniciando con `PORT=3001` en `.env` (o variable de entorno) y vuelve a ejecutar.
+- O libera el puerto 3000/3001. En PowerShell:
+  ```powershell
+  # Ver qué proceso usa el puerto 3000
+  netstat -ano | findstr :3000
+  # Con el PID obtenido, termina el proceso
+  Stop-Process -Id <PID> -Force
+  ```
+
+### Notas
+- En producción (Render) el puerto lo define la plataforma vía `PORT`.
+- El frontend en este backend se sirve de forma estática desde la carpeta raíz (`../`).
+- En `script.js` el fallback local apunta a `http://localhost:3000` por defecto.

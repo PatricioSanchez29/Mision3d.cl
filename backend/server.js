@@ -230,6 +230,24 @@ function flowSign(params, secret) {
 // - smtp: SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASS, MAIL_FROM
 // - sendgrid: SENDGRID_API_KEY, MAIL_FROM
 // - resend: RESEND_API_KEY, MAIL_FROM
+// Normaliza HTML de correos para evitar problemas de codificación en clientes (Gmail, Outlook)
+function normalizeEmailHtml(html) {
+  if (typeof html !== 'string') return html;
+  let out = html;
+  const lower = out.toLowerCase();
+  const hasHtmlShell = lower.includes('<html') || lower.includes('<!doctype');
+  if (!hasHtmlShell) {
+    out = `<!doctype html><html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"></head><body>${out}</body></html>`;
+  } else if (!lower.includes('charset')) {
+    // Añadir charset si falta
+    out = `<!doctype html><meta charset="utf-8">` + out;
+  }
+  // Reemplazar signos invertidos por entidades HTML para máxima compatibilidad
+  out = out
+    .replace(/\u00A1/g, '&iexcl;') // ¡
+    .replace(/\u00BF/g, '&iquest;'); // ¿
+  return out;
+}
 let sendEmail = async ({ to, subject, html, text }) => {
   console.log('📭 [Email omitido] Asunto:', subject, 'Para:', to);
   return { ok: false, skipped: true };
@@ -248,7 +266,7 @@ let sendEmail = async ({ to, subject, html, text }) => {
       }
       sgMail.setApiKey(key);
       sendEmail = async ({ to, subject, html, text }) => {
-        const msg = { to, from, subject, html, text };
+        const msg = { to, from, subject, html: normalizeEmailHtml(html), text };
         await sgMail.send(msg);
         return { ok: true };
       };
@@ -268,7 +286,7 @@ let sendEmail = async ({ to, subject, html, text }) => {
           from,
           to: Array.isArray(to) ? to : [to],
           subject,
-          html,
+          html: normalizeEmailHtml(html),
           text
         });
         if (error) throw error;
@@ -287,7 +305,7 @@ let sendEmail = async ({ to, subject, html, text }) => {
         auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
       });
       sendEmail = async ({ to, subject, html, text }) => {
-        await mailer.sendMail({ from, to, subject, html, text });
+        await mailer.sendMail({ from, to, subject, html: normalizeEmailHtml(html), text });
         return { ok: true };
       };
       console.log('📧 SMTP listo para enviar correos');
@@ -367,17 +385,18 @@ app.post('/api/test-email', async (req, res) => {
     // Normalizar para evitar errores por espacios o mayúsculas/minúsculas
     const expected = (process.env.TEST_EMAIL_KEY || '').trim();
     const provided = (typeof key === 'string' ? key : String(key || '')).trim();
-    // Si TEST_EMAIL_KEY está configurado, validarlo
-    if (expected && provided !== expected) {
+    // Exigir siempre TEST_EMAIL_KEY y que coincida
+    if (!expected) {
+      console.warn('⚠️ [Test Email] TEST_EMAIL_KEY ausente en servidor');
+      return res.status(401).json({ error: 'unauthorized', reason: 'TEST_EMAIL_KEY not configured on server' });
+    }
+    if (provided !== expected) {
       console.log('[Test Email] Auth failed. Expected:', expected.substring(0,8)+'...', 'Got:', provided.substring(0,8)+'...');
       return res.status(401).json({ error: 'unauthorized' });
     }
-    // Si no está configurado, advertir pero permitir (solo para desarrollo)
-    if (!expected) {
-      console.warn('⚠️ [Test Email] TEST_EMAIL_KEY no configurado, endpoint sin protección');
-    }
     const { to, subject = 'Prueba de correo', html = '<p>Prueba OK</p>', text } = req.body || {};
     if (!to) return res.status(400).json({ error: 'to requerido' });
+    // Normalización centralizada en sendEmail/normalizeEmailHtml
     const result = await sendEmail({ to, subject, html, text });
     return res.json({ ok: true, result });
   } catch (e) {

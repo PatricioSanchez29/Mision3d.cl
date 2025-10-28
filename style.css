@@ -701,6 +701,16 @@ body{
 .dark-toggle {background:#fff;border:1px solid #d1d5db;border-radius:8px;padding:6px 10px;cursor:pointer;margin-right:12px;font-size:1rem}
 .floating-whatsapp {position:fixed;bottom:24px;left:24px;background:#25d366;color:#fff;font-size:24px;width:54px;height:54px;display:flex;align-items:center;justify-content:center;border-radius:50%;text-decoration:none;box-shadow:0 4px 10px rgba(0,0,0,.25);z-index:1000}
 .floating-whatsapp:hover {filter:brightness(1.1)}
+/* Botón WhatsApp flotante (creado dinámicamente) */
+.whatsapp-float {position:fixed;bottom:24px;right:24px;background:#25d366;color:#fff;width:60px;height:60px;display:flex;align-items:center;justify-content:center;border-radius:50%;text-decoration:none;box-shadow:0 4px 16px rgba(37,211,102,.4);z-index:999;transition:all .3s ease}
+.whatsapp-float:hover {transform:scale(1.1);box-shadow:0 6px 20px rgba(37,211,102,.6)}
+.whatsapp-float svg {width:32px;height:32px}
+.whatsapp-pulse {position:absolute;width:100%;height:100%;border-radius:50%;background:#25d366;opacity:.75;animation:pulse-wa 2s infinite}
+@keyframes pulse-wa {0%{transform:scale(1);opacity:.75}50%{transform:scale(1.2);opacity:0}100%{transform:scale(1);opacity:0}}
+/* OCULTAR botón WhatsApp cuando el carrito está abierto */
+.cart.open ~ #whatsapp-float,
+.cart.open ~ .whatsapp-float {opacity:0;pointer-events:none;transform:scale(0.8)}
+body.dark .whatsapp-float {box-shadow:0 4px 16px rgba(37,211,102,.6)}
 body.dark {background:#0f172a;color:#e2e8f0}
 body.dark .header {background:#1e293b;box-shadow:0 2px 6px rgba(0,0,0,.6)}
 body.dark .logo {color:#818cf8}
@@ -715,6 +725,8 @@ body.dark .card {background:#1e293b;box-shadow:0 2px 6px rgba(0,0,0,.4)}
 body.dark .card .desc {color:#cbd5e1}
 body.dark .card .price {color:#38bdf8}
 body.dark .cart {background:#1e293b}
+body.dark .cart-header {background:#1e293b;border-color:#334155}
+body.dark .cart-footer {background:#1e293b;border-color:#334155}
 body.dark .cart-item {border-color:#334155}
 body.dark .modal-content {background:#1e293b;color:#e2e8f0}
 body.dark .reviews-section {background:#0f172a}
@@ -1028,24 +1040,6 @@ body.dark .login-form input{background:#1e293b;color:#e2e8f0;border-color:#33415
   text-align:center;
   padding:40px 20px;
   position:relative;
-  overflow:hidden;
-}
-
-.footer::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 3px;
-  background: linear-gradient(90deg, #8b5cf6, #ec4899, #f97316, #8b5cf6);
-  background-size: 200% 100%;
-  animation: gradientMove 3s linear infinite;
-}
-
-@keyframes gradientMove {
-  0% { background-position: 0% 0%; }
-  100% { background-position: 200% 0%; }
 }
 
 .footer p {
@@ -1164,12 +1158,15 @@ body.dark .login-form input{background:#1e293b;color:#e2e8f0;border-color:#33415
 .beneficios .item:hover p {
   color:#374151;
 }
-.cart{position:fixed;top:0;right:-380px;width:340px;height:100%;background:#fff;box-shadow:-4px 0 12px rgba(0,0,0,.2);display:flex;flex-direction:column;transition:right .3s;z-index:10000}
+.cart{position:fixed;top:0;right:-380px;width:320px;height:100vh!important;background:#fff;box-shadow:-4px 0 12px rgba(0,0,0,.2);display:flex;flex-direction:column;transition:right .3s;z-index:10000;overflow:hidden}
 .cart.open{right:0}
-.cart-header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid #eee}
-.cart-items{flex:1;overflow:auto;padding:10px;display:flex;flex-direction:column;gap:10px}
-.cart-item{display:grid;grid-template-columns:60px 1fr auto;gap:10px;align-items:center;border:1px solid #eee;border-radius:8px;padding:6px}
-.cart-item img{width:60px;height:60px;object-fit:cover;border-radius:6px}
+.cart-header{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid #eee;flex-shrink:0}
+.cart-header h3{font-size:1rem;margin:0}
+.cart-items{flex:1 1 auto;overflow-y:auto;overflow-x:hidden;padding:8px;display:flex;flex-direction:column;gap:8px;min-height:0;max-height:calc(100vh - 190px)!important}
+.cart-item{display:grid;grid-template-columns:50px 1fr auto;gap:8px;align-items:center;border:1px solid #eee;border-radius:6px;padding:4px}
+.cart-item img{width:50px;height:50px;object-fit:cover;border-radius:4px}
+.cart-item .name{font-size:0.85rem;line-height:1.2}
+.cart-item .price{font-size:0.8rem}
 .mini-cart-item{display:grid;grid-template-columns:46px 1fr auto;gap:8px;align-items:center;border:1px solid #eee;padding:6px 8px;border-radius:8px;background:#fafafa}
 .mini-cart-item img{width:46px;height:46px;object-fit:cover;border-radius:6px}
 .mini-cart-item .name{font-size:.65rem;font-weight:600;line-height:1.1}
@@ -1181,10 +1178,16 @@ body.dark .mini-cart-item{background:#1e293b;border-color:#334155}
 body.dark #miniCart > div{background:#1e293b;border-color:#334155}
 .qty{display:flex;align-items:center;gap:6px}
 .qty button{width:24px;height:24px;border:1px solid #ccc;background:#fff;border-radius:6px;cursor:pointer}
-.cart-footer{padding:12px;border-top:1px solid #eee}
-.totals{display:flex;justify-content:space-between;margin-bottom:10px}
+.cart-footer{padding:14px 12px!important;border-top:2px solid #ddd!important;background:#fff!important;display:flex!important;flex-direction:column!important;gap:8px!important;flex-shrink:0!important;position:relative!important;z-index:10001!important;min-height:140px!important;max-height:160px!important;height:auto!important;bottom:0!important}
+.cart-footer .btn{display:block!important;width:100%!important;margin:0!important;padding:12px!important;font-size:0.95rem!important;cursor:pointer!important;font-weight:700!important;position:relative!important;border:none!important;visibility:visible!important;opacity:1!important}
+.cart-footer .btn.primary{background:#4f46e5!important;color:#fff!important;border-radius:8px!important}
+.cart-footer .btn.outline{background:#fff!important;border:2px solid #4f46e5!important;color:#4f46e5!important;border-radius:8px!important}
+.totals{display:flex;justify-content:space-between;font-size:1rem;font-weight:700;margin-bottom:6px}
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:.3s;z-index:9998}
 .overlay.show{opacity:1;pointer-events:auto}
+@media (max-width:480px){
+  .cart{width:100vw}
+}
 /* Modal */
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:60}
 .modal.show{display:flex}

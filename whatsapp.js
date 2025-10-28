@@ -2,6 +2,10 @@
 // Integración de WhatsApp Business para contacto directo
 
 const WHATSAPP_CONFIG = {
+  // Habilitar/Deshabilitar botón flotante rápidamente
+  enabled: false, // ← dejado en false para que NO aparezca y no tape el carrito
+  // Posición del botón: 'right' (inferior derecha) o 'left' (inferior izquierda)
+  position: 'left',
   // Reemplaza con tu número de WhatsApp (código país + número sin espacios ni +)
   // Ejemplo: 56912345678 para Chile
   phoneNumber: '56950503585', // ACTUALIZAR CON TU NÚMERO REAL
@@ -47,6 +51,9 @@ function openWhatsApp(messageType = 'general', data = null) {
 
 // Botón flotante de WhatsApp
 function createWhatsAppButton() {
+  if (!WHATSAPP_CONFIG.enabled) return;
+  if (document.getElementById('whatsapp-float')) return;
+  
   const button = document.createElement('a');
   button.id = 'whatsapp-float';
   button.href = '#';
@@ -65,13 +72,34 @@ function createWhatsAppButton() {
   });
   
   document.body.appendChild(button);
+  
+  // Ocultar botón cuando se abre el carrito
+  const cart = document.getElementById('cartDrawer');
+  if (cart) {
+    const observer = new MutationObserver(() => {
+      if (cart.classList.contains('open')) {
+        button.style.opacity = '0';
+        button.style.pointerEvents = 'none';
+        button.style.transform = 'scale(0.8)';
+      } else {
+        button.style.opacity = '1';
+        button.style.pointerEvents = 'auto';
+        button.style.transform = 'scale(1)';
+      }
+    });
+    observer.observe(cart, { attributes: true, attributeFilter: ['class'] });
+  }
 }
 
-// Inicializar botón flotante cuando el DOM esté listo
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', createWhatsAppButton);
-} else {
+// Inicializar botón flotante cuando el DOM esté listo (si enabled)
+function initWhatsAppFloating() {
+  if (!WHATSAPP_CONFIG.enabled) return;
   createWhatsAppButton();
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initWhatsAppFloating);
+} else {
+  initWhatsAppFloating();
 }
 
 // Exponer funciones globalmente
@@ -80,11 +108,12 @@ window.WHATSAPP_CONFIG = WHATSAPP_CONFIG;
 
 // Estilos CSS para el botón flotante
 const whatsappStyles = document.createElement('style');
+const sideStyles = WHATSAPP_CONFIG.position === 'left' ? `left: 20px; right: auto;` : `right: 20px; left: auto;`;
 whatsappStyles.textContent = `
   .whatsapp-float {
     position: fixed;
     bottom: 20px;
-    right: 20px;
+    ${sideStyles}
     width: 60px;
     height: 60px;
     background: #25D366;
@@ -141,7 +170,7 @@ whatsappStyles.textContent = `
   @media (max-width: 768px) {
     .whatsapp-float {
       bottom: 15px;
-      right: 15px;
+      ${WHATSAPP_CONFIG.position === 'left' ? `left: 15px; right: auto;` : `right: 15px; left: auto;`}
       width: 56px;
       height: 56px;
     }
@@ -181,4 +210,26 @@ whatsappStyles.textContent = `
 `;
 document.head.appendChild(whatsappStyles);
 
-console.log('✅ WhatsApp Business integrado - Botón flotante activo');
+// Helpers para controlar en tiempo real (opcional)
+window.toggleWhatsApp = function(enable){
+  try {
+    WHATSAPP_CONFIG.enabled = !!enable;
+    const el = document.getElementById('whatsapp-float');
+    if (!enable && el) el.remove();
+    if (enable && !el) createWhatsAppButton();
+  } catch(e) {}
+}
+window.setWhatsAppPosition = function(pos){
+  try {
+    WHATSAPP_CONFIG.position = (pos === 'left' ? 'left' : 'right');
+    // Reinyectar estilos para reflejar nueva posición
+    if (whatsappStyles && whatsappStyles.parentNode) whatsappStyles.parentNode.removeChild(whatsappStyles);
+    const s = document.createElement('style');
+    const side = WHATSAPP_CONFIG.position === 'left' ? `left: 20px; right: auto;` : `right: 20px; left: auto;`;
+    const sideMobile = WHATSAPP_CONFIG.position === 'left' ? `left: 15px; right: auto;` : `right: 15px; left: auto;`;
+    s.textContent = whatsappStyles.textContent
+      .replace(/left:\s*20px;\s*right:\s*auto;|right:\s*20px;\s*left:\s*auto;/, side)
+      .replace(/left:\s*15px;\s*right:\s*auto;|right:\s*15px;\s*left:\s*auto;/, sideMobile);
+    document.head.appendChild(s);
+  } catch(e) {}
+}
