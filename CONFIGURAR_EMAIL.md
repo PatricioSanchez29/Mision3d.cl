@@ -1,11 +1,31 @@
-# 📧 Configurar Email Automático - Paso a Paso
+# 📧 Configurar Email Automático (SMTP, SendGrid o Resend)
 
 ## 🎯 Objetivo
-Enviar emails automáticos cuando se confirme un pago de Flow.
+Enviar emails automáticos cuando se confirme un pago de Flow. Ahora puedes elegir proveedor: `SMTP` (Gmail u otro), `SendGrid` o `Resend`.
 
 ---
 
-## 📝 Paso 1: Generar App Password en Gmail
+## � Elige tu proveedor (recomendado)
+
+- Si quieres rapidez sin configurar puertos: Resend
+- Si ya usas SendGrid en otros proyectos: SendGrid
+- Si prefieres tu correo Gmail/empresa: SMTP
+
+Selecciona con la variable de entorno:
+
+```
+EMAIL_PROVIDER = smtp | sendgrid | resend
+```
+
+Variables por proveedor:
+
+- SMTP: `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM`
+- SendGrid: `SENDGRID_API_KEY`, `MAIL_FROM`
+- Resend: `RESEND_API_KEY`, `MAIL_FROM`
+
+---
+
+## Opción A — SMTP (Gmail) – App Password
 
 ### 1. Ir a Seguridad de Google
 https://myaccount.google.com/security
@@ -29,7 +49,7 @@ https://myaccount.google.com/security
 
 ---
 
-## ⚙️ Paso 2: Configurar en Render
+## Configurar en Render (variables de entorno)
 
 ### 1. Ir a Render Dashboard
 https://dashboard.render.com
@@ -38,7 +58,9 @@ https://dashboard.render.com
 
 ### 3. Ir a Settings → Environment
 
-### 4. Agregar estas variables (Click "+ Add Environment Variable" para cada una):
+### 4. Agregar variables según el proveedor elegido
+
+#### A) SMTP (Gmail u otro)
 
 ```
 Variable: SMTP_HOST
@@ -61,9 +83,39 @@ Variable: MAIL_FROM
 Value: Misión 3D <mision3d.cl@gmail.com>
 ```
 
-### 5. Click "Save Changes"
+#### B) SendGrid
 
-### 6. Render hará auto-deploy (espera 2-3 minutos)
+```
+Variable: EMAIL_PROVIDER
+Value: sendgrid
+
+Variable: SENDGRID_API_KEY
+Value: <tu_api_key_de_sendgrid>
+
+Variable: MAIL_FROM
+Value: Misión 3D <notificaciones@tudominio.cl>
+```
+
+Para conseguir tu API Key: https://app.sendgrid.com/settings/api_keys → Create API Key → Full Access o acceso a "Mail Send".
+
+#### C) Resend
+
+```
+Variable: EMAIL_PROVIDER
+Value: resend
+
+Variable: RESEND_API_KEY
+Value: <tu_api_key_de_resend>
+
+Variable: MAIL_FROM
+Value: Misión 3D <onboarding@resend.dev>  (o tu dominio verificado)
+```
+
+Para conseguir tu API Key: https://resend.com/api-keys. Si usas un remitente propio, verifica el dominio en Resend.
+
+### 5. Guarda cambios
+
+Render hará auto-deploy (espera 2-3 minutos)
 
 ---
 

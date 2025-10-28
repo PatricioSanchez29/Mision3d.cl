@@ -6,6 +6,9 @@ import axios from "axios";
 import crypto from "crypto";
 import admin from "firebase-admin";
 import nodemailer from "nodemailer";
+// Proveedores alternativos de email
+import sgMail from "@sendgrid/mail";
+import { Resend } from "resend";
 import rateLimit from "express-rate-limit";
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
@@ -221,37 +224,80 @@ function flowSign(params, secret) {
   return crypto.createHmac("sha256", secret).update(ordered).digest("hex");
 }
 
-// ===== Email (Nodemailer) =====
-// Usa variables de entorno para configurar SMTP
-// Recomendado: cuenta transaccional o App Password de Gmail
-// ENV requeridas (ejemplo):
-// SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, MAIL_FROM
-let mailer = null;
-try {
-  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-    mailer = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT || 587),
-      secure: Boolean(process.env.SMTP_SECURE === 'true'),
-      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-    });
-    console.log('📧 SMTP listo para enviar correos');
-  } else {
-    console.log('ℹ️ SMTP no configurado (sin variables de entorno), se omitirán correos');
-  }
-} catch (e) {
-  console.warn('⚠️ No se pudo inicializar SMTP:', e?.message);
-}
+// ===== Email (multi-proveedor: SMTP | SendGrid | Resend) =====
+// Selección por VARIABLE: EMAIL_PROVIDER = smtp | sendgrid | resend
+// Variables por proveedor:
+// - smtp: SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASS, MAIL_FROM
+// - sendgrid: SENDGRID_API_KEY, MAIL_FROM
+// - resend: RESEND_API_KEY, MAIL_FROM
+let sendEmail = async ({ to, subject, html, text }) => {
+  console.log('📭 [Email omitido] Asunto:', subject, 'Para:', to);
+  return { ok: false, skipped: true };
+};
 
-async function sendEmail({ to, subject, html, text }) {
-  if (!mailer) {
-    console.log('📭 [Email omitido] Asunto:', subject, 'Para:', to);
-    return { ok: false, skipped: true };
-  }
+(() => {
+  const provider = (process.env.EMAIL_PROVIDER || '').toLowerCase().trim();
   const from = process.env.MAIL_FROM || process.env.SMTP_USER;
-  await mailer.sendMail({ from, to, subject, html, text });
-  return { ok: true };
-}
+
+  try {
+    if (provider === 'sendgrid') {
+      const key = process.env.SENDGRID_API_KEY;
+      if (!key) {
+        console.warn('⚠️ EMAIL_PROVIDER=sendgrid pero falta SENDGRID_API_KEY');
+        return;
+      }
+      sgMail.setApiKey(key);
+      sendEmail = async ({ to, subject, html, text }) => {
+        const msg = { to, from, subject, html, text };
+        await sgMail.send(msg);
+        return { ok: true };
+      };
+      console.log('📧 SendGrid listo para enviar correos');
+      return;
+    }
+
+    if (provider === 'resend') {
+      const key = process.env.RESEND_API_KEY;
+      if (!key) {
+        console.warn('⚠️ EMAIL_PROVIDER=resend pero falta RESEND_API_KEY');
+        return;
+      }
+      const resend = new Resend(key);
+      sendEmail = async ({ to, subject, html, text }) => {
+        const { error } = await resend.emails.send({
+          from,
+          to: Array.isArray(to) ? to : [to],
+          subject,
+          html,
+          text
+        });
+        if (error) throw error;
+        return { ok: true };
+      };
+      console.log('📧 Resend listo para enviar correos');
+      return;
+    }
+
+    // Default / SMTP
+    if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+      const mailer = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: Number(process.env.SMTP_PORT || 587),
+        secure: Boolean(process.env.SMTP_SECURE === 'true'),
+        auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+      });
+      sendEmail = async ({ to, subject, html, text }) => {
+        await mailer.sendMail({ from, to, subject, html, text });
+        return { ok: true };
+      };
+      console.log('📧 SMTP listo para enviar correos');
+    } else if (!provider) {
+      console.log('ℹ️ EMAIL_PROVIDER no definido y SMTP no configurado; los correos se omitirán');
+    }
+  } catch (e) {
+    console.warn('⚠️ No se pudo inicializar proveedor de email:', e?.message);
+  }
+})();
 
 // ===== Rate Limiting (Protección DDoS y fuerza bruta) =====
 // Limitar peticiones globales a la API
@@ -310,6 +356,25 @@ console.log('   • Pagos: 20 req/5min');
 // ===== Healthcheck =====
 app.get("/api/health", (req, res) => {
   res.json({ ok: true, ts: Date.now() });
+});
+
+// ===== Endpoint de prueba de email (protegido) =====
+// Uso: POST /api/test-email con header x-test-key = TEST_EMAIL_KEY
+// Body: { to, subject, html, text }
+app.post('/api/test-email', async (req, res) => {
+  try {
+    const key = req.headers['x-test-key'];
+    if (!process.env.TEST_EMAIL_KEY || key !== process.env.TEST_EMAIL_KEY) {
+      return res.status(401).json({ error: 'unauthorized' });
+    }
+    const { to, subject = 'Prueba de correo', html = '<p>Prueba OK</p>', text } = req.body || {};
+    if (!to) return res.status(400).json({ error: 'to requerido' });
+    const result = await sendEmail({ to, subject, html, text });
+    return res.json({ ok: true, result });
+  } catch (e) {
+    console.error('[Test Email] Error:', e?.message || e);
+    return res.status(500).json({ error: 'server', detail: e?.message });
+  }
 });
 
 // Ruta raíz sirve index.html
