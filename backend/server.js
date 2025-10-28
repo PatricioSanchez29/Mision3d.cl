@@ -1151,7 +1151,6 @@ app.post("/api/send-registration-email", async (req, res) => {
             <ul style="line-height: 2;">
               <li>✨ Proceso de compra más rápido</li>
               <li>📦 Seguimiento de tus pedidos</li>
-              <li>❤️ Lista de productos favoritos</li>
               <li>📍 Múltiples direcciones de envío</li>
               <li>🎁 Ofertas y promociones exclusivas</li>
             </ul>
@@ -1184,7 +1183,6 @@ Ya puedes iniciar sesión en: https://mision3d.cl/login.html
 Beneficios de tu cuenta:
 - Proceso de compra más rápido
 - Seguimiento de tus pedidos
-- Lista de productos favoritos
 - Múltiples direcciones de envío
 - Ofertas y promociones exclusivas
 

@@ -107,10 +107,6 @@
             <span class="icon">📧</span>
             <span>Contacto</span>
           </a>
-          <a href="favoritos.html">
-            <span class="icon">❤️</span>
-            <span>Favoritos</span>
-          </a>
           <a href="login.html" id="drawerUserLink">
             <span class="icon">👤</span>
             <span id="drawerUserText">Iniciar Sesión</span>
