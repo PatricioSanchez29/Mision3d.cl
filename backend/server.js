@@ -15,6 +15,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
 // Webpay SDK (Transbank). Se carga dinámicamente para no romper si no está instalado
+
 let WebpayPlus, Options, Environment, IntegrationCommerceCodes, IntegrationApiKeys;
 try {
   const tb = await import('transbank-sdk');
@@ -23,8 +24,10 @@ try {
   Environment = tb.Environment;
   IntegrationCommerceCodes = tb.IntegrationCommerceCodes;
   IntegrationApiKeys = tb.IntegrationApiKeys;
+  console.log('✅ transbank-sdk cargado correctamente');
 } catch (e) {
   console.warn('ℹ️  transbank-sdk no instalado; /api/payments/webpay quedará deshabilitado hasta instalarlo.');
+  console.warn('Detalle del error al importar transbank-sdk:', e?.message || e);
 }
 
 const __filename = fileURLToPath(import.meta.url);
@@ -685,6 +688,24 @@ app.post('/api/payments/webpay', paymentLimiter, async (req, res) => {
     const sessionId = email || ('sess_' + Math.random().toString(36).slice(2));
     const returnUrl = `${host}/webpay/retorno`;
 
+    // Guardar pedido en Firebase antes de redirigir a Webpay
+    let pedidoKey = null;
+    try {
+      const pedidoData = {
+        commerceOrder: buyOrder,
+        items,
+        payer: buyer,
+        totalCLP: total,
+        estado: 'pendiente_webpay',
+        createdAt: Date.now(),
+        meta
+      };
+      const pedidoRes = await createPedido(pedidoData);
+      pedidoKey = pedidoRes?.key || null;
+    } catch (e) {
+      console.warn('⚠️ [Firebase] No se pudo guardar pedido Webpay:', e?.message);
+    }
+
     let options;
     if(process.env.WEBPAY_COMMERCE_CODE && process.env.WEBPAY_API_KEY && String(process.env.WEBPAY_ENV||'').toLowerCase() === 'production'){
       options = new Options(process.env.WEBPAY_COMMERCE_CODE, process.env.WEBPAY_API_KEY, Environment.Production);
@@ -695,7 +716,7 @@ app.post('/api/payments/webpay', paymentLimiter, async (req, res) => {
     const resp = await tx.create(buyOrder, sessionId, total, returnUrl);
     if(resp?.token && resp?.url){
       const payUrl = `${resp.url}?token_ws=${resp.token}`;
-      return res.json({ url: payUrl, token: resp.token, provider: 'webpay', buyOrder });
+      return res.json({ url: payUrl, token: resp.token, provider: 'webpay', buyOrder, pedidoId: pedidoKey });
     }
     return res.status(502).json({ error: 'Respuesta inesperada de Webpay', detail: resp });
   } catch (err) {
@@ -720,6 +741,86 @@ app.get('/webpay/retorno', async (req, res) => {
     const tx = new WebpayPlus.Transaction(options);
     const result = await tx.commit(token);
     const ok = result?.status === 'AUTHORIZED' || result?.response_code === 0;
+
+    // Buscar pedido por buyOrder (result.buy_order)
+    let pedido = null;
+    let pedidoId = null;
+    let emailDestino = null;
+    let montoEsperado = 0;
+    try {
+      const pedidos = await findPedidosByCommerceOrder(result?.buy_order);
+      if (pedidos && pedidos.length) {
+        pedido = pedidos[0];
+        pedidoId = pedido.id;
+        emailDestino = pedido?.payer?.email;
+        montoEsperado = pedido?.totalCLP || 0;
+      }
+    } catch (e) {
+      console.warn('[Webpay Retorno] No se pudo buscar pedido en Firebase:', e?.message);
+    }
+
+    // Validar monto pagado vs pedido
+    let montoPagado = result?.amount || 0;
+    let diferencia = Math.abs(montoPagado - montoEsperado);
+    let actualizacionOK = false;
+    if (ok && pedidoId && diferencia <= 1) {
+      // Actualizar estado a pagado
+      const updates = {};
+      updates[`pedidos/${pedidoId}/estado`] = 'pagado';
+      updates[`pedidos/${pedidoId}/webpayToken`] = token;
+      updates[`pedidos/${pedidoId}/paymentDate`] = HAS_ADMIN_CREDENTIALS ? admin.database.ServerValue.TIMESTAMP : Date.now();
+      updates[`pedidos/${pedidoId}/paymentData`] = {
+        status: result.status,
+        amount: montoPagado,
+        provider: 'webpay',
+        response: result
+      };
+      try {
+        await updatePedidoPagadoMulti(updates, { status: result.status, amount: montoPagado });
+        actualizacionOK = true;
+      } catch (e) {
+        console.warn('[Webpay Retorno] No se pudo actualizar pedido como pagado:', e?.message);
+      }
+      // Enviar email de confirmación
+      if (emailDestino) {
+        const totalFmt = (montoEsperado || montoPagado || 0).toLocaleString('es-CL');
+        const asunto = `Confirmación de pago - ${result?.buy_order}`;
+        const html = `
+          <h2>¡Gracias por tu compra en Misión 3D!</h2>
+          <p>Hemos confirmado tu pago correctamente.</p>
+          <ul>
+            <li>Orden comercio: <strong>${result?.buy_order}</strong></li>
+            <li>Monto: <strong>$${totalFmt}</strong></li>
+            <li>Estado: <strong>Pagado</strong></li>
+          </ul>
+          <p>Pronto te contactaremos con el estado del envío.</p>
+        `;
+        try {
+          await sendEmail({ to: emailDestino, subject: asunto, html, text: `Pago confirmado. Orden ${result?.buy_order}` });
+          console.log('📧 Email de confirmación Webpay enviado a', emailDestino);
+        } catch (e) {
+          console.warn('⚠️ No se pudo enviar el email de confirmación Webpay:', e?.message);
+        }
+      }
+    } else if (ok && pedidoId && diferencia > 1) {
+      // Discrepancia de monto
+      const updates = {};
+      updates[`pedidos/${pedidoId}/estado`] = 'discrepancia_monto';
+      updates[`pedidos/${pedidoId}/webpayToken`] = token;
+      updates[`pedidos/${pedidoId}/errorData`] = {
+        type: 'monto_no_coincide',
+        montoEsperado,
+        montoPagado,
+        diferencia,
+        timestamp: Date.now()
+      };
+      try {
+        await updatePedidoPagadoMulti(updates, { status: 'error', amount: montoPagado });
+      } catch (e) {
+        console.warn('[Webpay Retorno] No se pudo actualizar pedido con discrepancia de monto:', e?.message);
+      }
+    }
+
     res.send(`<!doctype html><html><head><meta charset="utf-8"><title>Pago Webpay</title>
       <style>body{font-family:Inter,system-ui;padding:40px} .ok{color:#16a34a} .bad{color:#b91c1c}</style></head>
       <body><h2 class="${ok?'ok':'bad'}">${ok?'✅ Pago confirmado':'⚠️ Pago no confirmado'}</h2>
