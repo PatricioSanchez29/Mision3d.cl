@@ -181,9 +181,18 @@
     async function loadOrders(){
       const tbody = document.getElementById('ordersBody');
       try{
-        const base = window.location.origin;
-        const url = `${base}/api/orders/by-email?email=${encodeURIComponent((session.email||'').toLowerCase())}`;
+        // Detectar entorno: si es localhost/127.*, usar la API en producción
+        const isLocal = /^(localhost|127\.)$/.test(window.location.hostname) || !!window.location.hostname.match(/^127\./);
+        const apiBase = isLocal ? 'https://mision3d-cl.onrender.com' : window.location.origin;
+        const url = `${apiBase}/api/orders/by-email?email=${encodeURIComponent((session.email||'').toLowerCase())}`;
         const resp = await fetch(url);
+        if(!resp.ok){
+          throw new Error(`HTTP ${resp.status}`);
+        }
+        const ct = resp.headers.get('content-type') || '';
+        if(!ct.includes('application/json')){
+          throw new Error('Respuesta no es JSON');
+        }
         const data = await resp.json();
         const pedidos = Array.isArray(data.pedidos)? data.pedidos : [];
         if(pedidos.length === 0){
@@ -206,7 +215,7 @@
         }).join('');
       }catch(err){
         console.error('Error cargando pedidos:', err);
-        tbody.innerHTML = `<tr><td colspan="6" style="color:#6b7280; text-align:center; padding:40px;">No tienes pedidos aún.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="color:#6b7280; text-align:center; padding:40px;">No pudimos cargar tus pedidos ahora mismo. Intenta más tarde.</td></tr>`;
       }
     }
     loadOrders();
