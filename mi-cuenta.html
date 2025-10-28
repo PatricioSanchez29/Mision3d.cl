@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mi cuenta - Misión 3D</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="header-new-style.css"/>
+  <style>
+    body { font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial; }
+    .page-wrap { max-width: 1200px; margin: 20px auto; padding: 0 16px; }
+    .breadcrumb { font-size: 14px; color: #6b7280; margin-bottom: 12px; }
+    .account-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin: 10px 0 16px; }
+    .user-title h1 { margin:.2rem 0; font-size: 24px; color:#111827; }
+    .user-sub { color:#6b7280; font-size: 14px; }
+    .btn-outline { background:#fff; border:1px solid #e5e7eb; color:#111827; border-radius:8px; padding:10px 14px; cursor:pointer; font-weight:600; }
+    .btn-outline:hover { background:#f9fafb; }
+
+    .tabs { display:flex; gap:10px; border-bottom:1px solid #e5e7eb; margin: 10px 0 16px; }
+    .tab { padding:10px 14px; font-weight:600; color:#374151; cursor:pointer; border-bottom:2px solid transparent; }
+    .tab.active { color:#111827; border-bottom-color:#0ea5e9; }
+
+    .card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,.05); }
+    .card .card-body { padding:16px; }
+
+    .orders-table { width:100%; border-collapse: collapse; font-size:14px; }
+    .orders-table th, .orders-table td { padding:12px; border-bottom:1px solid #f3f4f6; text-align:left; vertical-align:top; }
+    .orders-table th { color:#6b7280; font-weight:600; }
+    .badge { display:inline-block; padding:4px 8px; border-radius:999px; font-size:12px; font-weight:700; }
+    .badge.gray { background:#f3f4f6; color:#374151; }
+    .badge.green { background:#dcfce7; color:#166534; }
+
+    .details-grid { display:grid; grid-template-columns: 1fr 1fr; gap:14px; }
+    .details-grid .box { background:#f9fafb; padding:14px; border-radius:10px; border:1px solid #e5e7eb; }
+    .box h3 { margin:0 0 8px; font-size:14px; color:#111827; }
+    .box p { margin:6px 0; color:#374151; font-size:14px; }
+
+    @media(max-width: 900px){ .details-grid{ grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <button class="menu-btn" id="hamburgerBtn" aria-label="Abrir menú">
+      <div class="hamburger-icon"><span></span><span></span><span></span></div>
+      <span class="menu-text">MENU</span>
+    </button>
+    <h1 class="logo" style="margin:0;display:flex;align-items:center">
+      <a href="index.html" style="display:inline-flex;align-items:center;text-decoration:none">
+        <img src="img/Logo_Mision3d.jpg" alt="Misión 3D" class="logo-img" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-text',textContent:'Misión 3D'}));" />
+      </a>
+    </h1>
+    <nav class="nav desktop-nav">
+      <a href="index.html">Inicio</a>
+      <a href="catalogo.html">Catálogo</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
+    <div class="right-actions">
+      <div id="userArea" class="user-area">
+        <a href="login.html" id="loginLink" class="header-icon-btn">
+          <span class="icon">👤</span>
+          <span class="label">ACCESO</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="page-wrap">
+    <div class="breadcrumb"><a href="index.html">Inicio</a> › <strong>Cuenta del cliente</strong></div>
+    <div class="account-head">
+      <div class="user-title">
+        <h1 id="userName">Mi cuenta</h1>
+        <div id="userEmail" class="user-sub"></div>
+      </div>
+      <button id="logoutTop" class="btn-outline">CERRAR SESIÓN</button>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="orders">🧾 Pedidos</div>
+      <div class="tab" data-tab="details">🧍 Detalles</div>
+      <div class="tab" data-tab="wishlist">❤️ Lista de favoritos (<span id="favCountTab">0</span>)</div>
+    </div>
+
+    <div id="tab-orders" class="card">
+      <div class="card-body">
+        <table class="orders-table" id="ordersTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Fecha</th>
+              <th>Estado</th>
+              <th>Dirección de envío</th>
+              <th>Estado de entrega</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="ordersBody">
+            <tr><td colspan="6" style="color:#6b7280">Cargando tus pedidos...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="tab-details" class="card" style="display:none">
+      <div class="card-body">
+        <div class="details-grid">
+          <div class="box">
+            <h3>Datos de contacto</h3>
+            <p><strong>Nombre:</strong> <span id="dName">—</span></p>
+            <p><strong>Email:</strong> <span id="dEmail">—</span></p>
+            <p><strong>Teléfono:</strong> <span id="dPhone">—</span></p>
+            <p><a class="btn-outline" href="editar-perfil.html">Editar mis detalles</a></p>
+          </div>
+          <div class="box">
+            <h3>Accesos rápidos</h3>
+            <p><a href="catalogo.html">Ver catálogo</a></p>
+            <p><a href="favoritos.html">Ver mi lista de favoritos</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-wishlist" class="card" style="display:none">
+      <div class="card-body">
+        <p>Revisa y gestiona tus favoritos en <a href="favoritos.html">favoritos.html</a>.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    if(localStorage.getItem('theme')==='dark') document.body.classList.add('dark');
+
+    function $(sel){ return document.querySelector(sel); }
+    function fmtDate(ts){ try{ const d = new Date(Number(ts)); return d.toLocaleString('es-CL'); }catch{ return '—'; } }
+
+    // Cargar sesión
+    let session=null; try{ session = JSON.parse(localStorage.getItem('userSession')||'null'); }catch{}
+    if(!session){ window.location.href = 'login.html'; }
+    document.getElementById('userName').textContent = session?.name || 'Mi cuenta';
+    document.getElementById('userEmail').textContent = session?.email || '';
+
+    // Favoritos
+    try { const wl = JSON.parse(localStorage.getItem('wishlist')||'[]'); document.getElementById('favCountTab').textContent = wl.length; } catch{}
+
+    // Tabs
+    document.querySelectorAll('.tab').forEach(t => {
+      t.addEventListener('click', ()=>{
+        document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+        t.classList.add('active');
+        const id = t.dataset.tab;
+        document.getElementById('tab-orders').style.display = id==='orders'?'block':'none';
+        document.getElementById('tab-details').style.display = id==='details'?'block':'none';
+        document.getElementById('tab-wishlist').style.display = id==='wishlist'?'block':'none';
+      });
+    });
+
+    // Rellenar detalles
+    document.getElementById('dName').textContent = session?.name || '—';
+    document.getElementById('dEmail').textContent = session?.email || '—';
+    document.getElementById('dPhone').textContent = session?.phone || '—';
+
+    // Cerrar sesión
+    document.getElementById('logoutTop').addEventListener('click', ()=>{
+      if(confirm('¿Cerrar sesión?')){ localStorage.removeItem('userSession'); window.location.href = 'index.html'; }
+    });
+
+    // Cargar pedidos del backend usando email
+    async function loadOrders(){
+      const tbody = document.getElementById('ordersBody');
+      try{
+        const base = window.location.origin;
+        const url = `${base}/api/orders/by-email?email=${encodeURIComponent((session.email||'').toLowerCase())}`;
+        const resp = await fetch(url);
+        const data = await resp.json();
+        const pedidos = Array.isArray(data.pedidos)? data.pedidos : [];
+        if(pedidos.length === 0){
+          tbody.innerHTML = `<tr><td colspan="6" style="color:#6b7280">No encontramos pedidos asociados a tu correo.</td></tr>`;
+          return;
+        }
+        tbody.innerHTML = pedidos.map((p,i)=>{
+          const shipping = p?.payer ? `${p?.payer?.name||''}<br>${p?.payer?.address||''}<br>${p?.payer?.commune||''} - ${p?.payer?.region||''}<br>${p?.payer?.country||''}` : '—';
+          const estado = p?.estado || 'No Procesado';
+          const badgeClass = estado.toLowerCase().includes('paga') ? 'green' : 'gray';
+          const num = p?.commerceOrder || (p?.id || '').slice(-6);
+          return `<tr>
+            <td><a href="#">${num}</a></td>
+            <td>${fmtDate(p?.createdAt)}</td>
+            <td><span class="badge ${badgeClass}">${estado}</span></td>
+            <td>${shipping}</td>
+            <td><span class="badge gray">No Procesado</span></td>
+            <td><a href="catalogo.html">Reordenar</a></td>
+          </tr>`;
+        }).join('');
+      }catch(err){
+        console.error('Error cargando pedidos:', err);
+        tbody.innerHTML = `<tr><td colspan="6" style="color:#b91c1c">Error al cargar tus pedidos. Intenta más tarde.</td></tr>`;
+      }
+    }
+    loadOrders();
+  </script>
+  <script src="script.js"></script>
+</body>
+</html>

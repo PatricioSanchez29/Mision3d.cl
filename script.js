@@ -821,7 +821,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
             <span class="label">${userName}</span>
           </button>
           <div class="user-dropdown" id="userDropdown" role="menu" aria-hidden="true">
-            <a href="login.html" class="user-dd-item" role="menuitem">Ir a Mi cuenta</a>
+            <a href="mi-cuenta.html" class="user-dd-item" role="menuitem">Ir a Mi cuenta</a>
             <a href="editar-perfil.html" class="user-dd-item" role="menuitem">Editar mis detalles</a>
             <a href="favoritos.html" class="user-dd-item" id="userFavLink" role="menuitem">Ver mi lista de favoritos (<span id="favCount">0</span>)</a>
             <button class="user-dd-item logout" id="logoutBtn" role="menuitem">Cerrar sesión</button>

@@ -212,6 +212,36 @@ app.get('/api', (req, res) => {
   });
 });
 
+// ===== Pedidos: listar por email del pagador =====
+// Devuelve los pedidos cuyo campo payer.email coincida exactamente
+app.get('/api/orders/by-email', async (req, res) => {
+  try {
+    const email = String(req.query.email || '').trim().toLowerCase();
+    if (!email) return res.status(400).json({ success:false, error:'Email requerido' });
+
+    let results = [];
+    if (HAS_ADMIN_CREDENTIALS) {
+      const snap = await db.ref('pedidos').orderByChild('payer/email').equalTo(email).once('value');
+      snap.forEach(ch => results.push({ id: ch.key, ...ch.val() }));
+    } else {
+      // REST query
+      const params = `orderBy=${encodeURIComponent('"payer/email"')}&equalTo=${encodeURIComponent('"' + email + '"')}`;
+      const base = RTDB_URL.replace(/\/$/, '');
+      const url = `${base}/pedidos.json?${params}`;
+      const { data } = await axios.get(url);
+      const obj = data || {};
+      results = Object.keys(obj).map(k => ({ id: k, ...obj[k] }));
+    }
+
+    // Ordenar por fecha creación descendente si existe
+    results.sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
+    res.json({ success:true, count: results.length, pedidos: results });
+  } catch (err) {
+    console.error('❌ Error listando pedidos por email:', err?.message || err);
+    res.status(500).json({ success:false, error:'server_error', detail: err?.message || String(err) });
+  }
+});
+
 // Servir archivos estáticos del frontend (HTML, CSS, JS, imágenes)
 // Los archivos están en la carpeta padre (..)
 import path from 'path';
