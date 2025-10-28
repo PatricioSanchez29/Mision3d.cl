@@ -404,10 +404,23 @@ const paymentLimiter = rateLimit({
   skipSuccessfulRequests: false, // Contar todas las peticiones
 });
 
+// Limiter para recuperación de contraseña (prevenir abuso pero permitir uso legítimo)
+const passwordRecoveryLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 5, // máximo 5 solicitudes de recuperación por 15 minutos
+  message: {
+    error: 'Has solicitado demasiadas recuperaciones de contraseña. Espera un momento.',
+    retryAfter: '15 minutos'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 console.log('🛡️  Rate Limiting activado:');
 console.log('   • API General: 100 req/15min');
 console.log('   • Webhook: 10 req/min');
 console.log('   • Pagos: 20 req/5min');
+console.log('   • Recuperación contraseña: 5 req/15min');
 
 // ===== Healthcheck =====
 app.get("/api/health", (req, res) => {
@@ -1167,7 +1180,7 @@ Soporte: soporte@mision3d.cl
 });
 
 // ===== Endpoint: Enviar correo de recuperación de contraseña =====
-app.post("/api/send-password-recovery", async (req, res) => {
+app.post("/api/send-password-recovery", passwordRecoveryLimiter, async (req, res) => {
   try {
     const { email } = req.body;
 
