@@ -14,26 +14,36 @@ import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
-// Webpay SDK (Transbank). Se carga dinámicamente para no romper si no está instalado
+dotenv.config();
 
+// --- Inicialización asíncrona de transbank-sdk y arranque del servidor ---
 let WebpayPlus, Options, Environment, IntegrationCommerceCodes, IntegrationApiKeys;
-try {
-  const tb = await import('transbank-sdk');
-  WebpayPlus = tb.WebpayPlus;
-  Options = tb.Options;
-  Environment = tb.Environment;
-  IntegrationCommerceCodes = tb.IntegrationCommerceCodes;
-  IntegrationApiKeys = tb.IntegrationApiKeys;
-  console.log('✅ transbank-sdk cargado correctamente');
-} catch (e) {
-  console.warn('ℹ️  transbank-sdk no instalado; /api/payments/webpay quedará deshabilitado hasta instalarlo.');
-  console.warn('Detalle del error al importar transbank-sdk:', e?.message || e);
-}
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-dotenv.config();
+async function startServer() {
+  try {
+    const tb = await import('transbank-sdk');
+    WebpayPlus = tb.WebpayPlus;
+    Options = tb.Options;
+    Environment = tb.Environment;
+    IntegrationCommerceCodes = tb.IntegrationCommerceCodes;
+    IntegrationApiKeys = tb.IntegrationApiKeys;
+    console.log('✅ transbank-sdk cargado correctamente');
+  } catch (e) {
+    console.warn('ℹ️  transbank-sdk no instalado; /api/payments/webpay quedará deshabilitado hasta instalarlo.');
+    console.warn('Detalle del error al importar transbank-sdk:', e?.message || e);
+  }
+
+  // ...existing code...
+  // Al final del archivo, donde se hace app.listen o similar, mueve esa línea aquí:
+  // Por ejemplo:
+  // app.listen(process.env.PORT || 10000, () => {
+  //   console.log('Backend escuchando en puerto', process.env.PORT || 10000);
+  // });
+}
+
+startServer();
 
 // ==== Compatibilidad de nombres de variables (shim) ====
 // Aceptar tanto FLOW_SECRET como FLOW_SECRET_KEY
