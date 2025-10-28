@@ -1,4 +1,4 @@
-# Backend Pagos Tienda3D
+# Backend Pagos Mision3D
 
 Integración mínima de pagos con MercadoPago y Flow (Chile) para el proyecto frontend existente.
 
