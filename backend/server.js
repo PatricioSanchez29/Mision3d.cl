@@ -14,6 +14,19 @@ import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
+// Webpay SDK (Transbank). Se carga dinámicamente para no romper si no está instalado
+let WebpayPlus, Options, Environment, IntegrationCommerceCodes, IntegrationApiKeys;
+try {
+  const tb = await import('transbank-sdk');
+  WebpayPlus = tb.WebpayPlus;
+  Options = tb.Options;
+  Environment = tb.Environment;
+  IntegrationCommerceCodes = tb.IntegrationCommerceCodes;
+  IntegrationApiKeys = tb.IntegrationApiKeys;
+} catch (e) {
+  console.warn('ℹ️  transbank-sdk no instalado; /api/payments/webpay quedará deshabilitado hasta instalarlo.');
+}
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -649,6 +662,126 @@ app.post("/api/payments/flow", paymentLimiter, async (req, res) => {
   }
 });
 
+// ===== Endpoint Webpay Plus =====
+app.post('/api/payments/webpay', paymentLimiter, async (req, res) => {
+  try {
+    if(!WebpayPlus){
+      return res.status(503).json({ error: 'webpay_disabled', message: 'Webpay no está instalado en el backend' });
+    }
+    const { items = [], totalCLP = 0, buyer = {}, meta = {} } = req.body || {};
+    const email = (buyer.email || '').toLowerCase();
+    // Calcular total si no viene totalCLP
+    let total = Number(totalCLP) || 0;
+    if(total <= 0 && Array.isArray(items)){
+      total = items.reduce((acc, it) => acc + (Number(it.price)||0) * (Number(it.qty)||0), 0);
+      total = Math.round(total);
+    }
+    if(total <= 0){
+      return res.status(400).json({ error: 'Monto inválido' });
+    }
+
+    const host = `${req.protocol}://${req.get('host')}`;
+    const buyOrder = 'WB' + Date.now().toString().slice(-10);
+    const sessionId = email || ('sess_' + Math.random().toString(36).slice(2));
+    const returnUrl = `${host}/webpay/retorno`;
+
+    let options;
+    if(process.env.WEBPAY_COMMERCE_CODE && process.env.WEBPAY_API_KEY && String(process.env.WEBPAY_ENV||'').toLowerCase() === 'production'){
+      options = new Options(process.env.WEBPAY_COMMERCE_CODE, process.env.WEBPAY_API_KEY, Environment.Production);
+    } else {
+      options = new Options(IntegrationCommerceCodes.WEBPAY_PLUS, IntegrationApiKeys.WEBPAY, Environment.Integration);
+    }
+    const tx = new WebpayPlus.Transaction(options);
+    const resp = await tx.create(buyOrder, sessionId, total, returnUrl);
+    if(resp?.token && resp?.url){
+      const payUrl = `${resp.url}?token_ws=${resp.token}`;
+      return res.json({ url: payUrl, token: resp.token, provider: 'webpay', buyOrder });
+    }
+    return res.status(502).json({ error: 'Respuesta inesperada de Webpay', detail: resp });
+  } catch (err) {
+    console.error('[Webpay] Error:', err?.response?.data || err.message);
+    return res.status(500).json({ error: 'webpay', detail: err?.response?.data || err.message });
+  }
+});
+
+// Retorno Webpay (commit)
+app.get('/webpay/retorno', async (req, res) => {
+  try {
+    if(!WebpayPlus){
+      return res.status(503).send('<h2>Webpay no disponible</h2>');
+    }
+    const token = req.query.token_ws;
+    if(!token){
+      return res.status(400).send('<h2>Token no recibido</h2>');
+    }
+    const options = process.env.WEBPAY_COMMERCE_CODE && process.env.WEBPAY_API_KEY && String(process.env.WEBPAY_ENV||'').toLowerCase()==='production'
+      ? new Options(process.env.WEBPAY_COMMERCE_CODE, process.env.WEBPAY_API_KEY, Environment.Production)
+      : new Options(IntegrationCommerceCodes.WEBPAY_PLUS, IntegrationApiKeys.WEBPAY, Environment.Integration);
+    const tx = new WebpayPlus.Transaction(options);
+    const result = await tx.commit(token);
+    const ok = result?.status === 'AUTHORIZED' || result?.response_code === 0;
+    res.send(`<!doctype html><html><head><meta charset="utf-8"><title>Pago Webpay</title>
+      <style>body{font-family:Inter,system-ui;padding:40px} .ok{color:#16a34a} .bad{color:#b91c1c}</style></head>
+      <body><h2 class="${ok?'ok':'bad'}">${ok?'✅ Pago confirmado':'⚠️ Pago no confirmado'}</h2>
+      <p>Orden: ${result?.buy_order || ''}</p><p>Monto: $${(result?.amount||0).toLocaleString('es-CL')}</p>
+      <p><a href="/index.html">Volver a la tienda</a></p></body></html>`);
+  } catch (err) {
+    console.error('[Webpay Retorno] Error:', err?.response?.data || err.message);
+    res.status(500).send('<h2>Error al confirmar pago Webpay</h2>');
+  }
+});
+
+// ===== Endpoint Khipu =====
+app.post('/api/payments/khipu', paymentLimiter, async (req, res) => {
+  try {
+    const receiverId = process.env.KHIPU_RECEIVER_ID;
+    const secret = process.env.KHIPU_SECRET;
+    if(!receiverId || !secret){
+      return res.status(503).json({ error: 'khipu_disabled', message: 'Faltan KHIPU_RECEIVER_ID y/o KHIPU_SECRET' });
+    }
+    const { totalCLP = 0, buyer = {} } = req.body || {};
+    let amount = Number(totalCLP) || 0;
+    if(amount <= 0) return res.status(400).json({ error: 'Monto inválido' });
+
+    const host = `${req.protocol}://${req.get('host')}`;
+    const subject = `Compra Mision3D - ${Date.now().toString().slice(-6)}`;
+    const payload = {
+      amount: amount,
+      currency: 'CLP',
+      subject,
+      body: 'Pago en Misión 3D',
+      return_url: `${host}/khipu/retorno`,
+      notify_url: `${host}/khipu/notify`,
+      payer_email: buyer?.email || undefined,
+      transaction_id: 'KH' + Date.now().toString().slice(-10)
+    };
+
+    const auth = Buffer.from(`${receiverId}:${secret}`).toString('base64');
+    const resp = await axios.post('https://khipu.com/api/2.0/payments', payload, {
+      headers: {
+        Authorization: `Basic ${auth}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    const data = resp.data || {};
+    if(data?.payment_url){
+      return res.json({ url: data.payment_url, provider: 'khipu', payment_id: data.payment_id });
+    }
+    return res.status(502).json({ error: 'Respuesta inesperada de Khipu', detail: data });
+  } catch (err) {
+    console.error('[Khipu] Error:', err?.response?.data || err.message);
+    return res.status(500).json({ error: 'khipu', detail: err?.response?.data || err.message });
+  }
+});
+
+app.get('/khipu/retorno', (req, res) => {
+  res.send('<h2>✅ Pago Khipu recibido (retorno)</h2><p>Puedes cerrar esta ventana.</p>');
+});
+
+app.post('/khipu/notify', express.urlencoded({ extended: true }), (req, res) => {
+  console.log('[Khipu Notify]', req.body);
+  res.status(200).send('OK');
+});
 // ===== Confirmación Flow (webhook) =====
 // Aplicar rate limiting ESTRICTO para prevenir ataques
 app.post("/flow/confirm", webhookLimiter, async (req, res) => {

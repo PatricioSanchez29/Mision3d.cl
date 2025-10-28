@@ -563,6 +563,40 @@ async function iniciarPago(payMethod, payload) {
     }
   } else if (payMethod === 'mercadopago') {
     alert("MercadoPago todavía no está conectado en este flujo 🚧");
+  } else if (payMethod === 'webpay') {
+    const res = await fetch(`${API_BASE}/api/payments/webpay`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+      const errText = await res.text().catch(()=> '');
+      throw new Error(`Error HTTP ${res.status}: ${errText.slice(0,200)}`);
+    }
+    const data = await res.json();
+    if (data.url) {
+      window.location.href = data.url;
+      return;
+    } else {
+      throw new Error(data.error || 'Error creando pago en Webpay');
+    }
+  } else if (payMethod === 'khipu') {
+    const res = await fetch(`${API_BASE}/api/payments/khipu`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+      const errText = await res.text().catch(()=> '');
+      throw new Error(`Error HTTP ${res.status}: ${errText.slice(0,200)}`);
+    }
+    const data = await res.json();
+    if (data.url) {
+      window.location.href = data.url;
+      return;
+    } else {
+      throw new Error(data.error || 'Error creando pago en Khipu');
+    }
   } else if (payMethod === 'transferencia' || payMethod === 'manual') {
     // Generar número de pedido aleatorio (8 dígitos)
     const orderNumber = Math.floor(10000000 + Math.random() * 90000000);

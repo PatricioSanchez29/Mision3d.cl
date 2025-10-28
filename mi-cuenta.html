@@ -181,10 +181,15 @@
     async function loadOrders(){
       const tbody = document.getElementById('ordersBody');
       try{
-        // Detectar entorno: si es localhost/127.*, usar la API en producción
-        const isLocal = /^(localhost|127\.)$/.test(window.location.hostname) || !!window.location.hostname.match(/^127\./);
-        const apiBase = isLocal ? 'https://mision3d-cl.onrender.com' : window.location.origin;
-        const url = `${apiBase}/api/orders/by-email?email=${encodeURIComponent((session.email||'').toLowerCase())}`;
+  // Detectar entorno local y forzar API de producción en desarrollo
+  const DEFAULT_PROD_API = 'https://mision3d-cl.onrender.com';
+  const LOCAL_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', '::1'];
+  const isLocal = LOCAL_HOSTS.includes(window.location.hostname) || window.location.port === '5500' || window.location.protocol === 'file:';
+  // Permite override manual temporal: localStorage.API_BASE
+  const manualBase = localStorage.getItem('API_BASE');
+  const apiBase = manualBase || (isLocal ? DEFAULT_PROD_API : window.location.origin);
+  const url = `${apiBase}/api/orders/by-email?email=${encodeURIComponent((session.email||'').toLowerCase())}&_=${Date.now()}`;
+  console.info('[MiCuenta] API base:', apiBase, '| isLocal:', isLocal);
         const resp = await fetch(url);
         if(!resp.ok){
           throw new Error(`HTTP ${resp.status}`);
