@@ -2116,6 +2116,7 @@ body.dark .faq-bg {opacity:.35}
   }
   
   /* Hero y secciones */
+  
   .hero { padding: 50px 16px; }
   .hero h2 { font-size: 1.8rem !important; }
   .hero p { font-size: 1rem; }
@@ -2135,11 +2136,13 @@ body.dark .faq-bg {opacity:.35}
   .cart-item .qty button { padding: 4px 8px; font-size: 0.85rem; }
   .user-area .user-badge { font-size: 0.8rem; padding: 4px 8px; }
   #logoutBtn { font-size: 0.7rem; padding: 2px 6px; }
-}
+
+
+  
 
 @media (max-width: 480px) {
   /* Logo aún más pequeño en pantallas muy pequeñas */
-  .logo-img { height: 44px !important; }
+  
   
   /* Header más compacto */
   .header {
