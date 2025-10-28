@@ -111,6 +111,44 @@
   align-items: center;
 }
 
+/* ===== Menú de usuario (dropdown) ===== */
+.user-menu { position: relative; }
+.user-menu .user-btn { cursor: pointer; }
+.user-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  min-width: 220px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.12);
+  padding: 8px;
+  display: none;
+  z-index: 1000;
+}
+.user-dropdown.open { display: block; }
+.user-dd-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  color: #111827;
+  text-decoration: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.user-dd-item:hover { background: #f3f4f6; }
+.user-dd-item.logout { color: #dc2626; }
+
+/* Modo oscuro */
+body.dark .user-dropdown { background: #111827; border-color: #374151; }
+body.dark .user-dd-item { color: #e5e7eb; }
+body.dark .user-dd-item:hover { background: #1f2937; }
+
 /* Ocultar nav y search en móvil si quieres mantener el drawer */
 @media (max-width: 768px) {
   .desktop-nav {

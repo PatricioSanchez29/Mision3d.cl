@@ -806,22 +806,72 @@ document.addEventListener('DOMContentLoaded', ()=>{
     toggle.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
   }
 
-  // Sesión demo
+  // Sesión y menú de usuario
   const userArea = document.getElementById('userArea');
   function renderUser(){
     if(!userArea) return;
     let session=null; try{ session = JSON.parse(localStorage.getItem('userSession')||'null'); }catch{}
     if(session){
-      const userName = session.guest ? 'Invitado' : session.name;
+      const userName = (session.guest ? 'Invitado' : (session.name||'Mi cuenta')).toUpperCase();
+      // Renderizar botón + dropdown
       userArea.innerHTML = `
-        <button class="header-icon-btn user-badge" onclick="window.location.href='login.html'" style="cursor:pointer;">
-          <span class="icon">👤</span>
-          <span class="label">${userName.toUpperCase()}</span>
-        </button>`;
+        <div class="user-menu">
+          <button class="header-icon-btn user-btn" id="userMenuBtn" aria-expanded="false" aria-haspopup="true">
+            <span class="icon">👤</span>
+            <span class="label">${userName}</span>
+          </button>
+          <div class="user-dropdown" id="userDropdown" role="menu" aria-hidden="true">
+            <a href="login.html" class="user-dd-item" role="menuitem">Ir a Mi cuenta</a>
+            <a href="editar-perfil.html" class="user-dd-item" role="menuitem">Editar mis detalles</a>
+            <a href="favoritos.html" class="user-dd-item" id="userFavLink" role="menuitem">Ver mi lista de favoritos (<span id="favCount">0</span>)</a>
+            <button class="user-dd-item logout" id="logoutBtn" role="menuitem">Cerrar sesión</button>
+          </div>
+        </div>`;
+
       // Prefill en checkout si corresponde
-      if($('#inputName') && !$('#inputName').value) $('#inputName').value = (session.name.split(' ')[0]||session.name);
-      if($('#inputApellido') && !$('#inputApellido').value && session.name.split(' ').length>1) $('#inputApellido').value = session.name.split(' ').slice(1).join(' ');
+      if($('#inputName') && !$('#inputName').value) $('#inputName').value = (session.name?.split(' ')[0]||session.name||'');
+      if($('#inputApellido') && !$('#inputApellido').value && (session.name||'').split(' ').length>1) $('#inputApellido').value = session.name.split(' ').slice(1).join(' ');
       if($('#inputEmail') && !$('#inputEmail').value && session.email) $('#inputEmail').value = session.email;
+
+      // Listeners del dropdown
+      const ddBtn = document.getElementById('userMenuBtn');
+      const dd = document.getElementById('userDropdown');
+      const favCountEl = document.getElementById('favCount');
+      const logoutBtn = document.getElementById('logoutBtn');
+
+      // Actualizar contador de favoritos
+      try {
+        const wl = JSON.parse(localStorage.getItem('wishlist')||'[]');
+        if(favCountEl) favCountEl.textContent = wl.length;
+      } catch {}
+
+      function openClose(toggle){
+        if(!dd) return;
+        const open = typeof toggle === 'boolean' ? toggle : !dd.classList.contains('open');
+        dd.classList.toggle('open', open);
+        if(ddBtn) ddBtn.setAttribute('aria-expanded', String(open));
+      }
+      if(ddBtn){
+        ddBtn.addEventListener('click', (e)=>{ e.stopPropagation(); openClose(); });
+      }
+      // Cerrar al hacer click fuera
+      document.addEventListener('click', (e)=>{
+        if(!dd) return;
+        if(!dd.contains(e.target) && !ddBtn.contains(e.target)){
+          dd.classList.remove('open');
+          ddBtn.setAttribute('aria-expanded','false');
+        }
+      }, { once: true });
+
+      // Logout
+      if(logoutBtn){
+        logoutBtn.addEventListener('click', ()=>{
+          localStorage.removeItem('userSession');
+          if(typeof showToast === 'function') showToast('Sesión cerrada', 'info');
+          window.location.href = 'index.html';
+        });
+      }
+
     } else {
       userArea.innerHTML = `
         <a href="login.html" id="loginLink" class="header-icon-btn">
