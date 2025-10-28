@@ -163,6 +163,9 @@ async function updatePedidoPagadoMulti(updatesObj, paymentDataMinimal) {
 
 const app = express();
 
+// Configurar trust proxy para Render (soluciona warning de express-rate-limit)
+app.set('trust proxy', 1);
+
 // CORS: restringir en producción con CORS_ORIGIN (coma-separado)
 const allowedOrigins = (process.env.CORS_ORIGIN || "").split(",").map(s=>s.trim()).filter(Boolean);
 const corsOptions = {
