@@ -47,16 +47,27 @@
       e.stopPropagation();
     }, { passive: false });
 
-    // Cerrar menú al hacer click en un link
+    // Cerrar menú al hacer click en un link (excepto enlaces de navegación)
     const drawerLinks = drawer.querySelectorAll('.drawer-nav a');
     drawerLinks.forEach(link => {
-      link.addEventListener('click', () => {
-        setTimeout(closeMenu, 150); // Pequeño delay para mejor UX
+      link.addEventListener('click', (e) => {
+        const href = link.getAttribute('href');
+        // Si es un enlace de navegación a otra página, cerrar sin delay
+        if (href && (href.startsWith('#') || href.includes('#'))) {
+          // Solo para anclas internas, cerrar con delay
+          setTimeout(closeMenu, 150);
+        } else {
+          // Para navegación a otras páginas, cerrar inmediatamente
+          closeMenu();
+        }
       });
     });
 
     // Marcar link activo según página actual
     highlightActiveLink();
+    
+    // Actualizar estado del usuario
+    updateUserLink();
   }
 
   /**
@@ -99,6 +110,10 @@
           <a href="favoritos.html">
             <span class="icon">❤️</span>
             <span>Favoritos</span>
+          </a>
+          <a href="login.html" id="drawerUserLink">
+            <span class="icon">👤</span>
+            <span id="drawerUserText">Iniciar Sesión</span>
           </a>
         </nav>
       </div>
@@ -185,6 +200,38 @@
         link.classList.add('active');
       }
     });
+  }
+
+  /**
+   * Actualizar enlace de usuario según estado de sesión
+   */
+  function updateUserLink() {
+    const drawerUserLink = document.getElementById('drawerUserLink');
+    const drawerUserText = document.getElementById('drawerUserText');
+    
+    if (!drawerUserLink || !drawerUserText) return;
+
+    // Verificar si hay usuario logueado
+    const currentUser = localStorage.getItem('currentUser');
+    
+    if (currentUser) {
+      try {
+        const userData = JSON.parse(currentUser);
+        const userName = userData.nombre || userData.email?.split('@')[0] || 'Usuario';
+        
+        // Actualizar texto y enlace
+        drawerUserText.textContent = userName;
+        drawerUserLink.href = 'login.html'; // Ir a login donde puede ver perfil/cerrar sesión
+      } catch (e) {
+        // Si hay error, mostrar opción de login
+        drawerUserText.textContent = 'Iniciar Sesión';
+        drawerUserLink.href = 'login.html';
+      }
+    } else {
+      // No hay sesión, mostrar login
+      drawerUserText.textContent = 'Iniciar Sesión';
+      drawerUserLink.href = 'login.html';
+    }
   }
 
   /**

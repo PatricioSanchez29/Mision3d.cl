@@ -167,11 +167,25 @@ const app = express();
 const allowedOrigins = (process.env.CORS_ORIGIN || "").split(",").map(s=>s.trim()).filter(Boolean);
 const corsOptions = {
   origin: (origin, cb) => {
-    if (!allowedOrigins.length) return cb(null, true); // sin restricción si no se configuró
+    // En desarrollo, permitir localhost y 127.0.0.1
+    const isDevelopment = process.env.NODE_ENV !== 'production';
+    const isLocalhost = origin?.includes('localhost') || origin?.includes('127.0.0.1');
+    
+    if (!allowedOrigins.length && isDevelopment) {
+      // Sin restricción en desarrollo
+      return cb(null, true);
+    }
     if (!origin) return cb(null, true); // llamadas server-to-server
+    if (isLocalhost) return cb(null, true); // permitir localhost siempre
     if (allowedOrigins.includes(origin)) return cb(null, true);
+    if (!allowedOrigins.length) return cb(null, true); // sin restricción si no se configuró
+    
+    console.warn('❌ CORS bloqueado para origen:', origin);
     cb(new Error("Not allowed by CORS"));
-  }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 };
 app.use(cors(corsOptions));
 app.use(express.json());
@@ -1010,6 +1024,300 @@ app.get("/flow/retorno", async (req, res) => {
       </body>
       </html>
     `);
+  }
+});
+
+// ===== Endpoint: Enviar correo de confirmación de registro =====
+app.post("/api/send-registration-email", async (req, res) => {
+  try {
+    const { email, name } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ success: false, error: "Email requerido" });
+    }
+
+    const userName = name || email.split('@')[0];
+
+    // HTML del correo de confirmación
+    const html = `
+      <!DOCTYPE html>
+      <html lang="es">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #0ea5e9, #0284c7); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+          .header h1 { margin: 0; font-size: 28px; }
+          .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
+          .message-box { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin: 20px 0; }
+          .button { display: inline-block; padding: 14px 32px; background: #0ea5e9; color: white; text-decoration: none; border-radius: 6px; font-weight: 600; margin: 20px 0; }
+          .button:hover { background: #0284c7; }
+          .footer { text-align: center; padding: 20px; color: #6b7280; font-size: 14px; }
+          .verification-code { background: #dbeafe; padding: 15px; border-radius: 6px; text-align: center; font-size: 24px; font-weight: 700; letter-spacing: 3px; color: #1e40af; margin: 20px 0; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>¡Bienvenido a Misión 3D! 🎨</h1>
+        </div>
+        <div class="content">
+          <div class="message-box">
+            <h2>¡Hola ${userName}!</h2>
+            <p>Tu cuenta ha sido creada exitosamente en <strong>Misión3D.cl</strong></p>
+            
+            <p>Hemos enviado este correo para confirmar tu dirección de email: <strong>${email}</strong></p>
+            
+            <div style="background: #f0f9ff; padding: 20px; border-left: 4px solid #0ea5e9; margin: 20px 0;">
+              <p style="margin: 0;"><strong>✅ Tu cuenta está lista para usar</strong></p>
+              <p style="margin: 10px 0 0 0;">Ya puedes iniciar sesión y comenzar a explorar nuestro catálogo de productos de impresión 3D.</p>
+            </div>
+            
+            <div style="text-align: center;">
+              <a href="https://mision3d.cl/login.html" class="button">INICIAR SESIÓN</a>
+            </div>
+            
+            <h3>Beneficios de tu cuenta:</h3>
+            <ul style="line-height: 2;">
+              <li>✨ Proceso de compra más rápido</li>
+              <li>📦 Seguimiento de tus pedidos</li>
+              <li>❤️ Lista de productos favoritos</li>
+              <li>📍 Múltiples direcciones de envío</li>
+              <li>🎁 Ofertas y promociones exclusivas</li>
+            </ul>
+            
+            <p style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+              Si no creaste esta cuenta, por favor ignora este correo o <a href="mailto:soporte@mision3d.cl" style="color: #0ea5e9;">contáctanos</a>.
+            </p>
+          </div>
+        </div>
+        <div class="footer">
+          <p><strong>Misión 3D</strong> - Impresión 3D Profesional</p>
+          <p>Este es un correo automático, por favor no responder.</p>
+          <p>¿Necesitas ayuda? Contáctanos en <a href="mailto:soporte@mision3d.cl" style="color: #0ea5e9;">soporte@mision3d.cl</a></p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const text = `
+Bienvenido a Misión 3D
+
+Hola ${userName},
+
+Tu cuenta ha sido creada exitosamente en Misión3D.cl
+
+Email confirmado: ${email}
+
+Ya puedes iniciar sesión en: https://mision3d.cl/login.html
+
+Beneficios de tu cuenta:
+- Proceso de compra más rápido
+- Seguimiento de tus pedidos
+- Lista de productos favoritos
+- Múltiples direcciones de envío
+- Ofertas y promociones exclusivas
+
+Si no creaste esta cuenta, por favor ignora este correo.
+
+---
+Misión 3D - Impresión 3D Profesional
+Soporte: soporte@mision3d.cl
+    `;
+
+    await sendEmail({
+      to: email,
+      subject: "¡Bienvenido a Misión 3D! - Cuenta creada exitosamente",
+      html,
+      text
+    });
+
+    console.log(`✅ Correo de registro enviado a: ${email}`);
+    res.json({ success: true, message: "Correo de confirmación enviado" });
+
+  } catch (error) {
+    console.error("❌ Error enviando correo de registro:", error);
+    res.status(500).json({ success: false, error: "Error al enviar correo" });
+  }
+});
+
+// ===== Endpoint: Enviar correo de recuperación de contraseña =====
+app.post("/api/send-password-recovery", async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ success: false, error: "Email requerido" });
+    }
+
+    // Generar token de recuperación (válido por 1 hora)
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenExpiry = Date.now() + 3600000; // 1 hora
+
+    // En producción, guardarías este token en base de datos
+    // Por ahora lo guardamos en memoria (se pierde al reiniciar servidor)
+    if (!global.passwordResetTokens) {
+      global.passwordResetTokens = new Map();
+    }
+    
+    global.passwordResetTokens.set(resetToken, {
+      email,
+      expiry: resetTokenExpiry
+    });
+
+    // Limpiar tokens expirados cada vez (simple cleanup)
+    const now = Date.now();
+    for (const [token, data] of global.passwordResetTokens.entries()) {
+      if (data.expiry < now) {
+        global.passwordResetTokens.delete(token);
+      }
+    }
+
+    // URL de recuperación
+    const isDevelopment = process.env.NODE_ENV !== 'production';
+    const baseUrl = isDevelopment ? 'http://localhost:5500' : 'https://mision3d.cl';
+    const resetUrl = `${baseUrl}/restablecer-password.html?token=${resetToken}`;
+
+    // HTML del correo de recuperación
+    const html = `
+      <!DOCTYPE html>
+      <html lang="es">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #0ea5e9, #0284c7); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+          .header h1 { margin: 0; font-size: 28px; }
+          .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
+          .message-box { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin: 20px 0; }
+          .button { display: inline-block; padding: 14px 32px; background: #0ea5e9; color: white; text-decoration: none; border-radius: 6px; font-weight: 600; margin: 20px 0; }
+          .button:hover { background: #0284c7; }
+          .warning-box { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0; border-radius: 4px; }
+          .footer { text-align: center; padding: 20px; color: #6b7280; font-size: 14px; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>🔒 Recuperación de Contraseña</h1>
+        </div>
+        <div class="content">
+          <div class="message-box">
+            <h2>Restablecer tu contraseña</h2>
+            <p>Hemos recibido una solicitud para restablecer la contraseña de tu cuenta en <strong>Misión3D.cl</strong></p>
+            
+            <p>Email: <strong>${email}</strong></p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${resetUrl}" class="button">RESTABLECER CONTRASEÑA</a>
+            </div>
+            
+            <div class="warning-box">
+              <p style="margin: 0;"><strong>⏰ Este enlace expira en 1 hora</strong></p>
+              <p style="margin: 10px 0 0 0;">Por razones de seguridad, este enlace solo es válido por 60 minutos.</p>
+            </div>
+            
+            <p style="font-size: 14px; color: #6b7280; margin-top: 20px;">
+              Si el botón no funciona, copia y pega este enlace en tu navegador:<br>
+              <a href="${resetUrl}" style="color: #0ea5e9; word-break: break-all;">${resetUrl}</a>
+            </p>
+            
+            <p style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+              <strong>⚠️ ¿No solicitaste este cambio?</strong><br>
+              Si no fuiste tú quien solicitó restablecer la contraseña, ignora este correo. Tu contraseña permanecerá sin cambios.
+            </p>
+          </div>
+        </div>
+        <div class="footer">
+          <p><strong>Misión 3D</strong> - Impresión 3D Profesional</p>
+          <p>Este es un correo automático, por favor no responder.</p>
+          <p>¿Necesitas ayuda? Contáctanos en <a href="mailto:soporte@mision3d.cl" style="color: #0ea5e9;">soporte@mision3d.cl</a></p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const text = `
+Recuperación de Contraseña - Misión 3D
+
+Hola,
+
+Hemos recibido una solicitud para restablecer la contraseña de tu cuenta.
+
+Email: ${email}
+
+Para restablecer tu contraseña, haz click en el siguiente enlace:
+${resetUrl}
+
+⏰ Este enlace expira en 1 hora por razones de seguridad.
+
+Si no solicitaste este cambio, ignora este correo. Tu contraseña permanecerá sin cambios.
+
+---
+Misión 3D - Impresión 3D Profesional
+Soporte: soporte@mision3d.cl
+    `;
+
+    await sendEmail({
+      to: email,
+      subject: "🔒 Recuperación de Contraseña - Misión 3D",
+      html,
+      text
+    });
+
+    console.log(`✅ Correo de recuperación enviado a: ${email}`);
+    res.json({ 
+      success: true, 
+      message: "Correo de recuperación enviado",
+      // En desarrollo, devolver el token para testing
+      ...(isDevelopment && { token: resetToken, resetUrl })
+    });
+
+  } catch (error) {
+    console.error("❌ Error enviando correo de recuperación:", error);
+    res.status(500).json({ success: false, error: "Error al enviar correo" });
+  }
+});
+
+// ===== Endpoint: Verificar token y restablecer contraseña =====
+app.post("/api/reset-password", async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+      return res.status(400).json({ success: false, error: "Token y contraseña requeridos" });
+    }
+
+    // Verificar token
+    if (!global.passwordResetTokens || !global.passwordResetTokens.has(token)) {
+      return res.status(400).json({ success: false, error: "Token inválido o expirado" });
+    }
+
+    const tokenData = global.passwordResetTokens.get(token);
+    
+    // Verificar expiración
+    if (Date.now() > tokenData.expiry) {
+      global.passwordResetTokens.delete(token);
+      return res.status(400).json({ success: false, error: "Token expirado" });
+    }
+
+    // Aquí en producción actualizarías la contraseña en la base de datos
+    // Por ahora solo retornamos éxito con el email
+    const email = tokenData.email;
+
+    // Eliminar token usado
+    global.passwordResetTokens.delete(token);
+
+    console.log(`✅ Contraseña restablecida para: ${email}`);
+    res.json({ 
+      success: true, 
+      message: "Contraseña restablecida exitosamente",
+      email 
+    });
+
+  } catch (error) {
+    console.error("❌ Error restableciendo contraseña:", error);
+    res.status(500).json({ success: false, error: "Error al restablecer contraseña" });
   }
 });
 

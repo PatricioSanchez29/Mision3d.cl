@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="header-new-style.css"/>
   <script>window.GA_MEASUREMENT_ID = 'G-XXXXXXXXXX';</script>
   <script src="consent.js"></script>
   <script type="application/ld+json">
@@ -24,13 +25,14 @@
 <body>
   <!-- Header -->
   <header class="header">
-    <!-- Botón Hamburguesa (solo móvil) -->
-    <button class="hamburger-btn" id="hamburgerBtn" aria-label="Abrir menú">
+    <!-- Botón Menú (escritorio y móvil) -->
+    <button class="menu-btn" id="hamburgerBtn" aria-label="Abrir menú">
       <div class="hamburger-icon">
         <span></span>
         <span></span>
         <span></span>
       </div>
+      <span class="menu-text">MENU</span>
     </button>
 
     <h1 class="logo" style="margin:0;display:flex;align-items:center">
@@ -38,13 +40,13 @@
         <img src="img/Logo_Mision3d.jpg" alt="Misión 3D" class="logo-img" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-text',textContent:'Misión 3D'}));" />
       </a>
     </h1>
-    <nav class="nav">
+    <nav class="nav desktop-nav">
       <a href="index.html" class="active">Inicio</a>
       <a href="catalogo.html" id="navCatalog">Catálogo</a>
       <a href="#nosotros">Nosotros</a>
       <a href="#contacto">Contacto</a>
     </nav>
-    <div class="search-header">
+    <div class="search-header desktop-search">
       <div class="advanced-search-bar">
         <select id="headerCategorySelect" class="category-select">
           <option value="all">Todas las categorías</option>
@@ -60,16 +62,17 @@
       <div id="searchSuggestions" class="search-suggestions"></div>
       <div id="headerTrendChips" class="trend-chips" aria-label="Búsquedas populares"></div>
     </div>
-    <div class="right-actions" style="display:flex;align-items:center;gap:10px">
+    <div class="right-actions">
       <div id="userArea" class="user-area">
-        <a href="login.html" id="loginLink" class="btn small outline">Ingresar</a>
+        <a href="login.html" id="loginLink" class="header-icon-btn">
+          <span class="icon">👤</span>
+          <span class="label">ACCESO</span>
+        </a>
       </div>
-      <button id="wishlistBtn" onclick="window.location.href='favoritos.html'" title="Mis Favoritos">
-        ❤️
-        <span id="wishlistCount">0</span>
-      </button>
-      <button class="cart-btn" id="openCart" aria-label="Abrir carrito">
-        🛒 <span id="cartCount">0</span>
+      <button class="header-icon-btn" id="openCart" aria-label="Abrir carrito">
+        <span class="icon">🛒</span>
+        <span class="label">CARRO</span>
+        <span class="count-badge" id="cartCount">0</span>
       </button>
     </div>
   </header>

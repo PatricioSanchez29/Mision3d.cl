@@ -812,22 +812,50 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if(!userArea) return;
     let session=null; try{ session = JSON.parse(localStorage.getItem('userSession')||'null'); }catch{}
     if(session){
-      const label = session.guest ? `👤 Invitado` : `👤 ${session.name}`;
-      userArea.innerHTML = `<span class="user-badge">${label}<button id=\"logoutBtn\" title=\"Cerrar sesión\">Salir</button></span>`;
-      $('#logoutBtn')?.addEventListener('click', ()=>{ localStorage.removeItem('userSession'); renderUser(); });
+      const userName = session.guest ? 'Invitado' : session.name;
+      userArea.innerHTML = `
+        <button class="header-icon-btn user-badge" onclick="window.location.href='login.html'" style="cursor:pointer;">
+          <span class="icon">👤</span>
+          <span class="label">${userName.toUpperCase()}</span>
+        </button>`;
       // Prefill en checkout si corresponde
       if($('#inputName') && !$('#inputName').value) $('#inputName').value = (session.name.split(' ')[0]||session.name);
       if($('#inputApellido') && !$('#inputApellido').value && session.name.split(' ').length>1) $('#inputApellido').value = session.name.split(' ').slice(1).join(' ');
       if($('#inputEmail') && !$('#inputEmail').value && session.email) $('#inputEmail').value = session.email;
     } else {
-      userArea.innerHTML = '<a href="login.html" id="loginLink" class="btn small outline">Ingresar</a>';
+      userArea.innerHTML = `
+        <a href="login.html" id="loginLink" class="header-icon-btn">
+          <span class="icon">👤</span>
+          <span class="label">ACCESO</span>
+        </a>`;
     }
     if(localStorage.getItem('justLoggedIn')){
-      showToast('Sesión iniciada');
+      if(typeof showToast === 'function') {
+        showToast('Sesión iniciada');
+      }
       localStorage.removeItem('justLoggedIn');
     }
   }
   renderUser();
+  
+  // Actualizar cuando la página gana foco (al volver de login)
+  window.addEventListener('focus', renderUser);
+  // También escuchar cambios en localStorage desde otras pestañas
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'userSession' || e.key === 'justLoggedIn') {
+      renderUser();
+    }
+  });
+  renderUser();
+  
+  // Actualizar cuando la página gana foco (al volver de login)
+  window.addEventListener('focus', renderUser);
+  // También escuchar cambios en localStorage desde otras pestañas
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'userSession' || e.key === 'justLoggedIn') {
+      renderUser();
+    }
+  });
   
   // Listener para selector de categorías del header
   const headerCategorySelect = document.getElementById('headerCategorySelect');
