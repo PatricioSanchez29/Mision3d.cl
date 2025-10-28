@@ -1901,33 +1901,93 @@ body.dark .faq-bg {opacity:.35}
 
 /* ===== RESPONSIVE MOBILE ===== */
 @media (max-width: 768px) {
-  .header { flex-wrap: wrap; padding: 10px 12px; gap: 8px; justify-content: space-between; }
+  /* Header compacto móvil con sticky */
+  .header { 
+    flex-wrap: wrap; 
+    padding: 10px 16px; 
+    gap: 10px; 
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
   
-  /* Logo a la izquierda, más pequeño */
-  .logo { order: 1; flex: 0 0 auto; }
-  .logo-img { height: 70px !important; }
+  /* Hamburguesa visible en móvil - primera posición */
+  .hamburger-btn {
+    order: 1;
+    display: flex !important;
+    flex: 0 0 auto;
+  }
   
-  /* Carrito y login a la derecha */
-  .right-actions { order: 2; gap: 6px !important; flex: 0 0 auto; }
-  .cart-btn { padding: 6px 10px; font-size: 0.85rem; }
-  .user-area .btn.small { padding: 5px 10px; font-size: 0.75rem; }
+  /* Logo centrado y más pequeño */
+  .logo { 
+    order: 2; 
+    flex: 1 1 auto;
+    display: flex;
+    justify-content: center;
+    margin: 0;
+  }
+  .logo-img { 
+    height: 50px !important;
+    background: white;
+    padding: 4px 8px;
+    border-radius: 8px;
+  }
   
-  /* Búsqueda en segunda fila, centrada */
-  .search-header { 
+  /* Acciones a la derecha (wishlist + carrito) */
+  .right-actions { 
     order: 3; 
+    gap: 8px !important; 
+    flex: 0 0 auto;
+    margin-left: auto;
+  }
+  
+  /* Ocultar área de usuario en móvil (login/logout) */
+  .user-area { 
+    display: none !important; 
+  }
+  
+  /* Botones wishlist y carrito más compactos */
+  #wishlistBtn {
+    padding: 6px 10px;
+    font-size: 1rem;
+    border-radius: 8px;
+  }
+  
+  #wishlistBtn span {
+    font-size: 0.7rem;
+    padding: 2px 5px;
+  }
+  
+  .cart-btn { 
+    padding: 6px 12px; 
+    font-size: 0.9rem;
+    border-radius: 8px;
+  }
+  
+  .cart-btn span {
+    font-size: 0.75rem;
+    padding: 2px 6px;
+  }
+  
+  /* Búsqueda en segunda fila completa */
+  .search-header { 
+    order: 4; 
     flex: 1 1 100%; 
     margin: 0; 
     max-width: 100%;
   }
   
   .advanced-search-bar {
-    height: 38px;
+    height: 40px;
   }
   
   .category-select {
     font-size: 0.85rem;
-    min-width: 120px;
-    padding: 0 8px;
+    min-width: 110px;
+    padding: 0 28px 0 10px;
   }
   
   .search-input {
@@ -1936,40 +1996,21 @@ body.dark .faq-bg {opacity:.35}
   }
   
   .search-btn {
-    padding: 0 14px;
-    min-width: 45px;
+    padding: 0 16px;
+    min-width: 48px;
   }
   
   .search-btn svg {
-    width: 18px;
-    height: 18px;
+    width: 19px;
+    height: 19px;
   }
   
-  /* Navegación en tercera fila, botones más grandes */
+  /* Ocultar navegación horizontal en móvil (se muestra en drawer) */
   .nav { 
-    order: 4; 
-    width: 100%; 
-    display: flex; 
-    justify-content: space-around; 
-    gap: 8px; 
-    padding: 10px 0 6px 0; 
-    border-top: 1px solid #e5e7eb; 
-    margin-top: 4px;
+    display: none !important;
   }
-  .nav a { 
-    margin: 0; 
-    font-size: 0.95rem; 
-    padding: 6px 12px;
-    background: #f3f4f6;
-    border-radius: 6px;
-    flex: 1;
-    text-align: center;
-    transition: all 0.2s;
-  }
-  .nav a:hover, .nav a:active {
-    background: #4f46e5;
-    color: #fff !important;
-  }
+  
+  /* Hero y secciones */
   .hero { padding: 50px 16px; }
   .hero h2 { font-size: 1.8rem !important; }
   .hero p { font-size: 1rem; }
@@ -1992,18 +2033,51 @@ body.dark .faq-bg {opacity:.35}
 }
 
 @media (max-width: 480px) {
-  .logo-img { height: 60px !important; }
+  /* Logo aún más pequeño en pantallas muy pequeñas */
+  .logo-img { height: 44px !important; }
   
-  /* Navegación más compacta */
-  .nav a { 
-    font-size: 0.85rem; 
-    padding: 8px 8px;
+  /* Header más compacto */
+  .header {
+    padding: 8px 12px;
+    gap: 8px;
   }
   
   /* Botones más compactos */
-  .cart-btn { padding: 5px 8px; font-size: 0.8rem; }
-  .user-area .btn.small { padding: 4px 8px; font-size: 0.7rem; }
+  #wishlistBtn {
+    padding: 5px 8px;
+    font-size: 0.95rem;
+  }
   
+  .cart-btn {
+    padding: 5px 10px;
+    font-size: 0.85rem;
+  }
+  
+  /* Barra de búsqueda más pequeña */
+  .advanced-search-bar {
+    height: 36px;
+  }
+  
+  .category-select {
+    font-size: 0.8rem;
+    min-width: 100px;
+  }
+  
+  .search-input {
+    font-size: 0.85rem;
+  }
+  
+  .search-btn {
+    padding: 0 12px;
+    min-width: 42px;
+  }
+  
+  .search-btn svg {
+    width: 17px;
+    height: 17px;
+  }
+  
+  /* Hero y grids más compactos */
   .hero h2 { font-size: 1.5rem !important; }
   .grid { grid-template-columns: 1fr 1fr !important; gap: 10px; }
   .card { padding: 8px; }
