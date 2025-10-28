@@ -278,6 +278,8 @@ let sendEmail = async ({ to, subject, html, text }) => {
   }
   // Permitir EMAIL_FROM como alias de MAIL_FROM
   const from = process.env.MAIL_FROM || process.env.EMAIL_FROM || process.env.SMTP_USER || 'Misión 3D <no-reply@mision3d.cl>';
+  global.__EMAIL_PROVIDER_ACTIVE__ = provider || 'auto';
+  global.__EMAIL_FROM_ACTIVE__ = from;
 
   try {
     if (provider === 'sendgrid') {
@@ -293,6 +295,7 @@ let sendEmail = async ({ to, subject, html, text }) => {
         return { ok: true };
       };
       console.log('📧 SendGrid listo para enviar correos');
+      global.__EMAIL_PROVIDER_ACTIVE__ = 'sendgrid';
       return;
     }
 
@@ -315,6 +318,7 @@ let sendEmail = async ({ to, subject, html, text }) => {
         return { ok: true };
       };
       console.log('📧 Resend listo para enviar correos');
+      global.__EMAIL_PROVIDER_ACTIVE__ = 'resend';
       return;
     }
 
@@ -331,6 +335,7 @@ let sendEmail = async ({ to, subject, html, text }) => {
         return { ok: true };
       };
       console.log('📧 SMTP listo para enviar correos');
+      global.__EMAIL_PROVIDER_ACTIVE__ = 'smtp';
     } else if (!provider) {
       console.log('ℹ️ EMAIL_PROVIDER no definido y SMTP/SendGrid/Resend no configurados; los correos se omitirán');
     }
@@ -338,6 +343,17 @@ let sendEmail = async ({ to, subject, html, text }) => {
     console.warn('⚠️ No se pudo inicializar proveedor de email:', e?.message);
   }
 })();
+
+// Endpoint de depuración rápida de email (no expone secretos)
+app.get('/api/email-config', (req, res) => {
+  res.json({
+    provider: global.__EMAIL_PROVIDER_ACTIVE__ || null,
+    from: global.__EMAIL_FROM_ACTIVE__ || null,
+    hasResendKey: !!process.env.RESEND_API_KEY,
+    hasSendgridKey: !!process.env.SENDGRID_API_KEY,
+    hasSmtp: !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS)
+  });
+});
 
 // ===== Rate Limiting (Protección DDoS y fuerza bruta) =====
 // Limitar peticiones globales a la API
@@ -1133,7 +1149,7 @@ Misión 3D - Impresión 3D Profesional
 Soporte: soporte@mision3d.cl
     `;
 
-    await sendEmail({
+    const sendResult = await sendEmail({
       to: email,
       subject: "¡Bienvenido a Misión 3D! - Cuenta creada exitosamente",
       html,
@@ -1141,11 +1157,12 @@ Soporte: soporte@mision3d.cl
     });
 
     console.log(`✅ Correo de registro enviado a: ${email}`);
-    res.json({ success: true, message: "Correo de confirmación enviado" });
+    res.json({ success: true, message: "Correo de confirmación enviado", provider: global.__EMAIL_PROVIDER_ACTIVE__ });
 
   } catch (error) {
-    console.error("❌ Error enviando correo de registro:", error);
-    res.status(500).json({ success: false, error: "Error al enviar correo" });
+    console.error("❌ Error enviando correo de registro:", error?.message || error);
+    // Devolver detalle de error para debug seguro
+    res.status(500).json({ success: false, error: "Error al enviar correo", detail: error?.message || String(error) });
   }
 });
 
@@ -1266,7 +1283,7 @@ Misión 3D - Impresión 3D Profesional
 Soporte: soporte@mision3d.cl
     `;
 
-    await sendEmail({
+    const sendResult = await sendEmail({
       to: email,
       subject: "🔒 Recuperación de Contraseña - Misión 3D",
       html,
@@ -1278,12 +1295,13 @@ Soporte: soporte@mision3d.cl
       success: true, 
       message: "Correo de recuperación enviado",
       // En desarrollo, devolver el token para testing
+      provider: global.__EMAIL_PROVIDER_ACTIVE__,
       ...(isDevelopment && { token: resetToken, resetUrl })
     });
 
   } catch (error) {
-    console.error("❌ Error enviando correo de recuperación:", error);
-    res.status(500).json({ success: false, error: "Error al enviar correo" });
+    console.error("❌ Error enviando correo de recuperación:", error?.message || error);
+    res.status(500).json({ success: false, error: "Error al enviar correo", detail: error?.message || String(error) });
   }
 });
 
