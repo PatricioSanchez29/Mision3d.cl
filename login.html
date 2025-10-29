@@ -12,52 +12,32 @@
     body.login-page {
       background: #f9fafb;
       min-height: 100vh;
-      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+    }
+    
+    .main-content-login {
+      flex: 1 0 auto;
       display: flex;
       align-items: center;
       justify-content: center;
+      min-height: 480px;
+      padding: 40px 20px 0 20px;
     }
     
     .login-container {
-      max-width: 1100px;
       width: 100%;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 40px;
+      max-width: 420px;
       background: #fff;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 4px 20px rgba(0,0,0,.08);
-    }
-    
-    .login-left {
-      padding: 60px 50px;
-      background: #f8f9fa;
+      border-radius: 16px;
+      box-shadow: 0 2px 16px #0001;
+      padding: 48px 24px;
+      margin: 0 auto;
       display: flex;
       flex-direction: column;
       justify-content: center;
-    }
-    
-    .login-right {
-      padding: 60px 50px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-    
-    .breadcrumb {
-      font-size: 14px;
-      color: #6b7280;
-      margin-bottom: 30px;
-    }
-    
-    .breadcrumb a {
-      color: #0ea5e9;
-      text-decoration: none;
-    }
-    
-    .breadcrumb a:hover {
-      text-decoration: underline;
+      align-items: stretch;
     }
     
     .login-title {
@@ -402,62 +382,30 @@
       }
     }
   </style>
+<!-- Header con logo para mantener consistencia -->
 </head>
 <body class="login-page">
-  <div class="login-container">
-    <!-- Columna izquierda: Login -->
-    <div class="login-left">
-      <div class="breadcrumb">
-        <a href="index.html">Inicio</a> > Registro de Clientes
+  <header class="header">
+    <h1 class="logo" style="margin:0;display:flex;align-items:center">
+      <a href="index.html" style="display:inline-flex;align-items:center;text-decoration:none">
+        <img src="img/Logo_Mision3d.jpg" alt="Misión 3D" class="logo-img" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-text',textContent:'Misión 3D'}));" />
+      </a>
+    </h1>
+  </header>
+  <div class="main-content-login">
+    <div class="login-container">
+      <div style="margin-bottom: 24px; color: #7a7a7a; font-size: 15px;">
+        <span style="color: #009fe3;">Inicio</span> &gt; Registro de Clientes
       </div>
-      
-      <div class="login-title">INGRESA A</div>
-      <h1 class="login-brand">MISION3D.CL</h1>
-      
-      <!-- Mensaje de éxito después de registro -->
-      <div class="success-message" id="successMessage">
-        ✅ Su cuenta fue creada exitosamente. Ya puede iniciar sesión con sus credenciales.
-      </div>
-      
+      <div style="font-size: 13px; color: #888; margin-bottom: 8px;">INGRESA A</div>
+      <div style="font-size: 2.2rem; font-weight: bold; margin-bottom: 24px; color: #111;">MISION3D.CL</div>
       <form id="loginForm">
         <div class="form-group">
-          <label class="form-label" for="loginEmail">E-mail</label>
+          <label class="form-label" for="loginEmail">Correo electrónico</label>
           <input type="email" id="loginEmail" class="form-input" required autocomplete="email">
         </div>
-        
-        <div class="form-group">
-          <label class="form-label" for="loginPassword">Contraseña</label>
-          <div class="password-input-wrapper">
-            <input type="password" id="loginPassword" class="form-input" required autocomplete="current-password">
-            <button type="button" class="password-toggle" onclick="togglePassword('loginPassword', this)">
-              <svg class="eye-open" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-              </svg>
-              <svg class="eye-closed" style="display:none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>
-              </svg>
-            </button>
-          </div>
-        </div>
-        
-        <button type="submit" class="btn-login">INICIAR SESIÓN</button>
-        
-        <div class="forgot-password">
-          <a href="recuperar-password.html">Restablecer mi Clave</a>
-        </div>
+        <button type="submit" class="btn-login">Continuar</button>
       </form>
-    </div>
-    
-    <!-- Columna derecha: Registro -->
-    <div class="login-right">
-      <div class="register-section">
-        <h2 class="register-title">¿ERES NUEVO EN MISION3D.CL?</h2>
-        <p class="register-text">
-          Al registrarte, podrás agilizar tu proceso de compra. Edita tus datos, añade varias direcciones, revisa y realiza un seguimiento de tus pedidos, y mucho más.
-        </p>
-        <button type="button" class="btn-register" id="registerBtn">CREAR CUENTA</button>
-      </div>
     </div>
   </div>
 
@@ -482,51 +430,9 @@
           title="Por favor ingresa un email válido (ejemplo: usuario@dominio.com)"
         >
       </div>
-      
       <div class="form-group">
         <label class="form-label" for="regPhone">Teléfono *</label>
         <input type="tel" id="regPhone" class="form-input" required autocomplete="tel">
-      </div>
-      
-      <div class="form-group">
-        <label class="form-label" for="regPassword">Contraseña *</label>
-        <div class="password-input-wrapper">
-          <input type="password" id="regPassword" class="form-input" required autocomplete="new-password">
-          <button type="button" class="password-toggle" onclick="togglePassword('regPassword', this)">
-            <svg class="eye-open" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-            </svg>
-            <svg class="eye-closed" style="display:none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>
-            </svg>
-          </button>
-        </div>
-        <div class="password-requirements">
-          <small>La contraseña debe contener:</small>
-          <ul>
-            <li id="req-length">✗ Mínimo 8 caracteres</li>
-            <li id="req-letter">✗ Al menos una letra</li>
-            <li id="req-number">✗ Al menos un número</li>
-            <li id="req-special">✗ Al menos un signo especial (!@#$%^&*)</li>
-          </ul>
-        </div>
-      </div>
-      
-      <div class="form-group">
-        <label class="form-label" for="regPasswordConfirm">Confirmar Contraseña *</label>
-        <div class="password-input-wrapper">
-          <input type="password" id="regPasswordConfirm" class="form-input" required autocomplete="new-password">
-          <button type="button" class="password-toggle" onclick="togglePassword('regPasswordConfirm', this)">
-            <svg class="eye-open" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-            </svg>
-            <svg class="eye-closed" style="display:none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>
-            </svg>
-          </button>
-        </div>
       </div>
       
       <div class="form-checkbox-group">
@@ -543,6 +449,30 @@
       </div>
     </form>
   </div>
+
+  <!-- Footer igual que en la página de inicio -->
+  <footer style="background: #181f2a; color: #bfc7d5; padding: 40px 0 20px 0; margin-top: 0; width: 100vw;">
+    <div style="max-width: 1200px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 32px;">
+      <div style="flex: 1; min-width: 220px; display: flex; flex-direction: column; align-items: center;">
+        <img src="img/Logo_Mision3d.jpg" alt="Mision3D Logo" style="width: 110px; margin-bottom: 12px;">
+        <div style="font-size: 1.1rem; font-weight: 500;">Impresión 3D personalizada</div>
+        <div style="font-size: 0.98rem; color: #bfc7d5;">Transforma tus ideas en realidad</div>
+      </div>
+      <div style="flex: 1; min-width: 220px; text-align: center;">
+        <div style="color: #009fe3; font-weight: bold; font-size: 1.1rem; margin-bottom: 8px;">Contacto</div>
+        <div><span style="margin-right: 6px;">📧</span>mision3d.cl@gmail.com</div>
+        <div><span style="margin-right: 6px;">📍</span>La Florida<br>Santiago, Chile</div>
+        <div><span style="margin-right: 6px;">⏰</span>Lunes a viernes, 9:00 - 18:00 hrs</div>
+      </div>
+      <div style="flex: 1; min-width: 220px; text-align: center;">
+        <div style="color: #009fe3; font-weight: bold; font-size: 1.1rem; margin-bottom: 8px;">Información Legal</div>
+        <div>Mision3D SpA</div>
+        <div style="margin-top: 8px;"><a href="privacidad.html" style="color: #009fe3; text-decoration: none; margin-right: 12px;">Privacidad</a><a href="terminos.html" style="color: #009fe3; text-decoration: none;">Términos</a></div>
+      </div>
+    </div>
+    <hr style="border: none; border-top: 1px solid #2a3140; margin: 32px 0 16px 0;">
+    <div style="text-align: center; color: #bfc7d5; font-size: 0.95rem;">© 2025 Misión 3D - Todos los derechos reservados</div>
+  </footer>
 
   <script>
     // Función para mostrar/ocultar contraseña
@@ -571,30 +501,19 @@
       loginForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const email = document.getElementById('loginEmail').value.trim();
-        const password = document.getElementById('loginPassword').value;
-        
-        if (!email || !password) {
-          alert('Por favor completa todos los campos');
+        if (!email) {
+          alert('Por favor ingresa tu correo electrónico');
           return;
         }
-        
-        // Validar credenciales contra usuarios registrados
+        // Buscar usuario registrado
         const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
         const user = registeredUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
-        
         if (!user) {
-          alert('Email no registrado. Por favor crea una cuenta primero.');
+          alert('Correo no registrado. Por favor crea una cuenta primero.');
           return;
         }
-        
-        if (user.password !== password) {
-          alert('Contraseña incorrecta. Por favor intenta nuevamente.');
-          return;
-        }
-        
         // Generar nombre base a partir del correo
         const nombre = user.name || email.split('@')[0].replace(/[-._]/g,' ').replace(/\b\w/g, c=>c.toUpperCase());
-        
         // Guardar sesión
         localStorage.setItem('userSession', JSON.stringify({
           name: nombre || 'Usuario',
@@ -603,7 +522,10 @@
           guest: false,
           ts: Date.now()
         }));
-        
+        localStorage.setItem('currentUser', JSON.stringify({
+          nombre: nombre || 'Usuario',
+          email: user.email
+        }));
         localStorage.setItem('justLoggedIn','1');
         window.location.href = 'index.html';
       });
@@ -776,6 +698,11 @@
             guest: false,
             ts: Date.now()
           }));
+          // Guardar también como currentUser para el menú
+          localStorage.setItem('currentUser', JSON.stringify({
+            nombre: nombre || 'Usuario',
+            email
+          }));
           
           // Ocultar formulario de registro y mostrar mensaje de éxito
           registerFormContainer.classList.remove('active');
@@ -860,6 +787,7 @@
                 if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
                   localStorage.removeItem('userSession');
                   localStorage.removeItem('justLoggedIn');
+                  localStorage.removeItem('currentUser');
                   window.location.reload();
                 }
               });

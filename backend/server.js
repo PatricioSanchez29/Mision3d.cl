@@ -1,3 +1,131 @@
+// ===== Endpoint Flow =====
+app.post("/api/payments/flow", async (req, res) => {
+  try {
+    const {
+      items,
+      payer,
+      shippingCost = 0,
+      discount = 0
+    } = req.body || {};
+
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ error: "items vacíos" });
+    }
+
+    const apiKey     = process.env.FLOW_API_KEY;
+    const secret     = process.env.FLOW_SECRET;
+    const commerceId = process.env.FLOW_COMMERCE_ID; // opcional
+    const returnUrl  = process.env.FLOW_RETURN_URL || "http://localhost:10000/flow/retorno";
+    const confirmUrl = process.env.FLOW_CONFIRM_URL || "http://localhost:10000/flow/confirm";
+    const baseUrl    = process.env.FLOW_BASE_URL || "https://sandbox.flow.cl/api";
+
+    if (!apiKey || !secret) {
+      return res.status(500).json({ error: "Faltan credenciales Flow (FLOW_API_KEY/FLOW_SECRET)" });
+    }
+    if (!returnUrl || !confirmUrl) {
+      return res.status(500).json({ error: "Faltan URLs (FLOW_RETURN_URL/FLOW_CONFIRM_URL)" });
+    }
+
+    // Recalcular SIEMPRE el costo de envío en el servidor para no depender del cliente
+    const meta = req.body?.meta || {};
+    const regionMeta = String(meta.region || '').trim();
+    const envioMeta  = String(meta.envio || '').trim();
+    const norm = (s) => s
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+    const regionN = norm(regionMeta);
+    const envioN  = norm(envioMeta);
+
+    let subtotal = 0;
+    (items || []).forEach(i => {
+      const price = Number(i?.price) || 0;
+      const qty   = Number(i?.qty) || 0;
+      subtotal += price * qty;
+    });
+    subtotal = Math.round(subtotal);
+
+    let ship = 0;
+    const clientShip = Number(shippingCost) || 0;
+    if (
+      (regionN.includes('metropolitana') && regionN.includes('santiago')) &&
+      (envioN === 'domicilio' || envioN === 'santiago')
+    ) {
+      ship = 2990;
+    } else {
+      ship = 0;
+    }
+    if (clientShip !== ship) {
+      console.warn('⚠️  [SECURITY] shippingCost del cliente no coincide. Se usará el calculado en servidor.', {
+        clientShip,
+        serverShip: ship,
+        region: regionMeta,
+        envio: envioMeta,
+      });
+    }
+    const disc   = Number(discount) || 0;
+    const total  = Math.max(0, subtotal - disc + ship);
+    console.log('[Flow Create] region:', regionMeta, '| envio:', envioMeta, '| ship:', ship, '| subtotal:', subtotal, '| disc:', disc, '| total:', total);
+
+    // Flow espera strings en algunos campos; amount puede ir como número o string
+    const params = {
+      apiKey,
+      commerceOrder: "ORD-" + Date.now(),
+      amount: total,
+      subject: "Compra Mision3D",
+      email: payer?.email || "cliente@example.com",
+      urlConfirmation: confirmUrl,
+      urlReturn: returnUrl
+    };
+    if (commerceId) params.commerceId = commerceId;
+
+    // Firmar los parámetros
+    const ordered = Object.keys(params)
+      .sort()
+      .map(k => `${k}=${params[k]}`)
+      .join("&");
+    const crypto = require('crypto');
+    const s = crypto.createHmac("sha256", secret).update(ordered).digest("hex");
+    const body = new URLSearchParams({ ...params, s });
+    const url = baseUrl.replace(/\/+$|$/, "") + "/payment/create";
+
+    try {
+      const axios = require('axios');
+      const resp = await axios.post(url, body.toString(), {
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      });
+      const data = resp.data || {};
+      if (data.token) {
+        const isSandbox = /sandbox/.test(baseUrl);
+        const payHost = isSandbox ? 'https://sandbox.flow.cl' : 'https://flow.cl';
+        const flowUrl = `${payHost}/app/web/pay.php?token=${data.token}`;
+        return res.json({
+          url: flowUrl,
+          flowOrder: data.flowOrder,
+          token: data.token,
+          commerceOrder: params.commerceOrder
+        });
+      }
+      if (data.url) return res.json({ url: data.url });
+      return res.status(502).json({ error: "Respuesta inesperada de Flow", detail: data });
+    } catch (err) {
+      console.error('[Flow] Error completo:', err);
+      console.error('[Flow] Error respuesta:', err.response?.data || err.message);
+      console.error('[Flow] Status:', err.response?.status);
+      return res.status(500).json({
+        error: "flow",
+        detail: err.response?.data || err.message,
+        status: err.response?.status
+      });
+    }
+  } catch (err) {
+    console.error("Flow error", err.response?.data || err.message);
+    return res.status(500).json({
+      error: "flow",
+      detail: err.response?.data || err.message,
+    });
+  }
+});
 // ===== Imports =====
 import express from "express";
 import cors from "cors";
