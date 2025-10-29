@@ -1,131 +1,3 @@
-// ===== Endpoint Flow =====
-app.post("/api/payments/flow", async (req, res) => {
-  try {
-    const {
-      items,
-      payer,
-      shippingCost = 0,
-      discount = 0
-    } = req.body || {};
-
-    if (!Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({ error: "items vacíos" });
-    }
-
-    const apiKey     = process.env.FLOW_API_KEY;
-    const secret     = process.env.FLOW_SECRET;
-    const commerceId = process.env.FLOW_COMMERCE_ID; // opcional
-    const returnUrl  = process.env.FLOW_RETURN_URL || "http://localhost:10000/flow/retorno";
-    const confirmUrl = process.env.FLOW_CONFIRM_URL || "http://localhost:10000/flow/confirm";
-    const baseUrl    = process.env.FLOW_BASE_URL || "https://sandbox.flow.cl/api";
-
-    if (!apiKey || !secret) {
-      return res.status(500).json({ error: "Faltan credenciales Flow (FLOW_API_KEY/FLOW_SECRET)" });
-    }
-    if (!returnUrl || !confirmUrl) {
-      return res.status(500).json({ error: "Faltan URLs (FLOW_RETURN_URL/FLOW_CONFIRM_URL)" });
-    }
-
-    // Recalcular SIEMPRE el costo de envío en el servidor para no depender del cliente
-    const meta = req.body?.meta || {};
-    const regionMeta = String(meta.region || '').trim();
-    const envioMeta  = String(meta.envio || '').trim();
-    const norm = (s) => s
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase();
-    const regionN = norm(regionMeta);
-    const envioN  = norm(envioMeta);
-
-    let subtotal = 0;
-    (items || []).forEach(i => {
-      const price = Number(i?.price) || 0;
-      const qty   = Number(i?.qty) || 0;
-      subtotal += price * qty;
-    });
-    subtotal = Math.round(subtotal);
-
-    let ship = 0;
-    const clientShip = Number(shippingCost) || 0;
-    if (
-      (regionN.includes('metropolitana') && regionN.includes('santiago')) &&
-      (envioN === 'domicilio' || envioN === 'santiago')
-    ) {
-      ship = 2990;
-    } else {
-      ship = 0;
-    }
-    if (clientShip !== ship) {
-      console.warn('⚠️  [SECURITY] shippingCost del cliente no coincide. Se usará el calculado en servidor.', {
-        clientShip,
-        serverShip: ship,
-        region: regionMeta,
-        envio: envioMeta,
-      });
-    }
-    const disc   = Number(discount) || 0;
-    const total  = Math.max(0, subtotal - disc + ship);
-    console.log('[Flow Create] region:', regionMeta, '| envio:', envioMeta, '| ship:', ship, '| subtotal:', subtotal, '| disc:', disc, '| total:', total);
-
-    // Flow espera strings en algunos campos; amount puede ir como número o string
-    const params = {
-      apiKey,
-      commerceOrder: "ORD-" + Date.now(),
-      amount: total,
-      subject: "Compra Mision3D",
-      email: payer?.email || "cliente@example.com",
-      urlConfirmation: confirmUrl,
-      urlReturn: returnUrl
-    };
-    if (commerceId) params.commerceId = commerceId;
-
-    // Firmar los parámetros
-    const ordered = Object.keys(params)
-      .sort()
-      .map(k => `${k}=${params[k]}`)
-      .join("&");
-    const crypto = require('crypto');
-    const s = crypto.createHmac("sha256", secret).update(ordered).digest("hex");
-    const body = new URLSearchParams({ ...params, s });
-    const url = baseUrl.replace(/\/+$|$/, "") + "/payment/create";
-
-    try {
-      const axios = require('axios');
-      const resp = await axios.post(url, body.toString(), {
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      });
-      const data = resp.data || {};
-      if (data.token) {
-        const isSandbox = /sandbox/.test(baseUrl);
-        const payHost = isSandbox ? 'https://sandbox.flow.cl' : 'https://flow.cl';
-        const flowUrl = `${payHost}/app/web/pay.php?token=${data.token}`;
-        return res.json({
-          url: flowUrl,
-          flowOrder: data.flowOrder,
-          token: data.token,
-          commerceOrder: params.commerceOrder
-        });
-      }
-      if (data.url) return res.json({ url: data.url });
-      return res.status(502).json({ error: "Respuesta inesperada de Flow", detail: data });
-    } catch (err) {
-      console.error('[Flow] Error completo:', err);
-      console.error('[Flow] Error respuesta:', err.response?.data || err.message);
-      console.error('[Flow] Status:', err.response?.status);
-      return res.status(500).json({
-        error: "flow",
-        detail: err.response?.data || err.message,
-        status: err.response?.status
-      });
-    }
-  } catch (err) {
-    console.error("Flow error", err.response?.data || err.message);
-    return res.status(500).json({
-      error: "flow",
-      detail: err.response?.data || err.message,
-    });
-  }
-});
 // ===== Imports =====
 import express from "express";
 import cors from "cors";
@@ -144,179 +16,28 @@ import { dirname, join } from 'path';
 
 dotenv.config();
 
+// Inicializar Firebase Admin
+let HAS_ADMIN_CREDENTIALS = false;
+try {
+  // Intenta inicializar Firebase Admin solo si tienes el archivo de credenciales
+  const serviceAccount = require("./firebase-credentials.json");
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: process.env.FIREBASE_DATABASE_URL
+  });
+  HAS_ADMIN_CREDENTIALS = true;
+  console.log('✅ Firebase Admin inicializado (modo admin)');
+} catch (e) {
+  HAS_ADMIN_CREDENTIALS = false;
+  console.warn('⚠️ Firebase Admin NO inicializado, usando modo REST');
+}
+
 // --- Inicialización asíncrona de transbank-sdk y arranque del servidor ---
 let WebpayPlus, Options, Environment, IntegrationCommerceCodes, IntegrationApiKeys;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-async function startServer() {
-  try {
-    const tb = await import('transbank-sdk');
-    WebpayPlus = tb.WebpayPlus;
-    Options = tb.Options;
-    Environment = tb.Environment;
-    IntegrationCommerceCodes = tb.IntegrationCommerceCodes;
-    IntegrationApiKeys = tb.IntegrationApiKeys;
-    console.log('✅ transbank-sdk cargado correctamente');
-  } catch (e) {
-    console.warn('ℹ️  transbank-sdk no instalado; /api/payments/webpay quedará deshabilitado hasta instalarlo.');
-    console.warn('Detalle del error al importar transbank-sdk:', e?.message || e);
-  }
-
-  // ...existing code...
-  // Al final del archivo, donde se hace app.listen o similar, mueve esa línea aquí:
-  // Por ejemplo:
-  // app.listen(process.env.PORT || 10000, () => {
-  //   console.log('Backend escuchando en puerto', process.env.PORT || 10000);
-  // });
-}
-
-startServer();
-
-// ==== Compatibilidad de nombres de variables (shim) ====
-// Aceptar tanto FLOW_SECRET como FLOW_SECRET_KEY
-if (!process.env.FLOW_SECRET && process.env.FLOW_SECRET_KEY) {
-  process.env.FLOW_SECRET = process.env.FLOW_SECRET_KEY;
-}
-// Aceptar tanto FLOW_BASE_URL como FLOW_API_URL
-if (!process.env.FLOW_BASE_URL && process.env.FLOW_API_URL) {
-  process.env.FLOW_BASE_URL = process.env.FLOW_API_URL;
-}
-
-// Log de variables de entorno para debugging
-console.log("=== VERIFICACIÓN DE VARIABLES DE ENTORNO ===");
-console.log("🔑 FLOW_API_KEY existe:", !!process.env.FLOW_API_KEY);
-console.log("🔑 FLOW_SECRET existe:", !!process.env.FLOW_SECRET);
-console.log("🔑 FLOW_BASE_URL:", process.env.FLOW_BASE_URL || "NO CONFIGURADA");
-console.log("🔥 FIREBASE_DATABASE_URL existe:", !!process.env.FIREBASE_DATABASE_URL);
-console.log("🌍 NODE_ENV:", process.env.NODE_ENV || "development");
-console.log("=============================================");
-
-if (!process.env.FLOW_API_KEY || !process.env.FLOW_SECRET) {
-  console.error("❌ ERROR: Faltan credenciales de Flow!");
-  console.error("Por favor configura FLOW_API_KEY y FLOW_SECRET en las variables de entorno de Render");
-}
-
-// ===== Protección contra Replay Attacks =====
-// Almacén temporal de tokens procesados (en producción usar Redis)
-const processedTokens = new Map();
-const TOKEN_EXPIRY_MS = 10 * 60 * 1000; // 10 minutos
-
-function isTokenProcessed(token) {
-  return processedTokens.has(token);
-}
-
-function markTokenAsProcessed(token) {
-  processedTokens.set(token, Date.now());
-  // Auto-cleanup de tokens antiguos
-  setTimeout(() => {
-    processedTokens.delete(token);
-  }, TOKEN_EXPIRY_MS);
-}
-
-// Limpiar tokens expirados cada 5 minutos
-setInterval(() => {
-  const now = Date.now();
-  for (const [token, timestamp] of processedTokens.entries()) {
-    if (now - timestamp > TOKEN_EXPIRY_MS) {
-      processedTokens.delete(token);
-    }
-  }
-}, 5 * 60 * 1000);
-
-// ===== Inicializar Firebase Admin =====
-if (!admin.apps.length) {
-  try {
-    // Intentar cargar credenciales desde archivo
-    const serviceAccountPath = join(__dirname, 'firebase-credentials.json');
-    let serviceAccount = null;
-    globalThis.__HAS_SERVICE_ACCOUNT__ = false;
-    
-    try {
-      serviceAccount = JSON.parse(readFileSync(serviceAccountPath, 'utf8'));
-      console.log('✅ Credenciales Firebase encontradas');
-      globalThis.__HAS_SERVICE_ACCOUNT__ = true;
-    } catch (err) {
-      console.log('⚠️ No se encontraron credenciales Firebase, usando solo databaseURL');
-    }
-
-    const config = {
-      databaseURL: "https://mision3d-72b4a-default-rtdb.firebaseio.com/"
-    };
-
-    if (serviceAccount) {
-      config.credential = admin.credential.cert(serviceAccount);
-    }
-
-    admin.initializeApp(config);
-    console.log("🔥 Firebase Admin inicializado");
-  } catch (err) {
-    console.error("❌ Error inicializando Firebase Admin:", err.message);
-  }
-}
-const db = admin.database();
-const RTDB_URL = "https://mision3d-72b4a-default-rtdb.firebaseio.com";
-const HAS_ADMIN_CREDENTIALS = !!globalThis.__HAS_SERVICE_ACCOUNT__;
-
-// ===== Helpers Firebase (Admin/REST fallback) =====
-async function rtdbRest(path, method = 'GET', data) {
-  const base = RTDB_URL.replace(/\/$/, '');
-  const url = `${base}/${path.replace(/^\//, '')}.json`;
-  const resp = await axios({ method, url, data });
-  return resp.data;
-}
-
-async function createPedido(pedidoData) {
-  if (HAS_ADMIN_CREDENTIALS) {
-    // Admin SDK
-    const ref = await db.ref('pedidos').push(pedidoData);
-    return { key: ref.key };
-  } else {
-    // REST (requiere reglas abiertas en dev)
-    const res = await rtdbRest('pedidos', 'POST', pedidoData);
-    // res = { name: "-Nx..." }
-    return { key: res?.name };
-  }
-}
-
-async function findPedidosByCommerceOrder(commerceOrder) {
-  if (HAS_ADMIN_CREDENTIALS) {
-    const snap = await db.ref('pedidos').orderByChild('commerceOrder').equalTo(commerceOrder).once('value');
-    const out = [];
-    snap.forEach(ch => out.push({ id: ch.key, ...ch.val() }));
-    return out;
-  } else {
-    // REST query: orderBy="commerceOrder"&equalTo="ORD-..."
-    const params = `orderBy=${encodeURIComponent('"commerceOrder"')}&equalTo=${encodeURIComponent('"' + commerceOrder + '"')}`;
-    const base = RTDB_URL.replace(/\/$/, '');
-    const url = `${base}/pedidos.json?${params}`;
-    const { data } = await axios.get(url);
-    const obj = data || {};
-    return Object.keys(obj).map(k => ({ id: k, ...obj[k] }));
-  }
-}
-
-async function updatePedidoPagadoMulti(updatesObj, paymentDataMinimal) {
-  if (HAS_ADMIN_CREDENTIALS) {
-    await db.ref().update(updatesObj);
-  } else {
-    // No hay multi-location updates vía REST: aplicar por cada clave
-    const entries = Object.entries(updatesObj);
-    for (const [path, value] of entries) {
-      // path como 'pedidos/<id>/campo'
-      const m = path.match(/^pedidos\/([^/]+)\/(.+)$/);
-      if (!m) continue;
-      const id = m[1];
-      const fieldPath = m[2];
-      // Convertir fieldPath plano a objeto para PATCH
-      const nested = fieldPath.split('/').reverse().reduce((acc, key) => ({ [key]: acc }), value);
-      await rtdbRest(`pedidos/${id}`, 'PATCH', nested);
-    }
-  }
-}
-
 const app = express();
-
 // Configurar trust proxy para Render (soluciona warning de express-rate-limit)
 app.set('trust proxy', 1);
 
@@ -1502,7 +1223,7 @@ Soporte: soporte@mision3d.cl
       });
     } catch (emailError) {
       console.error("❌ Error enviando correo de recuperación:", emailError);
-      // Si el correo falla, aún devolvemos success para no revelar si el email existe
+      // Si el correo falla, aún devolemos success para no revelar si el email existe
       // pero log el error
       res.json({ 
         success: true, 
@@ -1564,6 +1285,27 @@ app.post("/api/reset-password", async (req, res) => {
     res.status(500).json({ success: false, error: "Error al restablecer contraseña" });
   }
 });
+
+/**
+ * Guarda un pedido en Firebase (admin o REST)
+ * @param {object} pedidoData
+ * @returns {Promise<object>} key/id del pedido creado
+ */
+async function createPedido(pedidoData) {
+  if (HAS_ADMIN_CREDENTIALS) {
+    // Modo admin: usar SDK
+    const ref = admin.database().ref('pedidos');
+    const created = await ref.push(pedidoData);
+    return { key: created.key };
+  } else {
+    // Modo REST: usar REST API
+    const RTDB_URL = process.env.FIREBASE_DATABASE_URL;
+    if (!RTDB_URL) throw new Error('FIREBASE_DATABASE_URL no definido');
+    const url = `${RTDB_URL.replace(/\/$/, '')}/pedidos.json`;
+    const { data } = await axios.post(url, pedidoData);
+    return { key: data.name };
+  }
+}
 
 // ===== Start server =====
 const PORT = process.env.PORT || 3000;
