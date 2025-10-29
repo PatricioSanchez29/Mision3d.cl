@@ -6,12 +6,12 @@
 /* Estilos específicos página producto (pueden moverse a style.css luego) */
 .product-page{max-width:1250px;margin:40px auto;padding:0 20px;display:grid;grid-template-columns:380px 1fr;gap:50px}
 .product-gallery{display:flex;flex-direction:column;gap:14px}
-.product-main{position:relative;width:100%;aspect-ratio:1/1;border-radius:14px;overflow:hidden;background:#fafafa;display:flex;align-items:center;justify-content:center}
-.product-main img{width:100%;height:100%;object-fit:cover;transition:.4s ease}
+.product-main{position:relative;width:100%;aspect-ratio:1/1;border-radius:14px;overflow:hidden;background:#000;display:flex;align-items:center;justify-content:center}
+.product-main img{width:100%;height:100%;object-fit:cover;transition:.4s ease;background:#000;}
 .product-thumbs{display:flex;flex-direction:column;gap:10px;max-height:520px;overflow:auto;padding-right:4px}
-.product-thumb{width:70px;aspect-ratio:1/1;border:2px solid transparent;border-radius:10px;overflow:hidden;cursor:pointer;flex:0 0 auto;position:relative;background:#f4f4f4}
-.product-thumb img{width:100%;height:100%;object-fit:cover;display:block}
-.product-thumb.active{border-color:#e6462f}
+.product-thumb{width:70px;aspect-ratio:1/1;border:none;border-radius:0;overflow:hidden;cursor:pointer;flex:0 0 auto;position:relative;background:none;padding:0;margin:0;display:flex;align-items:center;justify-content:center}
+.product-thumb img{width:auto;height:80px;object-fit:cover;display:block;margin:0;padding:0;}
+.product-thumb.active{border:none}
 .breadcrumb{font-size:.85rem;color:#666;margin-bottom:20px}
 .breadcrumb a{color:#e6462f;text-decoration:none}
 .product-info h1{margin:0 0 8px;font-size:2rem;line-height:1.2}
@@ -58,9 +58,9 @@
 @media (max-width:600px){.related-grid{grid-template-columns:repeat(2,1fr);gap:12px}.related-card{padding:12px}}
 </style>
 </head><body>
-<header class="topbar" style="padding:14px 26px;display:flex;align-items:center;gap:28px;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.06)">
+<header class="header">
   <!-- Botón Hamburguesa (solo móvil) -->
-  <button class="hamburger-btn" id="hamburgerBtn" aria-label="Abrir menú" style="margin-right:8px">
+  <button class="hamburger-btn" id="hamburgerBtn" aria-label="Abrir menú">
     <div class="hamburger-icon">
       <span></span>
       <span></span>
@@ -68,14 +68,38 @@
     </div>
   </button>
 
-  <div style="flex:0 0 auto"><a href="index.html" style="text-decoration:none;font-weight:700;color:#e6462f;font-size:1.2rem">Mision3D</a></div>
-  <nav style="display:flex;gap:18px;font-size:.9rem;flex:1 1 auto">
-    <a href="catalogo.html">Catálogo</a>
-    <a href="index.html#faq">FAQ</a>
+  <h1 class="logo" style="margin:0;display:flex;align-items:center">
+    <a href="index.html" style="display:inline-flex;align-items:center;text-decoration:none">
+      <img src="img/Logo_Mision3d.jpg" alt="Misión 3D" class="logo-img" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-text',textContent:'Misión 3D'}));" />
+    </a>
+  </h1>
+  <nav class="nav">
+    <a href="index.html">Inicio</a>
+    <a href="catalogo.html" class="active">Catálogo</a>
+    <a href="index.html#contacto">Contacto</a>
   </nav>
-  <div id="userArea" class="user-area" style="display:flex;align-items:center;gap:10px"></div>
-  <button class="cart-btn" id="openCart" aria-label="Abrir carrito" style="background:#fff;border:1px solid #ddd;padding:8px 14px;border-radius:30px;cursor:pointer">🛒 <span id="cartCount">0</span></button>
-  <button id="darkToggle" class="btn small outline" style="padding:6px 12px">🌙</button>
+  <div class="search-header">
+    <div class="advanced-search-bar">
+      <select id="headerCategorySelect" class="category-select">
+        <option value="all">Todas las categorías</option>
+      </select>
+      <input type="text" id="searchInput" placeholder="¿Qué estás buscando?" class="search-input" autocomplete="off">
+      <button type="button" id="headerSearchBtn" class="search-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <path d="m21 21-4.35-4.35"></path>
+        </svg>
+      </button>
+    </div>
+    <div id="searchSuggestions" class="search-suggestions"></div>
+    <div id="headerTrendChips" class="trend-chips" aria-label="Búsquedas populares"></div>
+  </div>
+  <div class="right-actions" style="display:flex;align-items:center;gap:10px">
+    <div id="userArea" class="user-area">
+      <a href="login.html" id="loginLink" class="btn small outline">Ingresar</a>
+    </div>
+    <button class="cart-btn" id="openCart" aria-label="Abrir carrito">🛒 <span id="cartCount">0</span></button>
+  </div>
 </header>
 <div id="toast"></div>
 <div class="product-page">

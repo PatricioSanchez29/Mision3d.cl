@@ -386,16 +386,52 @@
 </head>
 <body class="login-page">
   <header class="header">
+    <!-- Botón Hamburguesa (solo móvil) -->
+    <button class="hamburger-btn" id="hamburgerBtn" aria-label="Abrir menú">
+      <div class="hamburger-icon">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </button>
+
     <h1 class="logo" style="margin:0;display:flex;align-items:center">
       <a href="index.html" style="display:inline-flex;align-items:center;text-decoration:none">
         <img src="img/Logo_Mision3d.jpg" alt="Misión 3D" class="logo-img" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-text',textContent:'Misión 3D'}));" />
       </a>
     </h1>
+    <nav class="nav">
+      <a href="index.html">Inicio</a>
+      <a href="catalogo.html" class="active">Catálogo</a>
+      <a href="index.html#contacto">Contacto</a>
+    </nav>
+    <div class="search-header">
+      <div class="advanced-search-bar">
+        <select id="headerCategorySelect" class="category-select">
+          <option value="all">Todas las categorías</option>
+        </select>
+        <input type="text" id="searchInput" placeholder="¿Qué estás buscando?" class="search-input" autocomplete="off">
+        <button type="button" id="headerSearchBtn" class="search-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+        </button>
+      </div>
+      <div id="searchSuggestions" class="search-suggestions"></div>
+      <div id="headerTrendChips" class="trend-chips" aria-label="Búsquedas populares"></div>
+    </div>
+    <div class="right-actions" style="display:flex;align-items:center;gap:10px">
+      <div id="userArea" class="user-area">
+        <a href="login.html" id="loginLink" class="btn small outline">Ingresar</a>
+      </div>
+      <button class="cart-btn" id="openCart" aria-label="Abrir carrito">🛒 <span id="cartCount">0</span></button>
+    </div>
   </header>
   <div class="main-content-login">
     <div class="login-container">
       <div style="margin-bottom: 24px; color: #7a7a7a; font-size: 15px;">
-        <span style="color: #009fe3;">Inicio</span> &gt; Registro de Clientes
+        <a href="index.html" style="color: #009fe3; text-decoration: none; font-weight: 500;">Inicio</a> &gt; Registro de Clientes
       </div>
       <div style="font-size: 13px; color: #888; margin-bottom: 8px;">INGRESA A</div>
       <div style="font-size: 2.2rem; font-weight: bold; margin-bottom: 24px; color: #111;">MISION3D.CL</div>
@@ -412,7 +448,7 @@
   <!-- Formulario de registro completo -->
   <div class="register-form-container" id="registerFormContainer">
     <div class="breadcrumb">
-      <a href="index.html">Inicio</a> > Registro de Cliente
+      <a href="index.html" style="display:inline-flex;align-items:center;text-decoration:none">Inicio</a> > Registro de Cliente
     </div>
     
     <h1 class="register-form-title">CREAR UNA CUENTA</h1>

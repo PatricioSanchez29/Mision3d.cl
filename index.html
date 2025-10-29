@@ -23,30 +23,27 @@
   </script>
 </head>
 <body>
-  <!-- Header -->
   <header class="header">
-    <!-- Botón Menú (escritorio y móvil) -->
-    <button class="menu-btn" id="hamburgerBtn" aria-label="Abrir menú">
+    <!-- Botón Hamburguesa (solo móvil) -->
+    <button class="hamburger-btn" id="hamburgerBtn" aria-label="Abrir menú">
       <div class="hamburger-icon">
         <span></span>
         <span></span>
         <span></span>
       </div>
-      <span class="menu-text">MENU</span>
     </button>
 
     <h1 class="logo" style="margin:0;display:flex;align-items:center">
-      <a href="#" style="display:inline-flex;align-items:center;text-decoration:none">
+      <a href="index.html" style="display:inline-flex;align-items:center;text-decoration:none">
         <img src="img/Logo_Mision3d.jpg" alt="Misión 3D" class="logo-img" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-text',textContent:'Misión 3D'}));" />
       </a>
     </h1>
-    <nav class="nav desktop-nav">
+    <nav class="nav">
       <a href="index.html" class="active">Inicio</a>
       <a href="catalogo.html" id="navCatalog">Catálogo</a>
-      <a href="#nosotros">Nosotros</a>
       <a href="#contacto">Contacto</a>
     </nav>
-    <div class="search-header desktop-search">
+    <div class="search-header">
       <div class="advanced-search-bar">
         <select id="headerCategorySelect" class="category-select">
           <option value="all">Todas las categorías</option>
@@ -62,18 +59,11 @@
       <div id="searchSuggestions" class="search-suggestions"></div>
       <div id="headerTrendChips" class="trend-chips" aria-label="Búsquedas populares"></div>
     </div>
-    <div class="right-actions">
+    <div class="right-actions" style="display:flex;align-items:center;gap:10px">
       <div id="userArea" class="user-area">
-        <a href="login.html" id="loginLink" class="header-icon-btn">
-          <span class="icon">👤</span>
-          <span class="label">ACCESO</span>
-        </a>
+        <a href="login.html" id="loginLink" class="btn small outline">Ingresar</a>
       </div>
-      <button class="header-icon-btn" id="openCart" aria-label="Abrir carrito">
-        <span class="icon">🛒</span>
-        <span class="label">CARRO</span>
-        <span class="count-badge" id="cartCount">0</span>
-      </button>
+      <button class="cart-btn" id="openCart" aria-label="Abrir carrito">🛒 <span id="cartCount">0</span></button>
     </div>
   </header>
   <div class="announcement-bar"><div class="ann-track"><span>Santiago despacho 2 a 3 días hábiles • Regiones envío 4 a 5 días hábiles • Pedidos personalizados: cotización gratuita • Soporte directo vía WhatsApp • Santiago despacho 2 a 3 días hábiles • Regiones envío 4 a 5 días hábiles • Pedidos personalizados: cotización gratuita • Soporte directo vía WhatsApp • Santiago despacho 2 a 3 días hábiles • Regiones envío 4 a 5 días hábiles • Pedidos personalizados: cotización gratuita • Soporte directo vía WhatsApp • Santiago despacho 2 a 3 días hábiles • Regiones envío 4 a 5 días hábiles • Pedidos personalizados: cotización gratuita • Soporte directo vía WhatsApp • </span></div></div>
@@ -109,10 +99,10 @@
 
   <!-- Productos (versión simplificada inicio) -->
   <section id="productos" class="productos">
-    <h3 class="section-title">Catálogo Destacado</h3>
-    <p class="section-subtitle">Descubre nuestros productos más populares de impresión 3D</p>
-    <div class="grid" id="homeProductsGrid">
-      <!-- Los productos se cargarán dinámicamente desde Firebase -->
+    <h3 class="section-title" style="text-align:center">Catálogo Destacado</h3>
+    <p class="section-subtitle" style="text-align:center">Descubre nuestros productos más populares de impresión 3D</p>
+    <div style="display:flex;justify-content:center;width:100%">
+      <div class="grid" id="homeProductsGrid" style="justify-content:center;grid-template-columns:repeat(2, minmax(220px, 1fr));max-width:500px;width:100%"></div>
     </div>
     <p style="margin-top:30px;text-align:center">
       <a href="catalogo.html" class="btn-ver-mas">

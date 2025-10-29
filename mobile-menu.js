@@ -107,11 +107,11 @@
             <span class="icon">📧</span>
             <span>Contacto</span>
           </a>
-          <a href="login.html" id="drawerUserLink">
+          <a href="mi-cuenta.html" id="drawerUserLink" style="position:relative;">
             <span class="icon">👤</span>
             <span id="drawerUserText">Iniciar Sesión</span>
           </a>
-        </nav>
+       </nav>
       </div>
     `;
 
@@ -204,29 +204,22 @@
   function updateUserLink() {
     const drawerUserLink = document.getElementById('drawerUserLink');
     const drawerUserText = document.getElementById('drawerUserText');
-    
     if (!drawerUserLink || !drawerUserText) return;
 
-    // Verificar si hay usuario logueado
     const currentUser = localStorage.getItem('currentUser');
-    
     if (currentUser) {
       try {
         const userData = JSON.parse(currentUser);
         const userName = userData.nombre || userData.email?.split('@')[0] || 'Usuario';
-        
-        // Actualizar texto y enlace
         drawerUserText.textContent = userName;
-        drawerUserLink.href = 'login.html'; // Ir a login donde puede ver perfil/cerrar sesión
+        drawerUserLink.href = 'mi-cuenta.html';
       } catch (e) {
-        // Si hay error, mostrar opción de login
         drawerUserText.textContent = 'Iniciar Sesión';
-        drawerUserLink.href = 'login.html';
+        drawerUserLink.href = 'mi-cuenta.html';
       }
     } else {
-      // No hay sesión, mostrar login
       drawerUserText.textContent = 'Iniciar Sesión';
-      drawerUserLink.href = 'login.html';
+      drawerUserLink.href = 'mi-cuenta.html';
     }
   }
 
