@@ -68,8 +68,16 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// ===== Health Check Endpoint para Render =====
+// ===== Health Check Endpoints para Render =====
 app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    memory: process.memoryUsage()
+  });
+});
+app.get('/healthz', (req, res) => {
   res.status(200).json({ 
     status: 'ok', 
     timestamp: new Date().toISOString(),
@@ -275,8 +283,11 @@ const apiLimiter = rateLimit({
   standardHeaders: true, // Retorna info en headers `RateLimit-*`
   legacyHeaders: false, // Deshabilita headers `X-RateLimit-*`
 });
-// Aplicar rate limiting general a todas las rutas /api/* (después de declarar apiLimiter)
-app.use('/api/', apiLimiter);
+// Excluir /health del rate limit para Render
+app.use((req, res, next) => {
+  if (req.path === '/health') return next();
+  return apiLimiter(req, res, next);
+});
 
 // Limiter estricto para webhooks (crítico)
 const webhookLimiter = rateLimit({

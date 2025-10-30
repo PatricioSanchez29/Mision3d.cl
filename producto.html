@@ -46,7 +46,17 @@
 .related-section h2{font-size:1.5rem;margin-bottom:24px;color:#333}
 .related-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:20px}
 .related-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px;text-align:center;transition:transform .3s,box-shadow .3s;cursor:pointer}
-.related-card:hover{transform:translateY(-5px);box-shadow:0 8px 16px rgba(0,0,0,.1)}
+.related-card:hover{
+  transform:translateY(-8px) scale(1.035);
+  box-shadow:0 12px 32px 0 rgba(0,0,0,0.18),0 1.5px 6px 0 rgba(0,0,0,0.10);
+  z-index:2;
+}
+.related-card img{
+  transition:transform .35s cubic-bezier(.4,1.6,.4,1);
+}
+.related-card:hover img{
+  transform:scale(1.06);
+}
 .related-card img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:8px;margin-bottom:12px}
 .related-card h3{font-size:1rem;margin:0 0 8px;color:#333}
 .related-card .price{font-size:1.1rem;font-weight:700;color:#e6462f;margin-bottom:10px;display:block}
