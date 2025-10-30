@@ -428,22 +428,51 @@
       <button class="cart-btn" id="openCart" aria-label="Abrir carrito">🛒 <span id="cartCount">0</span></button>
     </div>
   </header>
-  <div class="main-content-login">
-    <div class="login-container">
-      <div style="margin-bottom: 24px; color: #7a7a7a; font-size: 15px;">
-        <a href="index.html" style="color: #009fe3; text-decoration: none; font-weight: 500;">Inicio</a> &gt; Registro de Clientes
+  <div class="login-main-flex">
+    <div class="login-box">
+      <div class="login-header">
+        <span class="login-breadcrumb"><a href="index.html">Inicio</a> &gt; Registro de Clientes</span>
+        <div class="login-title">INGRESA A</div>
+        <div class="login-brand">MISION3D.CL</div>
       </div>
-      <div style="font-size: 13px; color: #888; margin-bottom: 8px;">INGRESA A</div>
-      <div style="font-size: 2.2rem; font-weight: bold; margin-bottom: 24px; color: #111;">MISION3D.CL</div>
       <form id="loginForm">
-        <div class="form-group">
-          <label class="form-label" for="loginEmail">Correo electrónico</label>
-          <input type="email" id="loginEmail" class="form-input" required autocomplete="email">
+        <label for="loginEmail">E-mail</label>
+        <input type="email" id="loginEmail" class="form-input" required autocomplete="email">
+        <label for="loginPassword">Contraseña</label>
+        <div style="position:relative;display:flex;align-items:center;">
+          <input type="password" id="loginPassword" class="form-input" autocomplete="current-password" style="flex:1;">
+          <button type="button" id="toggleLoginPass" style="position:absolute;right:10px;background:none;border:none;cursor:pointer;font-size:14px;padding:6px;color:#1f2937;" tabindex="-1" aria-label="Mostrar/Ocultar contraseña">Mostrar</button>
         </div>
-        <button type="submit" class="btn-login">Continuar</button>
+        <button type="submit" class="btn-login-full">INICIAR SESIÓN</button>
+        <div style="text-align:center;margin-top:10px;">
+          <a href="#" id="forgotPasswordLink" style="color:#222;text-decoration:underline;font-size:14px;">Restablecer mi Clave</a>
+        </div>
+        <div id="msg" style="margin-top:10px;"></div>
       </form>
     </div>
+    <div class="login-side-welcome">
+      <div class="side-title">¿ERES NUEVO EN MISION3D.CL?</div>
+      <div class="side-desc">Al registrarte, podrás agilizar tu proceso de compra. Edita tus datos, añade varias direcciones, revisa y realiza un seguimiento de tus pedidos, y mucho más.</div>
+      <a href="register.html" class="btn-register-full">CREAR CUENTA</a>
+    </div>
   </div>
+  <style>
+    .login-main-flex { display: flex; justify-content: center; align-items: flex-start; gap: 40px; margin: 40px 0; flex-wrap: wrap; }
+    .login-box { background: #f5f6f7; border-radius: 18px; padding: 40px 32px; min-width: 340px; max-width: 400px; flex: 1 1 340px; box-shadow: 0 2px 16px #0001; }
+    .login-header { text-align: center; margin-bottom: 18px; }
+    .login-breadcrumb { color: #7a7a7a; font-size: 15px; display: block; margin-bottom: 8px; }
+    .login-title { font-size: 13px; color: #888; margin-bottom: 4px; }
+    .login-brand { font-size: 2.2rem; font-weight: bold; color: #111; margin-bottom: 18px; }
+    .form-input { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #d1d5db; font-size: 15px; margin-bottom: 16px; }
+    .btn-login-full { width: 100%; padding: 14px; background: #1991d6; color: #fff; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 8px; }
+    .btn-login-full:hover { background: #0e6fa1; }
+    .login-side-welcome { background: #fff; border-radius: 18px; padding: 40px 32px; min-width: 320px; max-width: 420px; flex: 1 1 320px; box-shadow: 0 2px 16px #0001; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .side-title { font-size: 1.5rem; font-weight: bold; color: #111; margin-bottom: 18px; text-align: center; }
+    .side-desc { font-size: 1rem; color: #222; margin-bottom: 28px; text-align: center; }
+    .btn-register-full { display: inline-block; padding: 14px 32px; background: #1991d6; color: #fff; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; text-decoration: none; }
+    .btn-register-full:hover { background: #0e6fa1; }
+    @media (max-width: 900px) { .login-main-flex { flex-direction: column; align-items: center; } .login-side-welcome, .login-box { max-width: 100%; min-width: 0; } }
+  </style>
 
   <!-- Formulario de registro completo -->
   <div class="register-form-container" id="registerFormContainer">
@@ -510,13 +539,20 @@
     <div style="text-align: center; color: #bfc7d5; font-size: 0.95rem;">© 2025 Misión 3D - Todos los derechos reservados</div>
   </footer>
 
+
+  <!-- Scripts al final para asegurar que el DOM esté cargado -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
+    // Configuración de Supabase
+    const SUPABASE_URL = 'https://ytuwkynphdttotifgyaf.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0dXdreW5waGR0dG90aWZneWFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3ODUyMzYsImV4cCI6MjA3NzM2MTIzNn0.JIFDBzpYTcChc1fnmp6pFL0K9SZPnn2ltp4iKxLdSus';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     // Función para mostrar/ocultar contraseña
     function togglePassword(inputId, button) {
       const input = document.getElementById(inputId);
       const eyeOpen = button.querySelector('.eye-open');
       const eyeClosed = button.querySelector('.eye-closed');
-      
       if (input.type === 'password') {
         input.type = 'text';
         eyeOpen.style.display = 'none';
@@ -527,313 +563,96 @@
         eyeClosed.style.display = 'none';
       }
     }
-    
-    (function(){
+
+    // Esperar a que el DOM esté listo
+    window.addEventListener('DOMContentLoaded', function() {
       // Heredar tema oscuro si existe
       if(localStorage.getItem('theme')==='dark') document.body.classList.add('dark');
-      
-      // Formulario de login
-      const loginForm = document.getElementById('loginForm');
-      loginForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const email = document.getElementById('loginEmail').value.trim();
-        if (!email) {
-          alert('Por favor ingresa tu correo electrónico');
-          return;
-        }
-        // Buscar usuario registrado
-        const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-        const user = registeredUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
-        if (!user) {
-          alert('Correo no registrado. Por favor crea una cuenta primero.');
-          return;
-        }
-        // Generar nombre base a partir del correo
-        const nombre = user.name || email.split('@')[0].replace(/[-._]/g,' ').replace(/\b\w/g, c=>c.toUpperCase());
-        // Guardar sesión
-        localStorage.setItem('userSession', JSON.stringify({
-          name: nombre || 'Usuario',
-          email: user.email,
-          phone: user.phone,
-          guest: false,
-          ts: Date.now()
-        }));
-        localStorage.setItem('currentUser', JSON.stringify({
-          nombre: nombre || 'Usuario',
-          email: user.email
-        }));
-        localStorage.setItem('justLoggedIn','1');
-        window.location.href = 'index.html';
+      // Mostrar/ocultar contraseña
+      document.getElementById('toggleLoginPass').addEventListener('click', function() {
+        const pass = document.getElementById('loginPassword');
+        pass.type = pass.type === 'password' ? 'text' : 'password';
+        this.textContent = pass.type === 'password' ? 'Mostrar' : 'Ocultar';
       });
-      
-      // Botón crear cuenta - mostrar formulario de registro
-      const registerBtn = document.getElementById('registerBtn');
-      const loginContainer = document.querySelector('.login-container');
-      const registerFormContainer = document.getElementById('registerFormContainer');
-      const backToLoginLink = document.getElementById('backToLogin');
-      
-      if (registerBtn) {
-        registerBtn.addEventListener('click', () => {
-          loginContainer.style.display = 'none';
-          registerFormContainer.classList.add('active');
-        });
-      }
-      
-      // Volver al login
-      if (backToLoginLink) {
-        backToLoginLink.addEventListener('click', (e) => {
+      // Formulario de login con Supabase
+      const loginForm = document.getElementById('loginForm');
+      const msg = document.getElementById('msg');
+      if (loginForm) {
+        loginForm.addEventListener('submit', async function(e) {
           e.preventDefault();
-          registerFormContainer.classList.remove('active');
-          loginContainer.style.display = 'grid';
-        });
-      }
-      
-      // Validación en tiempo real de la contraseña
-      const regPasswordInput = document.getElementById('regPassword');
-      if (regPasswordInput) {
-        regPasswordInput.addEventListener('input', () => {
-          const password = regPasswordInput.value;
-          
-          // Validar longitud
-          const lengthReq = document.getElementById('req-length');
-          if (password.length >= 8) {
-            lengthReq.classList.add('valid');
-            lengthReq.textContent = '✓ Mínimo 8 caracteres';
-          } else {
-            lengthReq.classList.remove('valid');
-            lengthReq.textContent = '✗ Mínimo 8 caracteres';
+          const email = document.getElementById('loginEmail').value.trim();
+          const password = document.getElementById('loginPassword').value;
+          msg.textContent = '';
+          msg.style.color = '';
+          if (!email || !password) {
+            msg.style.color = '#dc2626';
+            msg.textContent = 'Ingresa tu correo y contraseña.';
+            return;
           }
-          
-          // Validar letra
-          const letterReq = document.getElementById('req-letter');
-          if (/[a-zA-Z]/.test(password)) {
-            letterReq.classList.add('valid');
-            letterReq.textContent = '✓ Al menos una letra';
-          } else {
-            letterReq.classList.remove('valid');
-            letterReq.textContent = '✗ Al menos una letra';
-          }
-          
-          // Validar número
-          const numberReq = document.getElementById('req-number');
-          if (/[0-9]/.test(password)) {
-            numberReq.classList.add('valid');
-            numberReq.textContent = '✓ Al menos un número';
-          } else {
-            numberReq.classList.remove('valid');
-            numberReq.textContent = '✗ Al menos un número';
-          }
-          
-          // Validar signo especial
-          const specialReq = document.getElementById('req-special');
-          if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-            specialReq.classList.add('valid');
-            specialReq.textContent = '✓ Al menos un signo especial (!@#$%^&*)';
-          } else {
-            specialReq.classList.remove('valid');
-            specialReq.textContent = '✗ Al menos un signo especial (!@#$%^&*)';
+          // Intentar login con contraseña
+          const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+          if (error) {
+            msg.style.color = '#dc2626';
+            msg.textContent = error.message;
+          } else if (data && data.session && data.session.user) {
+            // Guardar sesión
+            const user = data.session.user;
+            const userSession = {
+              email: user.email,
+              name: user.user_metadata && user.user_metadata.full_name ? user.user_metadata.full_name : '',
+              guest: false
+            };
+            window.localStorage.setItem('userSession', JSON.stringify(userSession));
+            msg.style.color = '#059669';
+            msg.textContent = '¡Acceso exitoso! Redirigiendo...';
+            setTimeout(() => { window.location.href = 'index.html'; }, 1200);
           }
         });
-      }
-      
-      // Formulario de registro completo
-      const registerForm = document.getElementById('registerForm');
-      if (registerForm) {
-        registerForm.addEventListener('submit', (e) => {
+        // Restablecer clave
+        document.getElementById('forgotPasswordLink').addEventListener('click', async function(e) {
           e.preventDefault();
-          
-          const email = document.getElementById('regEmail').value.trim();
-          const phone = document.getElementById('regPhone').value.trim();
-          const password = document.getElementById('regPassword').value;
-          const passwordConfirm = document.getElementById('regPasswordConfirm').value;
-          const termsAccepted = document.getElementById('termsCheckbox').checked;
-          
-          // Validación de campos vacíos
-          if (!email || !phone || !password || !passwordConfirm) {
-            alert('Por favor completa todos los campos');
+          const email = document.getElementById('loginEmail').value.trim();
+          msg.textContent = '';
+          msg.style.color = '';
+          if (!email) {
+            msg.style.color = '#dc2626';
+            msg.textContent = 'Ingresa tu correo para restablecer la clave.';
             return;
           }
-          
-          // Validación de formato de email
-          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-          if (!emailRegex.test(email)) {
-            alert('Por favor ingresa un email válido (ejemplo: usuario@dominio.com)');
-            return;
+          const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/reset-password.html' });
+          if (error) {
+            msg.style.color = '#dc2626';
+            msg.textContent = error.message;
+          } else {
+            msg.style.color = '#059669';
+            msg.textContent = 'Te enviamos un correo para restablecer tu clave.';
           }
-          
-          // Verificar si el email ya está registrado
-          const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-          const emailExists = registeredUsers.find(user => user.email.toLowerCase() === email.toLowerCase());
-          
-          if (emailExists) {
-            alert('Este correo electrónico ya está registrado. Por favor inicia sesión o usa otro correo.');
-            return;
-          }
-          
-          // Validación de contraseña estricta:
-          // - Mínimo 8 caracteres
-          // - Al menos una letra
-          // - Al menos un número
-          // - Al menos un signo especial (!@#$%^&*(),.?":{}|<>)
-          if (password.length < 8) {
-            alert('La contraseña debe tener al menos 8 caracteres');
-            return;
-          }
-          
-          const hasLetter = /[a-zA-Z]/.test(password);
-          const hasNumber = /[0-9]/.test(password);
-          const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-          
-          if (!hasLetter) {
-            alert('La contraseña debe contener al menos una letra');
-            return;
-          }
-          
-          if (!hasNumber) {
-            alert('La contraseña debe contener al menos un número');
-            return;
-          }
-          
-          if (!hasSpecial) {
-            alert('La contraseña debe contener al menos un signo especial (!@#$%^&*(),.?":{}|<>)');
-            return;
-          }
-          
-          // Validación de coincidencia de contraseñas
-          if (password !== passwordConfirm) {
-            alert('Las contraseñas no coinciden');
-            return;
-          }
-          
-          // Validación de términos
-          if (!termsAccepted) {
-            alert('Debes aceptar los términos y condiciones');
-            return;
-          }
-          
-          // Generar nombre base a partir del correo
-          const base = email.split('@')[0];
-          const nombre = base.replace(/[-._]/g,' ').replace(/\b\w/g, c=>c.toUpperCase());
-          
-          // Guardar usuario en la lista de registrados
-          let usersDB = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-          usersDB.push({
-            email: email.toLowerCase(),
-            name: nombre,
-            phone,
-            password, // En producción, esto debería estar hasheado
-            registeredAt: Date.now()
-          });
-          localStorage.setItem('registeredUsers', JSON.stringify(usersDB));
-          
-          // Guardar sesión
-          localStorage.setItem('userSession', JSON.stringify({
-            name: nombre || 'Usuario',
-            email,
-            phone,
-            guest: false,
-            ts: Date.now()
-          }));
-          // Guardar también como currentUser para el menú
-          localStorage.setItem('currentUser', JSON.stringify({
-            nombre: nombre || 'Usuario',
-            email
-          }));
-          
-          // Ocultar formulario de registro y mostrar mensaje de éxito
-          registerFormContainer.classList.remove('active');
-          loginContainer.style.display = 'grid';
-          
-          // Mostrar mensaje de éxito
-          const successMessage = document.getElementById('successMessage');
-          if (successMessage) {
-            successMessage.classList.add('active');
-            
-            // Pre-llenar el email en el formulario de login
-            document.getElementById('loginEmail').value = email;
-            
-            // Scroll al inicio suave
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }
-          
-          // Opcional: redirigir automáticamente después de 3 segundos
-          // setTimeout(() => {
-          //   localStorage.setItem('justLoggedIn','1');
-          //   window.location.href = 'index.html';
-          // }, 3000);
         });
       }
-      
-      // ELIMINADO: Ya no redirige automáticamente si hay sesión
-      // Permitir acceso al login incluso con sesión activa
-      // El usuario puede querer cerrar sesión o ver su perfil
-      
-      // Mostrar información de sesión si existe
-      const existing = localStorage.getItem('userSession');
-      if(existing) {
-        try {
-          const userData = JSON.parse(existing);
-          const loginLeft = document.querySelector('.login-left');
-          const loginRight = document.querySelector('.login-right');
-          
-          // Modificar el contenido para mostrar perfil
-          if (loginLeft && loginRight) {
-            loginLeft.innerHTML = `
-              <div class="breadcrumb">
-                <a href="index.html">Inicio</a> > Mi Cuenta
-              </div>
-              
-              <div class="login-title">MI CUENTA</div>
-              <h1 class="login-brand">MISION3D.CL</h1>
-              
-              <div class="message-box" style="background: #f0f9ff; padding: 25px; border-radius: 8px; margin: 20px 0;">
-                <h3 style="margin: 0 0 10px 0; color: #1e40af;">👤 Información de la cuenta</h3>
-                <p style="margin: 5px 0;"><strong>Nombre:</strong> ${userData.name || 'Usuario'}</p>
-                <p style="margin: 5px 0;"><strong>Email:</strong> ${userData.email || 'No especificado'}</p>
-                ${userData.phone ? `<p style="margin: 5px 0;"><strong>Teléfono:</strong> ${userData.phone}</p>` : ''}
-                <p style="margin: 5px 0;"><strong>Tipo:</strong> ${userData.guest ? 'Invitado' : 'Cuenta registrada'}</p>
-              </div>
-              
-              <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 20px;">
-                <button onclick="window.location.href='index.html'" class="btn-login" style="background: #0ea5e9;">
-                  Ir al Inicio
-                </button>
-                <button id="logoutBtnProfile" class="btn-login" style="background: #dc2626;">
-                  Cerrar Sesión
-                </button>
-              </div>
-            `;
-            
-            loginRight.innerHTML = `
-              <div class="register-section">
-                <h2 class="register-title">¿Quieres explorar nuestros productos?</h2>
-                <p class="register-text">
-                  Visita nuestro catálogo y descubre todos los productos de impresión 3D que tenemos para ti.
-                </p>
-                <button type="button" class="btn-register" onclick="window.location.href='catalogo.html'">
-                  VER CATÁLOGO
-                </button>
-              </div>
-            `;
-            
-            // Agregar evento al botón de cerrar sesión
-            const logoutBtn = document.getElementById('logoutBtnProfile');
-            if (logoutBtn) {
-              logoutBtn.addEventListener('click', () => {
-                if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
-                  localStorage.removeItem('userSession');
-                  localStorage.removeItem('justLoggedIn');
-                  localStorage.removeItem('currentUser');
-                  window.location.reload();
-                }
-              });
-            }
+      // Completar login si viene desde el enlace mágico
+      (async function() {
+        const hash = window.location.hash;
+        if (hash && hash.includes('access_token')) {
+          const { data, error } = await supabase.auth.getSession();
+          if (data.session && data.session.user) {
+            // Guardar sesión básica
+            const user = data.session.user;
+            const userSession = {
+              email: user.email,
+              name: user.user_metadata && user.user_metadata.full_name ? user.user_metadata.full_name : '',
+              guest: false
+            };
+            window.localStorage.setItem('userSession', JSON.stringify(userSession));
+            msg.style.color = '#059669';
+            msg.textContent = '¡Acceso exitoso! Redirigiendo...';
+            setTimeout(() => { window.location.href = 'index.html'; }, 1200);
+          } else if (error) {
+            msg.style.color = '#dc2626';
+            msg.textContent = 'Error al completar el acceso: ' + error.message;
           }
-        } catch (e) {
-          console.error('Error al cargar sesión:', e);
         }
-      }
-    })();
+      })();
+    });
   </script>
 </body>
 </html>

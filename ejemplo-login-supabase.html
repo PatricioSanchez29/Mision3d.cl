@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Ejemplo Login Supabase (Enlace por Email)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f3f4f6; display: flex; align-items: center; justify-content: center; height: 100vh; }
+    .card { background: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px #0001; max-width: 400px; width: 100%; }
+    h2 { margin-top: 0; }
+    input, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 6px; border: 1px solid #d1d5db; }
+    button { background: #0ea5e9; color: #fff; border: none; font-weight: bold; cursor: pointer; }
+    button:hover { background: #0284c7; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Acceso por Correo (Supabase)</h2>
+    <form id="loginForm">
+      <input type="email" id="loginEmail" placeholder="Tu correo electrónico" required autocomplete="email">
+      <button type="submit">Enviar enlace de acceso</button>
+    </form>
+    <div id="msg" style="color:#059669;margin-top:10px;"></div>
+  </div>
+  <script>
+    // Configuración de Supabase
+    const SUPABASE_URL = 'https://ytuwkynphdttotifgyaf.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0dXdreW5waGR0dG90aWZneWFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3ODUyMzYsImV4cCI6MjA3NzM2MTIzNn0.JIFDBzpYTcChc1fnmp6pFL0K9SZPnn2ltp4iKxLdSus';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Enviar enlace de acceso
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim();
+      const msg = document.getElementById('msg');
+      if (!email) return;
+      try {
+        const { error } = await supabase.auth.signInWithOtp({
+          email,
+          options: {
+            emailRedirectTo: window.location.origin + '/ejemplo-login-supabase.html'
+          }
+        });
+        if (error) {
+          msg.style.color = '#dc2626';
+          msg.textContent = error.message;
+        } else {
+          msg.style.color = '#059669';
+          msg.textContent = 'Enlace enviado. Revisa tu correo.';
+        }
+      } catch (error) {
+        msg.style.color = '#dc2626';
+        msg.textContent = error.message;
+      }
+    });
+
+    // Completar login si viene desde el enlace
+    (async function() {
+      const hash = window.location.hash;
+      if (hash && hash.includes('access_token')) {
+        const { data, error } = await supabase.auth.getSession();
+        const msg = document.getElementById('msg');
+        if (data.session && data.session.user) {
+          msg.style.color = '#059669';
+          msg.textContent = '¡Acceso exitoso!';
+        } else if (error) {
+          msg.style.color = '#dc2626';
+          msg.textContent = 'Error: ' + error.message;
+        }
+      }
+    })();
+  </script>
+</body>
+</html>

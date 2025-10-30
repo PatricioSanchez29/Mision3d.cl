@@ -61,7 +61,32 @@
     </div>
     <div class="right-actions" style="display:flex;align-items:center;gap:10px">
       <div id="userArea" class="user-area">
-        <a href="login.html" id="loginLink" class="btn small outline">Ingresar</a>
+        <div class="dropdown" style="position:relative;">
+          <button class="btn small outline" id="loginDropdownBtn" style="display:flex;align-items:center;gap:6px;">
+            <svg width="22" height="22" fill="#5b3fa2" viewBox="0 0 24 24"><path d="M12 12c2.7 0 8 1.34 8 4v2H4v-2c0-2.66 5.3-4 8-4zm0-2a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>
+            <span style="font-weight:600;letter-spacing:1px;">ACCESO</span>
+          </button>
+          <div class="dropdown-content" id="loginDropdownContent" style="display:none;position:absolute;right:0;z-index:10;background:#fff;border-radius:8px;box-shadow:0 2px 8px #0002;padding:8px 0;min-width:140px;">
+            <a href="login.html" style="display:block;padding:8px 18px;color:#222;text-decoration:none;">Ingresar</a>
+            <a href="register.html" style="display:block;padding:8px 18px;color:#222;text-decoration:none;">Crear cuenta</a>
+          </div>
+        </div>
+  <script>
+    // Dropdown simple para acceso
+    document.addEventListener('DOMContentLoaded', function() {
+      const btn = document.getElementById('loginDropdownBtn');
+      const content = document.getElementById('loginDropdownContent');
+      if(btn && content) {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          content.style.display = content.style.display === 'block' ? 'none' : 'block';
+        });
+        document.addEventListener('click', function() {
+          content.style.display = 'none';
+        });
+      }
+    });
+  </script>
       </div>
       <button class="cart-btn" id="openCart" aria-label="Abrir carrito">🛒 <span id="cartCount">0</span></button>
     </div>
