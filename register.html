@@ -252,8 +252,8 @@
       const password2 = document.getElementById('regPassword2').value;
       const terms = document.getElementById('termsCheckbox').checked;
       const msg = document.getElementById('registerMsg');
-      msg.textContent = '';
-      msg.className = '';
+  msg.textContent = '';
+  msg.className = '';
       // Validación de email
       const emailRegex = /^[\w-.]+@([\w-]+\.)+[\w-]{2,}$/;
       if (!email || !emailRegex.test(email)) {
@@ -301,17 +301,19 @@
         }
       });
       if (error) {
-        let msgText = error.message || '';
+        let msgText = (error.message || '').toLowerCase();
+        msg.textContent = '';
+        msg.className = '';
         if (
-          msgText.toLowerCase().includes('already registered') ||
-          msgText.toLowerCase().includes('already exists') ||
-          msgText.toLowerCase().includes('ya existe') ||
-          msgText.toLowerCase().includes('usuario ya registrado') ||
-          msgText.toLowerCase().includes('user already')
+          msgText.includes('already registered') ||
+          msgText.includes('already exists') ||
+          msgText.includes('ya existe') ||
+          msgText.includes('usuario ya registrado') ||
+          msgText.includes('user already')
         ) {
           msg.textContent = 'Este correo ya está en uso. Intenta iniciar sesión o recuperar tu contraseña.';
         } else {
-          msg.textContent = msgText || 'Ocurrió un error inesperado. Intenta nuevamente.';
+          msg.textContent = error.message || 'Ocurrió un error inesperado. Intenta nuevamente.';
         }
         msg.className = 'error-msg';
         return;
