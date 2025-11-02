@@ -129,10 +129,9 @@
     <div class="register-title">CREAR UNA CUENTA</div>
     <form id="registerForm">
       <div class="form-group">
-  <label for="regEmail">E-mail *</label>
-  <input type="email" id="regEmail" class="form-input" required autocomplete="email">
-  <div id="emailErrorMsg" class="error-msg" style="display:none;"></div>
-  <div id="emailErrorMsg" class="error-msg" style="display:none;"></div>
+        <label for="regEmail">E-mail *</label>
+        <input type="email" id="regEmail" class="form-input" required autocomplete="email">
+        <div id="emailErrorMsg" class="error-msg" style="display:none;"></div>
       </div>
       <div class="form-group">
         <label for="regPhone">Teléfono *</label>
@@ -315,9 +314,9 @@
         password,
         options: {
           emailRedirectTo:
-            window.location.hostname === 'mision3d.cl'
-              ? 'https://mision3d.cl/login.html'
-              : window.location.origin + '/login.html',
+            window.location.hostname === 'mision3d.cl' || window.location.hostname === 'www.mision3d.cl'
+              ? 'https://www.mision3d.cl/confirmacion-correo.html'
+              : window.location.origin + '/confirmacion-correo.html',
           data: { phone }
         }
       });
