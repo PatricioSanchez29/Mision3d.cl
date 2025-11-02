@@ -293,7 +293,10 @@
         email,
         password,
         options: {
-          emailRedirectTo: window.location.origin + '/login.html',
+          emailRedirectTo:
+            window.location.hostname === 'mision3d.cl'
+              ? 'https://mision3d.cl/login.html'
+              : window.location.origin + '/login.html',
           data: { phone }
         }
       });
