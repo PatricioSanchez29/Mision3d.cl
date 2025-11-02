@@ -619,10 +619,10 @@
             msg.textContent = 'Ingresa tu correo para restablecer la clave.';
             return;
           }
-          const isProd = window.location.hostname === 'mision3d.cl';
-          const redirectUrl = isProd
-            ? 'https://mision3d.cl/reset-password.html'
-            : 'http://localhost:3000/reset-password.html';
+          const redirectUrl =
+            window.location.hostname === 'mision3d.cl'
+              ? 'https://mision3d.cl/reset-password.html'
+              : window.location.origin + '/reset-password.html';
           const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: redirectUrl });
           if (error) {
             msg.style.color = '#dc2626';
