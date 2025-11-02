@@ -448,6 +448,7 @@
           <a href="#" id="forgotPasswordLink" style="color:#222;text-decoration:underline;font-size:14px;">Restablecer mi Clave</a>
         </div>
         <div id="msg" style="margin-top:10px;"></div>
+  <div id="correoConfirmadoMsg" class="success-msg" style="display:none;margin-top:10px;"></div>
       </form>
     </div>
     <div class="login-side-welcome">
@@ -543,6 +544,17 @@
   <!-- Scripts al final para asegurar que el DOM esté cargado -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
+    // Mostrar mensaje de correo confirmado si viene el parámetro en la URL
+    window.addEventListener('DOMContentLoaded', function() {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('correo_confirmado') === '1') {
+        const correoMsg = document.getElementById('correoConfirmadoMsg');
+        if (correoMsg) {
+          correoMsg.textContent = '¡Correo confirmado exitosamente! Ahora puedes iniciar sesión.';
+          correoMsg.style.display = 'block';
+        }
+      }
+    });
     // Configuración de Supabase
     const SUPABASE_URL = 'https://ytuwkynphdttotifgyaf.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0dXdreW5waGR0dG90aWZneWFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3ODUyMzYsImV4cCI6MjA3NzM2MTIzNn0.JIFDBzpYTcChc1fnmp6pFL0K9SZPnn2ltp4iKxLdSus';
