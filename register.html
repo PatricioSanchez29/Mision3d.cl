@@ -301,25 +301,32 @@
         }
       });
       if (error) {
-        // Supabase devuelve este mensaje si el correo ya está registrado
-        if (error.message && (error.message.includes('already registered') || error.message.includes('already exists') || error.message.includes('ya existe'))) {
+        let msgText = error.message || '';
+        if (
+          msgText.toLowerCase().includes('already registered') ||
+          msgText.toLowerCase().includes('already exists') ||
+          msgText.toLowerCase().includes('ya existe') ||
+          msgText.toLowerCase().includes('usuario ya registrado') ||
+          msgText.toLowerCase().includes('user already')
+        ) {
           msg.textContent = 'Este correo ya está en uso. Intenta iniciar sesión o recuperar tu contraseña.';
         } else {
-          msg.textContent = error.message;
+          msg.textContent = msgText || 'Ocurrió un error inesperado. Intenta nuevamente.';
         }
         msg.className = 'error-msg';
-      } else {
-        msg.textContent = '¡Registro exitoso! Revisa tu correo para confirmar tu cuenta.';
-        msg.className = 'success-msg';
-        document.getElementById('registerForm').reset();
-        regEmail.classList.remove('valid');
-        regPhone.classList.remove('valid');
-        reqLength.classList.remove('valid');
-        reqMayus.classList.remove('valid');
-        reqMinus.classList.remove('valid');
-        reqNum.classList.remove('valid');
-        reqSymbol.classList.remove('valid');
+        return;
       }
+      // Solo si NO hay error
+      msg.textContent = '¡Registro exitoso! Revisa tu correo para confirmar tu cuenta.';
+      msg.className = 'success-msg';
+      document.getElementById('registerForm').reset();
+      regEmail.classList.remove('valid');
+      regPhone.classList.remove('valid');
+      reqLength.classList.remove('valid');
+      reqMayus.classList.remove('valid');
+      reqMinus.classList.remove('valid');
+      reqNum.classList.remove('valid');
+      reqSymbol.classList.remove('valid');
     });
   </script>
   <footer class="footer" style="background:#181f2a;color:#bfc7d5;padding:40px 0 20px 0;margin-top:40px;width:100vw;">
