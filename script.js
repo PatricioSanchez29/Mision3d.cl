@@ -750,6 +750,26 @@ async function confirmCheckout(){
   
   const totalFinal = total + costoEnvio;
 
+  // Validación: Flow requiere mínimo $350 CLP
+  if (payMethod === 'flow' && totalFinal < 350) {
+    if (typeof showToast === 'function') {
+      showToast('El monto mínimo para pagar con Flow es $350 CLP', 'error');
+    } else {
+      alert('El monto mínimo para pagar con Flow es $350 CLP. Agrega más productos o elige otro método de pago.');
+    }
+    return;
+  }
+
+  // Validación: carrito vacío o total = 0
+  if (cart.length === 0 || totalFinal <= 0) {
+    if (typeof showToast === 'function') {
+      showToast('Tu carrito está vacío o el total es $0. Agrega productos antes de continuar.', 'warning');
+    } else {
+      alert('Tu carrito está vacío o el total es $0');
+    }
+    return;
+  }
+
   const cartItems = cart.map(it=>{
     const p = window.PRODUCTS?.find(x=>x.id===it.id) || {};
     return { id: p.id || it.id, name: p.name || '', price: p.price || 0, qty: it.qty };
