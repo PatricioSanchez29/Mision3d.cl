@@ -7,7 +7,22 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 // Configuración de Supabase (reemplaza con tus claves reales si es necesario)
 const SUPABASE_URL = 'https://ytuwkynphdttotifgyaf.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0dXdreW5waGR0dG90aWZneWFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3ODUyMzYsImV4cCI6MjA3NzM2MTIzNn0.JIFDBzpYTcChc1fnmp6pFL0K9SZPnn2ltp4iKxLdSus';
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Singleton en el navegador para evitar múltiples GoTrueClient
+let supabase;
+try {
+  if (typeof window !== 'undefined' && window.__supabaseClient) {
+    supabase = window.__supabaseClient;
+  } else {
+    supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    if (typeof window !== 'undefined') window.__supabaseClient = supabase;
+  }
+} catch {
+  // Fallback por si window no existe (SSR/otros entornos)
+  supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
+
+export { supabase };
 
 // Obtiene el usuario autenticado actual
 export async function getCurrentUser() {

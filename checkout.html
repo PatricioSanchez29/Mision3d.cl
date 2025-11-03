@@ -19,6 +19,7 @@
   <meta name="robots" content="noindex, nofollow"/>
   <link rel="stylesheet" href="style.css">
   <script>window.GA_MEASUREMENT_ID = window.GA_MEASUREMENT_ID || 'G-XXXXXXXXXX';</script>
+    <script type="module" src="auth-header.js"></script>
   <script src="consent.js"></script>
   <style>
   /* Microinteracciones para botones principales */
@@ -330,10 +331,8 @@
     // Si no hay en localStorage, igual seguimos con el remoto (puede fallar, pero hay fallback más abajo)
   }
 
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-  const SUPABASE_URL = 'https://ytuwkynphdttotifgyaf.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0dXdreW5waGR0dG90aWZneWFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3ODUyMzYsImV4cCI6MjA3NzM2MTIzNn0.JIFDBzpYTcChc1fnmp6pFL0K9SZPnn2ltp4iKxLdSus';
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // Reutiliza el cliente central para evitar múltiples GoTrueClient
+  const { supabase } = await import('./supabase-orders.js');
   
   // Cargar productos desde Supabase
   const { data: productos, error } = await supabase.from('productos').select('*');

@@ -1,0 +1,3 @@
+Este archivo fue eliminado porque el proyecto migró completamente a Supabase. Todas las funciones de pedidos y autenticación ahora usan Supabase.
+
+Si necesitas restaurar la integración con Firebase, recupéralo desde el control de versiones.

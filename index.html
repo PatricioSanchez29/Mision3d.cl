@@ -23,6 +23,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css"/>
   <link rel="stylesheet" href="header-new-style.css"/>
+  <script type="module" src="auth-header.js"></script>
   <script>window.GA_MEASUREMENT_ID = 'G-XXXXXXXXXX';</script>
   <script src="consent.js"></script>
   <script type="application/ld+json">
@@ -86,8 +87,7 @@
             <span style="font-weight:600;letter-spacing:1px;">ACCESO</span>
           </button>
           <div class="dropdown-content" id="loginDropdownContent" style="display:none;position:absolute;right:0;z-index:10;background:#fff;border-radius:8px;box-shadow:0 2px 8px #0002;padding:8px 0;min-width:140px;">
-            <a href="login.html" style="display:block;padding:8px 18px;color:#222;text-decoration:none;">Ingresar</a>
-            <a href="register.html" style="display:block;padding:8px 18px;color:#222;text-decoration:none;">Crear cuenta</a>
+            <!-- auth-header.js inyectará contenido según sesión -->
           </div>
         </div>
   <script>
@@ -447,11 +447,8 @@
     } catch {}
   }
 
-  // Remoto (producción o local forzado)
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-  const SUPABASE_URL = 'https://ytuwkynphdttotifgyaf.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0dXdreW5waGR0dG90aWZneWFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3ODUyMzYsImV4cCI6MjA3NzM2MTIzNn0.JIFDBzpYTcChc1fnmp6pFL0K9SZPnn2ltp4iKxLdSus';
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // Remoto (producción o local forzado) - reutiliza el cliente central para evitar múltiples GoTrueClient
+  const { supabase } = await import('./supabase-orders.js');
 
   // Cargar productos desde Supabase y renderizar catálogo
   async function cargarProductosDesdeSupabase() {

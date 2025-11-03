@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="header-new-style.css"/>
+  <script type="module" src="auth-header.js"></script>
   <style>
     body { font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial; }
     .page-wrap { max-width: 1200px; margin: 20px auto; padding: 0 16px; }
@@ -139,151 +140,197 @@
     </div>
   </div>
 
-  <script>
-    if(localStorage.getItem('theme')==='dark') document.body.classList.add('dark');
+  <!-- Lógica de la página -->
+  <script type="module">
+    import { supabase } from './supabase-orders.js';
 
-    function $(sel){ return document.querySelector(sel); }
-    function fmtDate(ts){ try{ const d = new Date(Number(ts)); return d.toLocaleString('es-CL'); }catch{ return '—'; } }
+    // Helpers
+    const $ = (sel) => document.querySelector(sel);
+    const fmtDate = (ts) => {
+      const n = Number(ts);
+      if (!Number.isFinite(n)) return '—';
+      try { return new Date(n).toLocaleString('es-CL'); } catch { return '—'; }
+    };
 
-    // Cargar sesión
-    let session=null; try{ session = JSON.parse(localStorage.getItem('userSession')||'null'); }catch{}
-    if(!session){ window.location.href = 'login.html'; }
-    document.getElementById('userName').textContent = session?.name || 'Mi cuenta';
-    document.getElementById('userEmail').textContent = session?.email || '';
+    // Tema
+    if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
 
-    // Favoritos
-    try { const wl = JSON.parse(localStorage.getItem('wishlist')||'[]'); document.getElementById('favCountTab').textContent = wl.length; } catch{}
+    // Favoritos contador
+    try {
+      const wl = JSON.parse(localStorage.getItem('wishlist') || '[]');
+      $('#favCountTab').textContent = wl.length;
+    } catch {}
 
     // Tabs
     document.querySelectorAll('.tab').forEach(t => {
-      t.addEventListener('click', ()=>{
-        document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      t.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
         t.classList.add('active');
         const id = t.dataset.tab;
-        document.getElementById('tab-orders').style.display = id==='orders'?'block':'none';
-        document.getElementById('tab-details').style.display = id==='details'?'block':'none';
-        document.getElementById('tab-wishlist').style.display = id==='wishlist'?'block':'none';
-        if(id === 'wishlist') loadWishlist();
+        $('#tab-orders').style.display = id === 'orders' ? 'block' : 'none';
+        $('#tab-details').style.display = id === 'details' ? 'block' : 'none';
+        $('#tab-wishlist').style.display = id === 'wishlist' ? 'block' : 'none';
+        if (id === 'wishlist') loadWishlist();
       });
     });
 
-    // Rellenar detalles
-    document.getElementById('dName').textContent = session?.name || '—';
-    document.getElementById('dEmail').textContent = session?.email || '—';
-    document.getElementById('dPhone').textContent = session?.phone || '—';
-
     // Cerrar sesión
-    document.getElementById('logoutTop').addEventListener('click', ()=>{
-      if(confirm('¿Cerrar sesión?')){ localStorage.removeItem('userSession'); window.location.href = 'index.html'; }
+    $('#logoutTop').addEventListener('click', async () => {
+      if (!confirm('¿Cerrar sesión?')) return;
+      try { await supabase.auth.signOut(); } catch {}
+      localStorage.removeItem('userSession');
+      window.location.href = 'index.html';
     });
 
-    // Cargar pedidos del backend usando email
-    async function loadOrders(){
-      const tbody = document.getElementById('ordersBody');
-      try{
-  // Detectar entorno local y forzar API de producción en desarrollo
-  const DEFAULT_PROD_API = 'https://mision3d-cl.onrender.com';
-  const LOCAL_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', '::1'];
-  const isLocal = LOCAL_HOSTS.includes(window.location.hostname) || window.location.port === '5500' || window.location.protocol === 'file:';
-  // Permite override manual temporal: localStorage.API_BASE
-  const manualBase = localStorage.getItem('API_BASE');
-  const apiBase = manualBase || (isLocal ? DEFAULT_PROD_API : window.location.origin);
-  const url = `${apiBase}/api/orders/by-email?email=${encodeURIComponent((session.email||'').toLowerCase())}&_=${Date.now()}`;
-  console.info('[MiCuenta] API base:', apiBase, '| isLocal:', isLocal);
-        const resp = await fetch(url);
-        if(!resp.ok){
-          throw new Error(`HTTP ${resp.status}`);
-        }
-        const ct = resp.headers.get('content-type') || '';
-        if(!ct.includes('application/json')){
-          throw new Error('Respuesta no es JSON');
-        }
-        const data = await resp.json();
-        const pedidos = Array.isArray(data.pedidos)? data.pedidos : [];
-        if(pedidos.length === 0){
-          tbody.innerHTML = `<tr><td colspan="6" style="color:#6b7280; text-align:center; padding:40px;">No tienes pedidos aún. <a href="catalogo.html">Explorar productos</a></td></tr>`;
+    // =============== Pedidos (RLS con user_id) ===============
+    async function loadOrders() {
+      const ordersBody = $('#ordersBody');
+      if (!ordersBody) return;
+
+      try {
+        // Usuario autenticado desde Supabase
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        
+        if (userError) {
+          console.error('Error de autenticación:', userError);
+          if (userError.message && userError.message.includes('API key')) {
+            ordersBody.innerHTML = '<tr><td colspan="6" style="color:#dc2626">Error de configuración de Supabase. Verifica las credenciales.</td></tr>';
+            return;
+          }
+          window.location.href = 'login.html';
           return;
         }
-        tbody.innerHTML = pedidos.map((p,i)=>{
-          const shipping = p?.payer ? `${p?.payer?.name||''}<br>${p?.payer?.address||''}<br>${p?.payer?.commune||''} - ${p?.payer?.region||''}<br>${p?.payer?.country||''}` : '—';
-          const estado = p?.estado || 'No Procesado';
-          const badgeClass = estado.toLowerCase().includes('paga') ? 'green' : 'gray';
-          const num = p?.commerceOrder || (p?.id || '').slice(-6);
-          return `<tr>
-            <td><a href="#">${num}</a></td>
-            <td>${fmtDate(p?.createdAt)}</td>
-            <td><span class="badge ${badgeClass}">${estado}</span></td>
-            <td>${shipping}</td>
-            <td><span class="badge gray">No Procesado</span></td>
-            <td><a href="catalogo.html">Reordenar</a></td>
-          </tr>`;
-        }).join('');
-      }catch(err){
-        console.error('Error cargando pedidos:', err);
-        tbody.innerHTML = `<tr><td colspan="6" style="color:#6b7280; text-align:center; padding:40px;">No pudimos cargar tus pedidos ahora mismo. Intenta más tarde.</td></tr>`;
+        
+        if (!user) {
+          window.location.href = 'login.html';
+          return;
+        }
+
+        // Completar encabezado
+        const displayName = user.user_metadata?.name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'Mi cuenta';
+        $('#userName').textContent = displayName;
+        $('#userEmail').textContent = user.email || '';
+        $('#dName').textContent = displayName;
+        $('#dEmail').textContent = user.email || '—';
+
+        // 🔒 Filtrar por user_id manualmente (en caso de que RLS no esté configurado)
+        const { data: orders, error } = await supabase
+          .from('pedidos')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('createdat', { ascending: false });
+
+        if (error) {
+          console.error('Error detallado:', error);
+          throw error;
+        }
+        renderOrders(orders || []);
+      } catch (e) {
+        console.error('Error cargando pedidos:', e);
+        ordersBody.innerHTML = '<tr><td colspan="6">Error al cargar pedidos: ' + (e.message || 'Desconocido') + '</td></tr>';
       }
     }
-    loadOrders();
 
-    // Cargar favoritos
-    function loadWishlist(){
+    function renderOrders(orders) {
+      const ordersBody = $('#ordersBody');
+      if (!orders || orders.length === 0) {
+        ordersBody.innerHTML = '<tr><td colspan="6" style="color:#6b7280">No tienes pedidos aún.</td></tr>';
+        return;
+      }
+
+      const rows = orders.map((o, idx) => {
+        const nro = o.id || `#${idx + 1}`;
+        const fecha = o.createdat ? new Date(o.createdat).toLocaleString('es-CL') : (o.createdAt ? new Date(o.createdAt).toLocaleString('es-CL') : '—');
+        const estado = o.estado || 'Pendiente';
+        const envio = `${o.direccion || '—'}, ${o.comuna || '—'}, ${o.region || '—'}`;
+        const entrega = o.estado_entrega || 'Pendiente';
+        const accion = `<a href="pedido.html?id=${encodeURIComponent(o.id)}" style="color:#0ea5e9">Ver</a>`;
+        const badgeClass = /pagado|paid|complet/i.test(estado) ? 'green' : 'gray';
+
+        return `<tr>
+          <td>${nro}</td>
+          <td>${fecha}</td>
+          <td><span class="badge ${badgeClass}">${estado}</span></td>
+          <td>${envio}</td>
+          <td>${entrega}</td>
+          <td>${accion}</td>
+        </tr>`;
+      }).join('');
+
+      ordersBody.innerHTML = rows;
+    }
+
+    // =============== Favoritos ===============
+    function loadWishlist() {
       const container = document.getElementById('wishlistBody');
-      try{
-        const wl = JSON.parse(localStorage.getItem('wishlist')||'[]');
-        if(wl.length === 0){
+      try {
+        const wl = JSON.parse(localStorage.getItem('wishlist') || '[]');
+        if (wl.length === 0) {
           container.innerHTML = `<div class="fav-empty">💔 No tienes favoritos aún.<br><a href="catalogo.html">Explorar productos</a></div>`;
           return;
         }
-        // Cargar productos (asumimos window.PRODUCTS si está disponible, sino fallback)
+        // Fuente de productos
         let products = [];
-        if(window.PRODUCTS && Array.isArray(window.PRODUCTS)){
+        if (window.PRODUCTS && Array.isArray(window.PRODUCTS)) {
           products = window.PRODUCTS;
+          renderFavs(wl, products, container);
         } else {
-          // Fallback: intentar cargar datos.json (si está accesible)
-          fetch('datos.json').then(r=>r.json()).then(data=>{
-            products = data?.products || [];
-            renderFavs(wl, products, container);
-          }).catch(()=>{
-            container.innerHTML = `<p style="color:#b91c1c">No se pudieron cargar los productos.</p>`;
-          });
-          return;
+          // Fallback a datos.json
+          fetch('datos.json')
+            .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
+            .then(data => {
+              products = data?.products || [];
+              renderFavs(wl, products, container);
+            })
+            .catch(() => {
+              container.innerHTML = `<p style="color:#b91c1c">No se pudieron cargar los productos.</p>`;
+            });
         }
-        renderFavs(wl, products, container);
-      }catch(err){
+      } catch (err) {
         console.error('Error cargando favoritos:', err);
         container.innerHTML = `<p style="color:#b91c1c">Error al cargar favoritos.</p>`;
       }
     }
 
-    function renderFavs(wl, products, container){
-      const favProds = wl.map(id => products.find(p=>p.id===id)).filter(Boolean);
-      if(favProds.length === 0){
+    function renderFavs(wl, products, container) {
+      const favProds = wl.map(id => products.find(p => p.id === id)).filter(Boolean);
+      if (favProds.length === 0) {
         container.innerHTML = `<div class="fav-empty">Los productos favoritos ya no están disponibles.<br><a href="catalogo.html">Explorar catálogo</a></div>`;
         return;
       }
       const html = favProds.map(p => {
-        const price = p.price ? `$${p.price.toLocaleString('es-CL')}` : 'Consultar';
+        const price = (typeof p.price === 'number') ? `$${p.price.toLocaleString('es-CL')}` : 'Consultar';
+        const img = p.img || 'img/placeholder.png';
+        const name = p.name || 'Producto';
+        const id = p.id ?? '';
         return `<div class="fav-card">
-          <button class="fav-remove" onclick="removeFav('${p.id}')" title="Quitar de favoritos">✕</button>
-          <img src="${p.img||'img/placeholder.png'}" alt="${p.name}" />
+          <button class="fav-remove" onclick="removeFav('${String(id).replace(/"/g, '&quot;')}')" title="Quitar de favoritos" aria-label="Quitar de favoritos">✕</button>
+          <img src="${img}" alt="${name}" />
           <div class="fav-card-body">
-            <h4>${p.name}</h4>
+            <h4>${name}</h4>
             <p>${price}</p>
-            <a href="producto.html?id=${p.id}" style="color:#0ea5e9; font-size:13px;">Ver producto</a>
+            <a href="producto.html?id=${encodeURIComponent(id)}" style="color:#0ea5e9; font-size:13px;">Ver producto</a>
           </div>
         </div>`;
       }).join('');
       container.innerHTML = `<div class="fav-grid">${html}</div>`;
     }
 
-    window.removeFav = function(id){
-      let wl = JSON.parse(localStorage.getItem('wishlist')||'[]');
+    // Exponer removeFav para el botón inline
+    window.removeFav = function(id) {
+      let wl = [];
+      try { wl = JSON.parse(localStorage.getItem('wishlist') || '[]'); } catch {}
       wl = wl.filter(x => x !== id);
       localStorage.setItem('wishlist', JSON.stringify(wl));
       document.getElementById('favCountTab').textContent = wl.length;
       loadWishlist();
-    }
+    };
+
+    // Init
+    loadOrders();
   </script>
+
+  <!-- Scripts externos una sola vez -->
   <script src="mobile-menu.js"></script>
   <script src="script.js"></script>
 </body>

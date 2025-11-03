@@ -33,6 +33,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="header-new-style.css"/>
+  <script type="module" src="auth-header.js"></script>
   <script>window.GA_MEASUREMENT_ID = window.GA_MEASUREMENT_ID || 'G-XXXXXXXXXX';</script>
   <script src="consent.js"></script>
 </head>
@@ -350,11 +351,8 @@
     } catch {}
   }
 
-  // Remoto (producción o local forzado)
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-  const SUPABASE_URL = 'https://ytuwkynphdttotifgyaf.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0dXdreW5waGR0dG90aWZneWFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3ODUyMzYsImV4cCI6MjA3NzM2MTIzNn0.JIFDBzpYTcChc1fnmp6pFL0K9SZPnn2ltp4iKxLdSus';
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // Remoto (producción o local forzado) - reutiliza el cliente central para evitar múltiples GoTrueClient
+  const { supabase } = await import('./supabase-orders.js');
 
   async function cargarProductosDesdeSupabase() {
     try {
