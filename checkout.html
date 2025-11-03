@@ -278,7 +278,6 @@
     <div class="total-line"><span>Total</span><span>$0</span></div>
   </aside>
  </main>
-<script type="module" src="firebase-rtdb.js"></script>
 <script src="ui-components.js"></script>
 <script src="validations.js"></script>
 <script>
@@ -440,7 +439,13 @@ document.addEventListener("DOMContentLoaded", ()=>{
     }
     syncShipping();
   }
-  if(regionSel){ regionSel.addEventListener('change', updateSantiagoAvailability); setTimeout(updateSantiagoAvailability,0); }
+  if(regionSel){ 
+    regionSel.addEventListener('change', ()=>{
+      updateSantiagoAvailability();
+      renderCheckoutSummary(); // Recalcular total al cambiar región
+    }); 
+    setTimeout(updateSantiagoAvailability,0); 
+  }
   // Restaurar código aplicado
   const stored = getAppliedDiscount();
   if(stored){
