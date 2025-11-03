@@ -116,6 +116,10 @@ const frontendPath = path.join(__dirname, "..");
 app.use(express.static(frontendPath));
 console.log("📂 Sirviendo frontend desde:", frontendPath);
 
+// Almacenamiento temporal de pedidos creados vía Flow (solo en memoria)
+// Clave: token de Flow -> Valor: resumen del pedido
+global.__PENDING_ORDERS__ = global.__PENDING_ORDERS__ || new Map();
+
 // ===== Helpers numéricos =====
 const toNum = (v) => Number(v) || 0;
 
@@ -385,7 +389,7 @@ app.get("/", (req, res) => {
 // ===== Endpoint Flow (crear pago) =====
 app.post("/api/payments/flow", paymentLimiter, async (req, res) => {
   try {
-    const { items, payer, shippingCost = 0, discount = 0 } = req.body || {};
+    const { items, payer, shippingCost = 0, discount = 0, meta = {} } = req.body || {};
 
     if (!Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ error: "items vacíos" });
@@ -412,8 +416,7 @@ app.post("/api/payments/flow", paymentLimiter, async (req, res) => {
         .json({ error: "Faltan URLs (FLOW_RETURN_URL/FLOW_CONFIRM_URL)" });
     }
 
-    // Recalcular envío en servidor
-    const meta = req.body?.meta || {};
+  // Recalcular envío en servidor
     const regionMeta = String(meta.region || "").trim();
     const envioMeta = String(meta.envio || "").trim();
     const norm = (s) =>
@@ -503,7 +506,29 @@ app.post("/api/payments/flow", paymentLimiter, async (req, res) => {
         const flowUrl = `${payHost}/app/web/pay.php?token=${data.token}`;
         console.log("[Flow] Redirigiendo a:", flowUrl);
 
-        // TODO: Guardar pedido en Supabase aquí si es necesario
+        // Guardar resumen de pedido en memoria para usar en el webhook de confirmación
+        try {
+          const orderSummary = {
+            token: data.token,
+            flowOrder: data.flowOrder || null,
+            commerceOrder: params.commerceOrder,
+            payer: {
+              email: payer?.email || null,
+              name: payer?.name || null,
+            },
+            items: Array.isArray(items) ? items : [],
+            meta: meta || {},
+            shippingCost: ship,
+            discount: disc,
+            subtotal,
+            total,
+            createdAt: Date.now(),
+          };
+          global.__PENDING_ORDERS__.set(data.token, orderSummary);
+          console.log("🗂️  [Flow] Pedido temporal almacenado en memoria para token", data.token);
+        } catch (e) {
+          console.warn("⚠️  [Flow] No se pudo almacenar pedido temporal:", e?.message || e);
+        }
 
         return res.json({
           url: flowUrl,
@@ -582,7 +607,95 @@ app.post("/flow/confirm", webhookLimiter, async (req, res) => {
 
     // status: 1=pendiente, 2=pagado, 3=rechazado, 4=anulado
     if (paymentData.status === 2) {
-      // TODO: actualizar pedido en Supabase aquí
+      // Intentar recuperar pedido temporal guardado al crear el pago
+      const tmp = global.__PENDING_ORDERS__.get(token);
+
+      // Armar correo de confirmación
+      try {
+        const emailTo = tmp?.payer?.email || paymentData?.email || null;
+        if (emailTo) {
+          const fmt = (n) => Number(n || 0).toLocaleString("es-CL");
+          const itemsHtml = (tmp?.items || [])
+            .map(
+              (it) => `
+                <tr>
+                  <td style="padding:8px;border-bottom:1px solid #eee">${
+                    it?.name || it?.title || "Producto"
+                  }</td>
+                  <td style="padding:8px;border-bottom:1px solid #eee;text-align:right">${
+                    it?.qty || 1
+                  }</td>
+                  <td style="padding:8px;border-bottom:1px solid #eee;text-align:right">$${fmt(
+                    it?.price || 0
+                  )}</td>
+                </tr>`
+            )
+            .join("");
+          const total = tmp?.total || paymentData?.amount || 0;
+          const subtotal = tmp?.subtotal ?? null;
+          const discount = tmp?.discount ?? null;
+          const shipping = tmp?.shippingCost ?? null;
+          const commerceOrder = tmp?.commerceOrder || paymentData?.commerceOrder || "";
+
+          const html = `
+            <h2>✅ Pago confirmado - Misión 3D</h2>
+            <p>Gracias por tu compra. Hemos recibido tu pago exitosamente.</p>
+            <p><strong>Orden:</strong> ${commerceOrder}</p>
+            <table style="border-collapse:collapse;width:100%;max-width:520px">
+              <thead>
+                <tr>
+                  <th style="text-align:left;padding:8px;border-bottom:2px solid #111">Producto</th>
+                  <th style="text-align:right;padding:8px;border-bottom:2px solid #111">Cant.</th>
+                  <th style="text-align:right;padding:8px;border-bottom:2px solid #111">Precio</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${itemsHtml || ""}
+              </tbody>
+            </table>
+            <div style="margin-top:12px">
+              ${
+                subtotal !== null
+                  ? `<div><strong>Subtotal:</strong> $${fmt(subtotal)}</div>`
+                  : ""
+              }
+              ${
+                discount
+                  ? `<div><strong>Descuento:</strong> -$${fmt(discount)}</div>`
+                  : ""
+              }
+              ${
+                shipping !== null
+                  ? `<div><strong>Envío:</strong> $${fmt(shipping)}</div>`
+                  : ""
+              }
+              <div style="margin-top:8px;font-size:1.1em"><strong>Total pagado:</strong> $${fmt(
+                total
+              )}</div>
+            </div>
+            <p style="margin-top:16px">Pronto te contactaremos con los detalles de envío.</p>
+          `;
+
+          await sendEmail({
+            to: emailTo,
+            subject: `Pago confirmado - ${commerceOrder}`,
+            html,
+            text: `Pago confirmado. Orden: ${commerceOrder}. Total: $${fmt(total)}`,
+          });
+          console.log("📧 Email de confirmación enviado a", emailTo);
+        } else {
+          console.warn("⚠️ [Flow Confirm] No se encontró email del comprador para token", token);
+        }
+      } catch (mailErr) {
+        console.warn("⚠️ [Flow Confirm] Error enviando correo:", mailErr?.message || mailErr);
+      }
+
+      // Limpiar cache temporal
+      if (global.__PENDING_ORDERS__.has(token)) {
+        global.__PENDING_ORDERS__.delete(token);
+      }
+
+      // TODO: actualizar pedido en Supabase aquí (estado pagado)
       return res.status(200).send("CONFIRMED");
     }
 
@@ -1035,6 +1148,104 @@ app.post("/api/reset-password", async (req, res) => {
   } catch (error) {
     console.error("❌ Error restableciendo contraseña:", error);
     res.status(500).json({ success: false, error: "Error al restablecer contraseña" });
+  }
+});
+
+// ===== Webhook Supabase: pedidos (al cambiar a pagado) =====
+app.post("/api/webhooks/supabase/pedidos", webhookLimiter, async (req, res) => {
+  try {
+    const keyHeader = req.headers["x-webhook-key"] || req.headers["x-supabase-webhook-key"];
+    const expected = String(process.env.SUPABASE_WEBHOOK_KEY || "").trim();
+    const provided = String(keyHeader || "").trim();
+
+    if (!expected) {
+      console.warn("⚠️ [Supabase Webhook] Falta SUPABASE_WEBHOOK_KEY en servidor");
+      return res.status(401).json({ error: "unauthorized", reason: "missing server secret" });
+    }
+    if (!provided || provided !== expected) {
+      return res.status(401).json({ error: "unauthorized" });
+    }
+
+    const payload = req.body || {};
+    const type = payload.type || payload.eventType || payload.action || "";
+    const table = payload.table || payload.tableId || (payload.data && payload.data.table) || payload.table_name || "";
+    const newRow = payload.record || payload.new || (payload.data && payload.data.new) || {};
+    const oldRow = payload.old_record || payload.old || (payload.data && payload.data.old) || {};
+
+    if (!table || String(table).indexOf("pedidos") === -1) {
+      return res.json({ ok: true, ignored: true, reason: "not pedidos" });
+    }
+
+    const becamePaid = (newRow && newRow.status === "pagado") && (!oldRow || oldRow.status !== "pagado");
+    const insertPaid = (String(type).toUpperCase() === "INSERT") && newRow && newRow.status === "pagado";
+    if (!(becamePaid || insertPaid)) {
+      return res.json({ ok: true, ignored: true, reason: "no paid transition" });
+    }
+
+    const commerceOrder = newRow.commerceOrder || newRow.commerce_order || newRow.order_code || newRow.id || "";
+    const items = Array.isArray(newRow.items) ? newRow.items : [];
+    const subtotal = Number(newRow.subtotal || 0);
+    const discount = Number(newRow.discount || 0);
+    const shipping = Number(newRow.shipping || newRow.shipping_cost || 0);
+    const total = Number(newRow.total || newRow.amount || 0);
+    const emailTo = newRow.email || newRow.payer_email || newRow.buyer_email || newRow.contact_email || null;
+
+    if (!emailTo) {
+      console.warn("⚠️ [Supabase Webhook] Pedido pagado sin email para notificar", commerceOrder);
+      return res.json({ ok: true, warned: "missing email" });
+    }
+
+    const fmt = (n) => Number(n || 0).toLocaleString("es-CL");
+    const itemsHtml = items.map(it => `
+      <tr>
+        <td style="padding:8px;border-bottom:1px solid #eee">${it?.name || it?.title || "Producto"}</td>
+        <td style="padding:8px;border-bottom:1px solid #eee;text-align:right">${it?.qty || 1}</td>
+        <td style="padding:8px;border-bottom:1px solid #eee;text-align:right">$${fmt(it?.price || 0)}</td>
+      </tr>
+    `).join("");
+
+    const html = `
+      <h2>✅ Pago confirmado - Misión 3D</h2>
+      <p>Gracias por tu compra. Hemos recibido tu pago exitosamente.</p>
+      <p><strong>Orden:</strong> ${commerceOrder}</p>
+      ${itemsHtml ? `
+      <table style="border-collapse:collapse;width:100%;max-width:520px">
+        <thead>
+          <tr>
+            <th style="text-align:left;padding:8px;border-bottom:2px solid #111">Producto</th>
+            <th style="text-align:right;padding:8px;border-bottom:2px solid #111">Cant.</th>
+            <th style="text-align:right;padding:8px;border-bottom:2px solid #111">Precio</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${itemsHtml}
+        </tbody>
+      </table>` : ""}
+      <div style="margin-top:12px">
+        ${Number.isFinite(subtotal) && subtotal > 0 ? `<div><strong>Subtotal:</strong> $${fmt(subtotal)}</div>` : ""}
+        ${Number.isFinite(discount) && discount > 0 ? `<div><strong>Descuento:</strong> -$${fmt(discount)}</div>` : ""}
+        <div><strong>Envío:</strong> $${fmt(shipping)}</div>
+        <div style="margin-top:8px;font-size:1.1em"><strong>Total pagado:</strong> $${fmt(total)}</div>
+      </div>
+      <p style="margin-top:16px">Pronto te contactaremos con los detalles de envío.</p>
+    `;
+
+    try {
+      await sendEmail({
+        to: emailTo,
+        subject: `Pago confirmado - ${commerceOrder}`,
+        html,
+        text: `Pago confirmado. Orden: ${commerceOrder}. Total: $${fmt(total)}`
+      });
+      console.log("📧 [Supabase Webhook] Email de confirmación enviado a", emailTo);
+    } catch (mailErr) {
+      console.warn("⚠️ [Supabase Webhook] Error enviando correo:", mailErr?.message || mailErr);
+    }
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("❌ [Supabase Webhook] Error:", err?.message || err);
+    res.status(500).json({ error: "server", detail: err?.message || String(err) });
   }
 });
 

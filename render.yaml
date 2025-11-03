@@ -19,11 +19,17 @@ services:
       - key: FLOW_BASE_URL
         value: https://www.flow.cl/api
       - key: FLOW_RETURN_URL
-        value: https://mision3d.onrender.com/flow/retorno
+        value: https://mision3d.cl/flow/retorno
       - key: FLOW_CONFIRM_URL
-        value: https://mision3d.onrender.com/flow/confirm
+        value: https://mision3d.cl/flow/confirm
       - key: CORS_ORIGIN
-        value: https://mision3d.onrender.com
+        value: https://mision3d.cl
+      - key: SUPABASE_WEBHOOK_KEY
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        value: Misión 3D <pedidos@mision3d.cl>
       - key: FIREBASE_DATABASE_URL
         sync: false
       - key: FIREBASE_CREDENTIALS_JSON
