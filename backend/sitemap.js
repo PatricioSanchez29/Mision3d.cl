@@ -3,7 +3,7 @@ import express from 'express';
 const router = express.Router();
 
 // Puedes agregar aquí tus rutas dinámicas si lo deseas
-themes = [
+const themes = [
   '/',
   '/login.html',
   '/register.html',
