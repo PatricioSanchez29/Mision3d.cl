@@ -285,6 +285,36 @@
   window.API_URL = "https://mision3d-api.onrender.com"; 
 </script>
 
+<!-- Cargar productos desde Supabase ANTES de script.js -->
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+  const supabase = createClient(
+    'https://gxypkkmhczpdvgjqhkgw.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd4eXBra21oY3pwZHZnanFoa2d3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzA2MjE3ODEsImV4cCI6MjA0NjE5Nzc4MX0.SnG2-91eYrCvBBg1S3lG0lmLI6wO5cxf9xdnXs3MG9A'
+  );
+  
+  // Cargar productos desde Supabase
+  const { data: productos, error } = await supabase.from('productos').select('*');
+  if (error) {
+    console.error('[checkout] Error cargando productos de Supabase:', error);
+  } else {
+    // Convertir formato Supabase a formato esperado por script.js
+    window.PRODUCTS = productos.map(p => ({
+      id: p.id,
+      name: p.name,
+      price: p.price,
+      img: p.img,
+      description: p.description || '',
+      category: p.category || '',
+      gallery: p.gallery || []
+    }));
+    console.log('[checkout] Productos cargados desde Supabase:', window.PRODUCTS.length);
+    
+    // Disparar evento para que checkout sepa que los productos están listos
+    window.dispatchEvent(new CustomEvent('productsLoaded'));
+  }
+</script>
+
 <script src="script.js"></script>
 </main>
 <script>
@@ -363,8 +393,7 @@ function initRegions(){
 document.addEventListener("DOMContentLoaded", ()=>{
   initRegions();
   
-  // IMPORTANTE: Esperar a que script.js inicialice completamente
-  // Usamos un pequeño delay para asegurar que window.cart esté disponible
+  // IMPORTANTE: Esperar a que los productos se carguen desde Supabase
   const checkCartAndRender = () => {
     const currentCart = window.cart || JSON.parse(localStorage.getItem('cart') || '[]');
     
@@ -374,14 +403,31 @@ document.addEventListener("DOMContentLoaded", ()=>{
       return;
     }
     
+    // Verificar que los productos estén cargados
+    if (typeof window.PRODUCTS === 'undefined' || window.PRODUCTS.length === 0) {
+      console.log('[checkout] Esperando a que se carguen los productos...');
+      return; // No renderizar hasta que los productos estén disponibles
+    }
+    
     renderCheckoutSummary();
   };
   
-  // Ejecutar validación después de que script.js haya cargado
-  if (window.cart !== undefined) {
+  // Escuchar evento de productos cargados
+  window.addEventListener('productsLoaded', checkCartAndRender);
+  
+  // También intentar inmediatamente por si los productos ya están cargados
+  if (window.PRODUCTS && window.PRODUCTS.length > 0) {
     checkCartAndRender();
   } else {
-    setTimeout(checkCartAndRender, 50);
+    // Timeout de seguridad de 3 segundos
+    setTimeout(() => {
+      if (typeof window.PRODUCTS === 'undefined' || window.PRODUCTS.length === 0) {
+        console.error('[checkout] Productos no se cargaron a tiempo');
+        alert('Error cargando productos. Por favor recarga la página.');
+      } else {
+        checkCartAndRender();
+      }
+    }, 3000);
   }
   
   // Conectar botón principal con confirmCheckout (definida en script.js)
