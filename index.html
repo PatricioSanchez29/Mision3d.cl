@@ -401,8 +401,53 @@
   </script>
 
 <!-- Firebase RTDB (módulos) -->
-<!-- Supabase: Productos y Pedidos -->
+<!-- Supabase: Productos y Pedidos (con modo local sin Supabase) -->
 <script type="module">
+  const isLocal = /localhost|127\.0\.0\.1/.test(location.hostname);
+  const forceRemote = Boolean(window.FORCE_REMOTE_PRODUCTS);
+
+  // Helper para fusionar arrays de productos sin perder IDs existentes
+  const mergeProducts = (arr) => {
+    if (!Array.isArray(arr)) return;
+    if (Array.isArray(window.PRODUCTS) && window.PRODUCTS.length > 0) {
+      const map = new Map(window.PRODUCTS.map(p => [String(p.id), p]));
+      for (const sp of arr) {
+        const key = String(sp.id);
+        if (map.has(key)) {
+          const ex = map.get(key);
+          ex.name = sp.name ?? ex.name;
+          ex.price = typeof sp.price === 'number' ? sp.price : ex.price;
+          ex.img = sp.img || ex.img;
+          ex.description = sp.description || ex.description;
+          ex.category = sp.category || ex.category;
+          ex.gallery = sp.gallery || ex.gallery;
+        } else {
+          window.PRODUCTS.push(sp);
+        }
+      }
+    } else {
+      window.PRODUCTS = arr;
+    }
+  };
+
+  // Si estamos en local y no se fuerza el remoto, usa localStorage/PRODUCTS existentes y evita pegarle a Supabase
+  if (isLocal && !forceRemote) {
+    try {
+      const ls = JSON.parse(localStorage.getItem('PRODUCTS')||'[]');
+      if (Array.isArray(ls) && ls.length > 0) {
+        mergeProducts(ls);
+        console.log('[index] Usando PRODUCTS desde localStorage (modo local)');
+        document.dispatchEvent(new Event('productsReady'));
+        window.dispatchEvent(new CustomEvent('productsLoaded'));
+        renderHomeProducts((window.PRODUCTS||[]).slice(0,5));
+        if (typeof window.renderCatalog === 'function') renderCatalog('');
+        // Evitar continuar al remoto
+        throw new Error('skip-remote-in-local');
+      }
+    } catch {}
+  }
+
+  // Remoto (producción o local forzado)
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
   const SUPABASE_URL = 'https://ytuwkynphdttotifgyaf.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0dXdreW5waGR0dG90aWZneWFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3ODUyMzYsImV4cCI6MjA3NzM2MTIzNn0.JIFDBzpYTcChc1fnmp6pFL0K9SZPnn2ltp4iKxLdSus';
@@ -413,18 +458,19 @@
     try {
       const { data, error } = await supabase.from('productos').select('*');
       if (error) throw error;
-      window.PRODUCTS = data || [];
-      localStorage.setItem('PRODUCTS', JSON.stringify(window.PRODUCTS));
+      const arr = Array.isArray(data) ? data : [];
+      mergeProducts(arr);
+      try { localStorage.setItem('PRODUCTS', JSON.stringify(window.PRODUCTS||[])); } catch {}
       document.dispatchEvent(new Event('productsReady'));
-      renderHomeProducts(window.PRODUCTS.slice(0, 5));
-      if (typeof window.renderCatalog === "function") renderCatalog("");
+      window.dispatchEvent(new CustomEvent('productsLoaded'));
+      renderHomeProducts((window.PRODUCTS||[]).slice(0, 5));
+      if (typeof window.renderCatalog === 'function') renderCatalog('');
     } catch (err) {
-      console.error("Error cargando productos:", err);
-      if (window.PRODUCTS && window.PRODUCTS.length > 0) {
-        document.dispatchEvent(new Event('productsReady'));
-        renderHomeProducts(window.PRODUCTS.slice(0, 5));
-      }
-      if (typeof window.renderCatalog === "function") renderCatalog("");
+      console.warn('[index] No se pudieron cargar productos desde Supabase:', err?.message || err);
+      document.dispatchEvent(new Event('productsReady'));
+      window.dispatchEvent(new CustomEvent('productsLoaded'));
+      renderHomeProducts((window.PRODUCTS||[]).slice(0, 5));
+      if (typeof window.renderCatalog === 'function') renderCatalog('');
     }
   }
 
