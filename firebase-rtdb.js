@@ -15,6 +15,11 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db  = getDatabase(app);
 
+// Helper: solo log en desarrollo (localhost)
+const isDev = /localhost|127\.0\.0\.1/.test(location.hostname);
+const devLog = (...args) => { if (isDev) console.log(...args); };
+const devWarn = (...args) => { if (isDev) console.warn(...args); };
+
 // Utilidad: intenta leer carrito del localStorage
 function getCartSafe() {
   try { return JSON.parse(localStorage.getItem("cart") || "[]"); }
@@ -24,7 +29,7 @@ function getCartSafe() {
 // 🧾 Cargar productos desde RTDB y notificar a la UI
 async function loadProductsFromRTDB() {
   try {
-    console.log("[Firebase] Cargando productos desde RTDB...");
+    devLog("[Firebase] Cargando productos desde RTDB...");
     const snap = await get(ref(db, "productos"));
     if (snap.exists()) {
       const data = snap.val();
@@ -34,15 +39,15 @@ async function loadProductsFromRTDB() {
       // IMPORTANTE: Actualizar localStorage para sincronizar con Firebase
       localStorage.setItem('PRODUCTS', JSON.stringify(window.PRODUCTS));
       
-      console.log("✅ [Firebase] Productos cargados y sincronizados:", window.PRODUCTS.length);
+      devLog("✅ [Firebase] Productos cargados y sincronizados:", window.PRODUCTS.length);
     } else {
-      console.warn("⚠️ [Firebase] No hay productos en la base de datos");
+      devWarn("⚠️ [Firebase] No hay productos en la base de datos");
       // Si no hay productos en Firebase, limpiar localStorage
       localStorage.removeItem('PRODUCTS');
     }
   } catch (err) {
     console.error("❌ [Firebase] Error cargando productos:", err);
-    console.warn("[RTDB] No se pudieron cargar productos:", err);
+    devWarn("[RTDB] No se pudieron cargar productos:", err);
   }
 
   // Si existe, vuelve a renderizar catálogo/listados
@@ -60,9 +65,9 @@ async function bindCheckoutSave() {
   if (!btn) return; // No estamos en checkout.html
 
   btn.addEventListener("click", async () => {
-    // Campos ya presentes en tu checkout.html
+    // Importar funciones de Supabase
+    const { saveOrderSupabase } = await import('./supabase-orders.js');
     const items = getCartSafe();
-    
     // Calcular total correctamente buscando precio en PRODUCTS
     const total = items.reduce((s, it) => {
       const product = (window.PRODUCTS || []).find(p => p.id === it.id);
@@ -70,7 +75,6 @@ async function bindCheckoutSave() {
       const qty = Number(it.qty) || 1;
       return s + (price * qty);
     }, 0);
-    
     const pedido = {
       email:       document.getElementById("inputEmail")?.value?.trim() || "",
       nombre:      document.getElementById("inputName")?.value?.trim() || "",
@@ -87,19 +91,17 @@ async function bindCheckoutSave() {
       items,
       totalCLP:    total,
       estado:      "pendiente",
-      createdAt:   serverTimestamp()
+      createdAt:   new Date().toISOString()
     };
-
     try {
-      console.log("[Firebase] Intentando guardar pedido:", pedido);
-      const pedidoRef = await push(ref(db, "pedidos"), pedido);
-      console.log("✅ [Firebase] Pedido guardado exitosamente. ID:", pedidoRef.key);
-      alert("✅ Pedido registrado. ID: " + pedidoRef.key);
+      const saved = await saveOrderSupabase(pedido);
+      let pedidoId = '';
+      if (saved && (typeof saved.id !== 'undefined')) pedidoId = saved.id;
+      alert("✅ Pedido registrado. ID: " + pedidoId);
       localStorage.removeItem("cart");
       window.location.href = "index.html";
     } catch (e) {
-      console.error("❌ [Firebase] Error guardando pedido:", e);
-      console.error("❌ [Firebase] Detalles del error:", e.message);
+      console.error("❌ [Supabase] Error guardando pedido:", e);
       alert("❌ Ocurrió un problema registrando el pedido. Intenta nuevamente.");
     }
   });
