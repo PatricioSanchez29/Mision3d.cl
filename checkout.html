@@ -331,10 +331,9 @@
   }
 
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-  const supabase = createClient(
-    'https://gxypkkmhczpdvgjqhkgw.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd4eXBra21oY3pwZHZnanFoa2d3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzA2MjE3ODEsImV4cCI6MjA0NjE5Nzc4MX0.SnG2-91eYrCvBBg1S3lG0lmLI6wO5cxf9xdnXs3MG9A'
-  );
+  const SUPABASE_URL = 'https://ytuwkynphdttotifgyaf.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0dXdreW5waGR0dG90aWZneWFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3ODUyMzYsImV4cCI6MjA3NzM2MTIzNn0.JIFDBzpYTcChc1fnmp6pFL0K9SZPnn2ltp4iKxLdSus';
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   
   // Cargar productos desde Supabase
   const { data: productos, error } = await supabase.from('productos').select('*');
