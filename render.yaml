@@ -29,7 +29,7 @@ services:
       - key: RESEND_API_KEY
         sync: false
       - key: EMAIL_FROM
-        value: Misión 3D <pedidos@mision3d.cl>
+        value: Mision 3D <onboarding@resend.dev>
       - key: FIREBASE_DATABASE_URL
         sync: false
       - key: FIREBASE_CREDENTIALS_JSON
