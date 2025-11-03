@@ -3,18 +3,66 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Inicia sesión en Misión 3D. Accede a tu cuenta para gestionar tus pedidos de impresión 3D personalizada en Chile.">
+  <meta name="keywords" content="login, acceso, impresión 3D, cuenta, Chile, tienda, personalizado">
+  <meta property="og:title" content="Iniciar sesión - Misión 3D"/>
+  <meta property="og:description" content="Accede a tu cuenta para gestionar tus pedidos de impresión 3D personalizada en Chile."/>
+  <meta property="og:image" content="https://tudominio.cl/img/Logo_Mision3d.jpg"/>
+  <meta property="og:url" content="https://tudominio.cl/login.html"/>
+  <meta property="og:type" content="website"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="Iniciar sesión - Misión 3D"/>
+  <meta name="twitter:description" content="Accede a tu cuenta para gestionar tus pedidos de impresión 3D personalizada en Chile."/>
+  <meta name="twitter:image" content="https://tudominio.cl/img/Logo_Mision3d.jpg"/>
+  <link rel="canonical" href="https://tudominio.cl/login.html"/>
+  <meta name="robots" content="index, follow"/>
   <title>Iniciar sesión - Misión 3D</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="header-new-style.css" />
   <script>window.GA_MEASUREMENT_ID = window.GA_MEASUREMENT_ID || 'G-XXXXXXXXXX';</script>
   <script src="consent.js"></script>
+  <script src="recaptcha-key.js"></script>
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
   <style>
+    .form-label.required::after {
+      content: ' *';
+      color: #e11d48;
+      font-weight: bold;
+    }
+    .error-msg {
+      color: #e11d48;
+      font-size: 0.97em;
+      margin-top: 4px;
+      display: block;
+      min-height: 18px;
+    }
     body.login-page {
       background: #f9fafb;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       padding: 0;
+    }
+    /* Microinteracciones para botones principales */
+    .btn-register, .btn.primary, .btn.small, .btn.outline, .cart-btn, .search-btn {
+      transition: background 0.18s, color 0.18s, box-shadow 0.18s, transform 0.12s;
+      box-shadow: 0 1px 4px #0001;
+    }
+    .btn-register:hover, .btn.primary:hover, .btn.small:hover, .btn.outline:hover, .cart-btn:hover, .search-btn:hover {
+      background: #4f46e5;
+      color: #fff;
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 4px 16px #4f46e522;
+    }
+    .btn-register:active, .btn.primary:active, .btn.small:active, .btn.outline:active, .cart-btn:active, .search-btn:active {
+      background: #312e81;
+      color: #fff;
+      transform: scale(0.97);
+      box-shadow: 0 1px 4px #0002;
+    }
+    .btn-register:focus, .btn.primary:focus, .btn.small:focus, .btn.outline:focus, .cart-btn:focus, .search-btn:focus {
+      outline: 2px solid #6366f1;
+      outline-offset: 2px;
     }
     
     .main-content-login {
@@ -397,7 +445,7 @@
 
     <h1 class="logo" style="margin:0;display:flex;align-items:center">
       <a href="index.html" style="display:inline-flex;align-items:center;text-decoration:none">
-        <img src="img/Logo_Mision3d.jpg" alt="Misión 3D" class="logo-img" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-text',textContent:'Misión 3D'}));" />
+  <img src="img/Logo_Mision3d.jpg" alt="Misión 3D" class="logo-img" loading="lazy" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-text',textContent:'Misión 3D'}));" />
       </a>
     </h1>
     <nav class="nav">
@@ -436,13 +484,15 @@
         <div class="login-brand">MISION3D.CL</div>
       </div>
       <form id="loginForm">
-        <label for="loginEmail">E-mail</label>
+        <label for="loginEmail" class="form-label required">E-mail</label>
         <input type="email" id="loginEmail" class="form-input" required autocomplete="email">
-        <label for="loginPassword">Contraseña</label>
+        <div id="loginEmailErrorMsg" class="error-msg"></div>
+        <label for="loginPassword" class="form-label required">Contraseña</label>
         <div style="position:relative;display:flex;align-items:center;">
           <input type="password" id="loginPassword" class="form-input" autocomplete="current-password" style="flex:1;">
           <button type="button" id="toggleLoginPass" style="position:absolute;right:10px;background:none;border:none;cursor:pointer;font-size:14px;padding:6px;color:#1f2937;" tabindex="-1" aria-label="Mostrar/Ocultar contraseña">Mostrar</button>
         </div>
+        <div id="loginPasswordErrorMsg" class="error-msg"></div>
         <button type="submit" class="btn-login-full">INICIAR SESIÓN</button>
         <div style="text-align:center;margin-top:10px;">
           <a href="#" id="forgotPasswordLink" style="color:#222;text-decoration:underline;font-size:14px;">Restablecer mi Clave</a>
@@ -520,7 +570,7 @@
   <footer style="background: #181f2a; color: #bfc7d5; padding: 40px 0 20px 0; margin-top: 0; width: 100vw;">
     <div style="max-width: 1200px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 32px;">
       <div style="flex: 1; min-width: 220px; display: flex; flex-direction: column; align-items: center;">
-        <img src="img/Logo_Mision3d.jpg" alt="Mision3D Logo" style="width: 110px; margin-bottom: 12px;">
+  <img src="img/Logo_Mision3d.jpg" alt="Mision3D Logo" style="width: 110px; margin-bottom: 12px;" loading="lazy">
         <div style="font-size: 1.1rem; font-weight: 500;">Impresión 3D personalizada</div>
         <div style="font-size: 0.98rem; color: #bfc7d5;">Transforma tus ideas en realidad</div>
       </div>
@@ -544,6 +594,40 @@
   <!-- Scripts al final para asegurar que el DOM esté cargado -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
+    // Validación en tiempo real de email y contraseña en login
+    const loginEmail = document.getElementById('loginEmail');
+    const loginPassword = document.getElementById('loginPassword');
+    const loginEmailErrorMsg = document.getElementById('loginEmailErrorMsg');
+    const loginPasswordErrorMsg = document.getElementById('loginPasswordErrorMsg');
+    loginEmail.addEventListener('input', function() {
+      const emailRegex = /^[\w-.]+@([\w-]+\.)+[\w-]{2,}$/;
+      if (loginEmail.value.trim() === '') {
+        loginEmail.classList.remove('valid', 'invalid');
+        loginEmailErrorMsg.textContent = 'El correo es obligatorio.';
+      } else if (emailRegex.test(loginEmail.value.trim())) {
+        loginEmail.classList.add('valid');
+        loginEmail.classList.remove('invalid');
+        loginEmailErrorMsg.textContent = '';
+      } else {
+        loginEmail.classList.remove('valid');
+        loginEmail.classList.add('invalid');
+        loginEmailErrorMsg.textContent = 'Correo electrónico inválido.';
+      }
+    });
+    loginPassword.addEventListener('input', function() {
+      if (loginPassword.value === '') {
+        loginPassword.classList.remove('valid', 'invalid');
+        loginPasswordErrorMsg.textContent = 'La contraseña es obligatoria.';
+      } else if (loginPassword.value.length >= 6) {
+        loginPassword.classList.add('valid');
+        loginPassword.classList.remove('invalid');
+        loginPasswordErrorMsg.textContent = '';
+      } else {
+        loginPassword.classList.remove('valid');
+        loginPassword.classList.add('invalid');
+        loginPasswordErrorMsg.textContent = 'La contraseña debe tener al menos 6 caracteres.';
+      }
+    });
     // Mostrar mensaje de correo confirmado si viene el parámetro en la URL
     window.addEventListener('DOMContentLoaded', function() {
       const params = new URLSearchParams(window.location.search);
@@ -592,13 +676,40 @@
       if (loginForm) {
         loginForm.addEventListener('submit', async function(e) {
           e.preventDefault();
-          const email = document.getElementById('loginEmail').value.trim();
-          const password = document.getElementById('loginPassword').value;
+          const email = loginEmail.value.trim();
+          const password = loginPassword.value;
           msg.textContent = '';
           msg.style.color = '';
-          if (!email || !password) {
+          let valid = true;
+          // Validación de email
+          if (!email) {
+            loginEmail.classList.add('invalid');
+            loginEmailErrorMsg.textContent = 'El correo es obligatorio.';
+            valid = false;
+          } else if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,}$/.test(email)) {
+            loginEmail.classList.add('invalid');
+            loginEmailErrorMsg.textContent = 'Correo electrónico inválido.';
+            valid = false;
+          } else {
+            loginEmail.classList.remove('invalid');
+            loginEmailErrorMsg.textContent = '';
+          }
+          // Validación de contraseña
+          if (!password) {
+            loginPassword.classList.add('invalid');
+            loginPasswordErrorMsg.textContent = 'La contraseña es obligatoria.';
+            valid = false;
+          } else if (password.length < 6) {
+            loginPassword.classList.add('invalid');
+            loginPasswordErrorMsg.textContent = 'La contraseña debe tener al menos 6 caracteres.';
+            valid = false;
+          } else {
+            loginPassword.classList.remove('invalid');
+            loginPasswordErrorMsg.textContent = '';
+          }
+          if (!valid) {
             msg.style.color = '#dc2626';
-            msg.textContent = 'Ingresa tu correo y contraseña.';
+            msg.textContent = 'Corrige los errores antes de continuar.';
             return;
           }
           // Intentar login con contraseña

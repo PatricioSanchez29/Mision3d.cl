@@ -176,6 +176,19 @@
             <option value="">Selecciona comuna</option>
           </select>
         </label>
+    <meta name="description" content="Detalles del producto de impresión 3D personalizada en Misión 3D. Calidad premium y envío a todo Chile.">
+    <meta name="keywords" content="producto, impresión 3D, personalizado, Chile, tienda, calidad">
+    <meta property="og:title" content="Producto | Tienda 3D"/>
+    <meta property="og:description" content="Detalles y compra de productos de impresión 3D personalizada en Chile."/>
+    <meta property="og:image" content="https://tudominio.cl/img/Logo_Mision3d.jpg"/>
+    <meta property="og:url" content="https://tudominio.cl/producto.html"/>
+    <meta property="og:type" content="product"/>
+    <meta name="twitter:card" content="summary_large_image"/>
+    <meta name="twitter:title" content="Producto | Tienda 3D"/>
+    <meta name="twitter:description" content="Detalles y compra de productos de impresión 3D personalizada en Chile."/>
+    <meta name="twitter:image" content="https://tudominio.cl/img/Logo_Mision3d.jpg"/>
+    <link rel="canonical" href="https://tudominio.cl/producto.html"/>
+    <meta name="robots" content="index, follow"/>
       </div>
       <div class="form-row">
         <label>Teléfono:<br><input id="inputTelefono" autocomplete="tel"></label>
@@ -212,7 +225,26 @@ if(typeof window.money !== 'function') {
       "brand": {"@type":"Brand","name":"Misión 3D"},
       "offers": {"@type":"Offer","priceCurrency":"CLP","price": price,"availability":"https://schema.org/InStock","url": location.href}
     };
+    // Agregar aggregateRating si hay reseñas y estrellas
+    if (p.reviews && p.stars) {
+      data.aggregateRating = {
+        "@type": "AggregateRating",
+        "ratingValue": String(p.stars),
+        "reviewCount": String(p.reviews)
+      };
+    }
+    // BreadcrumbList dinámico
+    const breadcrumb = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Inicio", "item": "https://mision3d.cl/" },
+        { "@type": "ListItem", "position": 2, "name": "Catálogo", "item": "https://mision3d.cl/catalogo.html" },
+        { "@type": "ListItem", "position": 3, "name": p.name, "item": location.href }
+      ]
+    };
     const s = document.createElement('script'); s.type='application/ld+json'; s.textContent=JSON.stringify(data); document.head.appendChild(s);
+    const sb = document.createElement('script'); sb.type='application/ld+json'; sb.textContent=JSON.stringify(breadcrumb); document.head.appendChild(sb);
   })();
 </script>
 <script>
@@ -239,7 +271,7 @@ function renderProductDetail(){
   // Galería simple (si en futuro p.gallery existe la usamos)
   const gallery=(p.gallery&&p.gallery.length?p.gallery:[p.img]);
   const thumbs=document.getElementById('thumbs');
-  thumbs.innerHTML=gallery.map((g,i)=>`<div class='product-thumb ${i===0?'active':''}' data-img='${g}'><img src='${g}' alt='thumb'></div>`).join('');
+  thumbs.innerHTML=gallery.map((g,i)=>`<div class='product-thumb ${i===0?'active':''}' data-img='${g}'><img src='${g}' alt='thumb' loading='lazy'></div>`).join('');
   thumbs.querySelectorAll('.product-thumb').forEach(th=>th.onclick=()=>{document.getElementById('mainImage').src=th.dataset.img;thumbs.querySelectorAll('.product-thumb').forEach(x=>x.classList.remove('active'));th.classList.add('active');});
   document.getElementById('mainImage').src=gallery[0];
   const isLow=p.stock==='bajo';
@@ -386,7 +418,7 @@ function renderRelatedProducts(currentProduct) {
   
   container.innerHTML = related.map(p => `
     <div class="related-card" data-product-id="${p.id}">
-      <img src="${p.img || 'img/placeholder.png'}" alt="${p.name}">
+      <img src="${p.img || 'img/placeholder.png'}" alt="${p.name}" loading="lazy">
       <h3>${p.name}</h3>
       <span class="price">$${(p.price || 0).toLocaleString('es-CL')}</span>
       <button class="btn-add" data-id="${p.id}">
@@ -441,7 +473,7 @@ function renderRecentlyViewed(currentProductId) {
     
     container.innerHTML = recentProducts.map(p => `
       <div class="related-card" data-product-id="${p.id}">
-        <img src="${p.img || 'img/placeholder.png'}" alt="${p.name}">
+        <img src="${p.img || 'img/placeholder.png'}" alt="${p.name}" loading="lazy">
         <h3>${p.name}</h3>
         <span class="price">$${(p.price || 0).toLocaleString('es-CL')}</span>
         <button class="btn-add" data-id="${p.id}">

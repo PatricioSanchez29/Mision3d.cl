@@ -552,6 +552,9 @@ async function iniciarPago(payMethod, payload) {
     });
     if (!res.ok) {
       const errText = await res.text().catch(()=> '');
+      if (typeof showToast === 'function') {
+        showToast(`Error HTTP ${res.status}: ${errText.slice(0,200)}`, 'error');
+      }
       throw new Error(`Error HTTP ${res.status}: ${errText.slice(0,200)}`);
     }
     const data = await res.json();
@@ -559,10 +562,17 @@ async function iniciarPago(payMethod, payload) {
       window.location.href = data.url; // redirige a Flow
       return;
     } else {
+      if (typeof showToast === 'function') {
+        showToast(data.error || "Error creando pago en Flow", 'error');
+      }
       throw new Error(data.error || "Error creando pago en Flow");
     }
   } else if (payMethod === 'mercadopago') {
-    alert("MercadoPago todavía no está conectado en este flujo 🚧");
+    if (typeof showToast === 'function') {
+      showToast("MercadoPago todavía no está conectado en este flujo 🚧", 'error');
+    } else {
+      alert("MercadoPago todavía no está conectado en este flujo 🚧");
+    }
   } else if (payMethod === 'webpay') {
     const res = await fetch(`${API_BASE}/api/payments/webpay`, {
       method: 'POST',
@@ -571,6 +581,9 @@ async function iniciarPago(payMethod, payload) {
     });
     if (!res.ok) {
       const errText = await res.text().catch(()=> '');
+      if (typeof showToast === 'function') {
+        showToast(`Error HTTP ${res.status}: ${errText.slice(0,200)}`, 'error');
+      }
       throw new Error(`Error HTTP ${res.status}: ${errText.slice(0,200)}`);
     }
     const data = await res.json();
@@ -578,6 +591,9 @@ async function iniciarPago(payMethod, payload) {
       window.location.href = data.url;
       return;
     } else {
+      if (typeof showToast === 'function') {
+        showToast(data.error || 'Error creando pago en Webpay', 'error');
+      }
       throw new Error(data.error || 'Error creando pago en Webpay');
     }
   } else if (payMethod === 'khipu') {
@@ -588,6 +604,9 @@ async function iniciarPago(payMethod, payload) {
     });
     if (!res.ok) {
       const errText = await res.text().catch(()=> '');
+      if (typeof showToast === 'function') {
+        showToast(`Error HTTP ${res.status}: ${errText.slice(0,200)}`, 'error');
+      }
       throw new Error(`Error HTTP ${res.status}: ${errText.slice(0,200)}`);
     }
     const data = await res.json();
@@ -687,7 +706,11 @@ async function confirmCheckout(){
     await iniciarPago(payMethod, payload);
   } catch (err) {
     console.error('Error iniciando pago:', err);
-    alert('No se pudo iniciar el pago: ' + (err?.message || err));
+    if (typeof showToast === 'function') {
+      showToast('No se pudo iniciar el pago: ' + (err?.message || err), 'error');
+    } else {
+      alert('No se pudo iniciar el pago: ' + (err?.message || err));
+    }
   } finally {
     const modal = $('#checkoutModal');
     if (modal) modal.classList.remove('show');

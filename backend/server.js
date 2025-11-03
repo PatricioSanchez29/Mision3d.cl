@@ -33,11 +33,14 @@ try {
 }
 
 // --- Inicialización asíncrona de transbank-sdk y arranque del servidor ---
+import sitemapRouter from './sitemap.js';
 let WebpayPlus, Options, Environment, IntegrationCommerceCodes, IntegrationApiKeys;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app = express();
+// Endpoint para sitemap.xml
+app.use(sitemapRouter);
 // Configurar trust proxy para Render (soluciona warning de express-rate-limit)
 app.set('trust proxy', 1);
 

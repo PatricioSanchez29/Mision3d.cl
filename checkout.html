@@ -4,10 +4,44 @@
   <meta charset="UTF-8">
   <title>Checkout | Mision3D</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Finaliza tu compra de impresión 3D personalizada en Misión 3D. Pago seguro y envío rápido a todo Chile.">
+  <meta name="keywords" content="checkout, compra, impresión 3D, personalizado, Chile, tienda, pago">
+  <meta property="og:title" content="Checkout | Misión 3D"/>
+  <meta property="og:description" content="Finaliza tu compra de impresión 3D personalizada en Misión 3D. Pago seguro y envío rápido a todo Chile."/>
+  <meta property="og:image" content="https://tudominio.cl/img/Logo_Mision3d.jpg"/>
+  <meta property="og:url" content="https://tudominio.cl/checkout.html"/>
+  <meta property="og:type" content="website"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="Checkout | Misión 3D"/>
+  <meta name="twitter:description" content="Finaliza tu compra de impresión 3D personalizada en Misión 3D. Pago seguro y envío rápido a todo Chile."/>
+  <meta name="twitter:image" content="https://tudominio.cl/img/Logo_Mision3d.jpg"/>
+  <link rel="canonical" href="https://tudominio.cl/checkout.html"/>
+  <meta name="robots" content="noindex, nofollow"/>
   <link rel="stylesheet" href="style.css">
   <script>window.GA_MEASUREMENT_ID = window.GA_MEASUREMENT_ID || 'G-XXXXXXXXXX';</script>
   <script src="consent.js"></script>
   <style>
+  /* Microinteracciones para botones principales */
+  .btn-register, .btn.primary, .btn.small, .btn.outline, .cart-btn, .search-btn, .btn-wide {
+    transition: background 0.18s, color 0.18s, box-shadow 0.18s, transform 0.12s;
+    box-shadow: 0 1px 4px #0001;
+  }
+  .btn-register:hover, .btn.primary:hover, .btn.small:hover, .btn.outline:hover, .cart-btn:hover, .search-btn:hover, .btn-wide:hover {
+    background: #4f46e5;
+    color: #fff;
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 4px 16px #4f46e522;
+  }
+  .btn-register:active, .btn.primary:active, .btn.small:active, .btn.outline:active, .cart-btn:active, .search-btn:active, .btn-wide:active {
+    background: #312e81;
+    color: #fff;
+    transform: scale(0.97);
+    box-shadow: 0 1px 4px #0002;
+  }
+  .btn-register:focus, .btn.primary:focus, .btn.small:focus, .btn.outline:focus, .cart-btn:focus, .search-btn:focus, .btn-wide:focus {
+    outline: 2px solid #6366f1;
+    outline-offset: 2px;
+  }
     /* Oculta el bloque de usuario en checkout */
     #userArea { display: none !important; }
   </style>
@@ -216,6 +250,21 @@
 
   <aside class="summary">
     <h3>Resumen</h3>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+      <span title="SSL Seguro" style="display:flex;align-items:center;gap:4px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span style="font-size:11px;color:#059669;font-weight:600;">SSL</span>
+      </span>
+      <span title="Webpay" style="display:flex;align-items:center;gap:4px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="3"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01"/></svg>
+        <span style="font-size:11px;color:#2563eb;font-weight:600;">Webpay</span>
+      </span>
+      <span title="Transbank" style="display:flex;align-items:center;gap:4px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e11d48" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+        <span style="font-size:11px;color:#e11d48;font-weight:600;">Transbank</span>
+      </span>
+      <a href="privacidad.html" target="_blank" style="font-size:13px;color:#0ea5e9;text-decoration:underline;">Política de Privacidad</a>
+    </div>
     <div class="summary-items" id="summaryItems">
       <p style="font-size:.8rem;color:#666">Carrito vacío</p>
     </div>

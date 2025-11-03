@@ -3,11 +3,55 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Crea tu cuenta en Misión 3D y comienza a personalizar tus pedidos de impresión 3D en Chile.">
+  <meta name="keywords" content="registro, crear cuenta, impresión 3D, personalizado, Chile, tienda">
+  <meta property="og:title" content="Crear cuenta - Misión 3D"/>
+  <meta property="og:description" content="Crea tu cuenta y accede a servicios de impresión 3D personalizada en Chile."/>
+  <meta property="og:image" content="https://tudominio.cl/img/Logo_Mision3d.jpg"/>
+  <meta property="og:url" content="https://tudominio.cl/register.html"/>
+  <meta property="og:type" content="website"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="Crear cuenta - Misión 3D"/>
+  <meta name="twitter:description" content="Crea tu cuenta y accede a servicios de impresión 3D personalizada en Chile."/>
+  <meta name="twitter:image" content="https://tudominio.cl/img/Logo_Mision3d.jpg"/>
+  <link rel="canonical" href="https://tudominio.cl/register.html"/>
+  <meta name="robots" content="index, follow"/>
   <title>Crear cuenta - Misión 3D</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="header-new-style.css" />
   <script src="consent.js"></script>
+  <script src="recaptcha-key.js"></script>
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // --- reCAPTCHA integración registro ---
+    let registerAttempts = parseInt(localStorage.getItem('registerAttempts') || '0');
+    let recaptchaWidgetId = null;
+    function showRecaptcha() {
+      const recaptchaContainer = document.getElementById('recaptcha-container');
+      if (recaptchaContainer) recaptchaContainer.style.display = 'block';
+    }
+    function hideRecaptcha() {
+      const recaptchaContainer = document.getElementById('recaptcha-container');
+      if (recaptchaContainer) recaptchaContainer.style.display = 'none';
+    }
+    function onRecaptchaLoadCallback() {
+      if (document.getElementById('recaptcha-container')) {
+        recaptchaWidgetId = grecaptcha.render('recaptcha-container', {
+          'sitekey': window.RECAPTCHA_SITE_KEY,
+          'size': 'invisible',
+          'callback': onRegisterRecaptchaSuccess
+        });
+      }
+    }
+    async function onRegisterRecaptchaSuccess(token) {
+      // Reintentar submit solo si el captcha fue exitoso
+      hideRecaptcha();
+      // Simular click en submit para reintentar
+      document.getElementById('registerForm').dispatchEvent(new Event('submit'));
+    }
+    // --- Fin integración reCAPTCHA registro ---
+  </script>
   <style>
     .register-container {
       max-width: 600px;
@@ -16,6 +60,39 @@
       border-radius: 18px;
       padding: 40px 32px;
       box-shadow: 0 2px 16px #0001;
+    }
+    .form-group label.required::after {
+      content: ' *';
+      color: #e11d48;
+      font-weight: bold;
+    }
+    .error-msg {
+      color: #e11d48;
+      font-size: 0.97em;
+      margin-top: 4px;
+      display: block;
+      min-height: 18px;
+    }
+    /* Microinteracciones para botones principales */
+    .btn-register, .btn.primary, .btn.small, .btn.outline, .cart-btn, .search-btn {
+      transition: background 0.18s, color 0.18s, box-shadow 0.18s, transform 0.12s;
+      box-shadow: 0 1px 4px #0001;
+    }
+    .btn-register:hover, .btn.primary:hover, .btn.small:hover, .btn.outline:hover, .cart-btn:hover, .search-btn:hover {
+      background: #4f46e5;
+      color: #fff;
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 4px 16px #4f46e522;
+    }
+    .btn-register:active, .btn.primary:active, .btn.small:active, .btn.outline:active, .cart-btn:active, .search-btn:active {
+      background: #312e81;
+      color: #fff;
+      transform: scale(0.97);
+      box-shadow: 0 1px 4px #0002;
+    }
+    .btn-register:focus, .btn.primary:focus, .btn.small:focus, .btn.outline:focus, .cart-btn:focus, .search-btn:focus {
+      outline: 2px solid #6366f1;
+      outline-offset: 2px;
     }
     .register-title {
       text-align: center;
@@ -82,7 +159,7 @@
 
     <h1 class="logo" style="margin:0;display:flex;align-items:center">
       <a href="index.html" style="display:inline-flex;align-items:center;text-decoration:none">
-        <img src="img/Logo_Mision3d.jpg" alt="Misión 3D" class="logo-img" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-text',textContent:'Misión 3D'}));" />
+  <img src="img/Logo_Mision3d.jpg" alt="Misión 3D" class="logo-img" loading="lazy" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-text',textContent:'Misión 3D'}));" />
       </a>
     </h1>
     <nav class="nav">
@@ -129,16 +206,17 @@
     <div class="register-title">CREAR UNA CUENTA</div>
     <form id="registerForm">
       <div class="form-group">
-        <label for="regEmail">E-mail *</label>
+        <label for="regEmail" class="required">E-mail</label>
         <input type="email" id="regEmail" class="form-input" required autocomplete="email">
-        <div id="emailErrorMsg" class="error-msg" style="display:none;"></div>
+        <div id="emailErrorMsg" class="error-msg"></div>
       </div>
       <div class="form-group">
-        <label for="regPhone">Teléfono *</label>
+        <label for="regPhone" class="required">Teléfono</label>
         <input type="tel" id="regPhone" class="form-input" required autocomplete="tel">
+        <div id="phoneErrorMsg" class="error-msg"></div>
       </div>
       <div class="form-group">
-        <label for="regPassword">Contraseña *</label>
+        <label for="regPassword" class="required">Contraseña</label>
         <div style="position:relative;display:flex;align-items:center;">
           <input type="password" id="regPassword" class="form-input" required autocomplete="new-password" style="flex:1;">
           <button type="button" id="togglePass1" style="position:absolute;right:10px;background:none;border:none;cursor:pointer;font-size:14px;padding:6px;color:#1f2937;" tabindex="-1" aria-label="Mostrar/Ocultar contraseña">Mostrar</button>
@@ -153,13 +231,15 @@
             <li id="req-symbol">Al menos un símbolo</li>
           </ul>
         </div>
+        <div id="passwordErrorMsg" class="error-msg"></div>
       </div>
       <div class="form-group">
-        <label for="regPassword2">Confirmar Contraseña *</label>
+        <label for="regPassword2" class="required">Confirmar Contraseña</label>
         <div style="position:relative;display:flex;align-items:center;">
           <input type="password" id="regPassword2" class="form-input" required autocomplete="new-password" style="flex:1;">
           <button type="button" id="togglePass2" style="position:absolute;right:10px;background:none;border:none;cursor:pointer;font-size:14px;padding:6px;color:#1f2937;" tabindex="-1" aria-label="Mostrar/Ocultar contraseña">Mostrar</button>
         </div>
+        <div id="password2ErrorMsg" class="error-msg"></div>
       </div>
       <div class="checkbox-group">
         <input type="checkbox" id="newsletter">
@@ -170,7 +250,8 @@
         <label for="termsCheckbox">He leído y acepto los <a href="#" onclick="alert('Demo: Términos y Condiciones'); return false;">Términos y Condiciones</a>.</label>
       </div>
       <div id="registerMsg"></div>
-      <button type="submit" class="btn-register">CONFIRMAR</button>
+  <div id="recaptcha-container" style="display:none;margin:12px 0;"></div>
+  <button type="submit" class="btn-register">CONFIRMAR</button>
       <div class="form-footer-text">
         ¿Ya tienes una cuenta? <a href="login.html">Puedes ingresar aquí</a>.
       </div>
@@ -182,23 +263,20 @@
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     // Validación en tiempo real de email
     const regEmail = document.getElementById('regEmail');
-    const emailCheck = document.getElementById('emailCheck');
     regEmail.addEventListener('input', function() {
       const emailRegex = /^[\w-.]+@([\w-]+\.)+[\w-]{2,}$/;
+      const errorMsg = document.getElementById('emailErrorMsg');
       if (regEmail.value.trim() === '') {
         regEmail.classList.remove('valid', 'invalid');
-        document.getElementById('emailErrorMsg').style.display = 'none';
-        document.getElementById('emailErrorMsg').textContent = '';
+        errorMsg.textContent = 'El correo es obligatorio.';
       } else if (emailRegex.test(regEmail.value.trim())) {
         regEmail.classList.add('valid');
         regEmail.classList.remove('invalid');
-        document.getElementById('emailErrorMsg').style.display = 'none';
-        document.getElementById('emailErrorMsg').textContent = '';
+        errorMsg.textContent = '';
       } else {
         regEmail.classList.remove('valid');
         regEmail.classList.add('invalid');
-        document.getElementById('emailErrorMsg').style.display = 'none';
-        document.getElementById('emailErrorMsg').textContent = '';
+        errorMsg.textContent = 'Correo electrónico inválido.';
       }
     });
 
@@ -206,17 +284,20 @@
 
     // Validación en tiempo real de teléfono chileno
     const regPhone = document.getElementById('regPhone');
-    const phoneCheck = document.getElementById('phoneCheck');
     regPhone.addEventListener('input', function() {
       const phoneRegex = /^9\d{8}$/;
+      const errorMsg = document.getElementById('phoneErrorMsg');
       if (regPhone.value.trim() === '') {
         regPhone.classList.remove('valid', 'invalid');
+        errorMsg.textContent = 'El teléfono es obligatorio.';
       } else if (phoneRegex.test(regPhone.value.trim())) {
         regPhone.classList.add('valid');
         regPhone.classList.remove('invalid');
+        errorMsg.textContent = '';
       } else {
         regPhone.classList.remove('valid');
         regPhone.classList.add('invalid');
+        errorMsg.textContent = 'Debe ser un número chileno válido (9 dígitos, comienza con 9).';
       }
     });
 
@@ -227,19 +308,52 @@
     const reqMinus = document.getElementById('req-minus');
     const reqNum = document.getElementById('req-num');
     const reqSymbol = document.getElementById('req-symbol');
+    const passwordErrorMsg = document.getElementById('passwordErrorMsg');
     regPassword.addEventListener('input', function() {
       const val = regPassword.value;
+      let valid = true;
       // Largo
-      if (val.length >= 8) reqLength.classList.add('valid'); else reqLength.classList.remove('valid');
+      if (val.length >= 8) { reqLength.classList.add('valid'); } else { reqLength.classList.remove('valid'); valid = false; }
       // Mayúscula
-      if (/[A-Z]/.test(val)) reqMayus.classList.add('valid'); else reqMayus.classList.remove('valid');
+      if (/[A-Z]/.test(val)) { reqMayus.classList.add('valid'); } else { reqMayus.classList.remove('valid'); valid = false; }
       // Minúscula
-      if (/[a-z]/.test(val)) reqMinus.classList.add('valid'); else reqMinus.classList.remove('valid');
+      if (/[a-z]/.test(val)) { reqMinus.classList.add('valid'); } else { reqMinus.classList.remove('valid'); valid = false; }
       // Número
-      if (/\d/.test(val)) reqNum.classList.add('valid'); else reqNum.classList.remove('valid');
+      if (/\d/.test(val)) { reqNum.classList.add('valid'); } else { reqNum.classList.remove('valid'); valid = false; }
       // Símbolo
-      if (/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(val)) reqSymbol.classList.add('valid'); else reqSymbol.classList.remove('valid');
+      if (/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(val)) { reqSymbol.classList.add('valid'); } else { reqSymbol.classList.remove('valid'); valid = false; }
+      if (val === '') {
+        regPassword.classList.remove('valid', 'invalid');
+        passwordErrorMsg.textContent = 'La contraseña es obligatoria.';
+      } else if (valid) {
+        regPassword.classList.add('valid');
+        regPassword.classList.remove('invalid');
+        passwordErrorMsg.textContent = '';
+      } else {
+        regPassword.classList.remove('valid');
+        regPassword.classList.add('invalid');
+        passwordErrorMsg.textContent = 'La contraseña no cumple todos los requisitos.';
+      }
     });
+    // Validación de coincidencia de contraseñas
+    const regPassword2 = document.getElementById('regPassword2');
+    const password2ErrorMsg = document.getElementById('password2ErrorMsg');
+    function checkPasswordsMatch() {
+      if (regPassword2.value === '') {
+        regPassword2.classList.remove('valid', 'invalid');
+        password2ErrorMsg.textContent = 'Debes confirmar la contraseña.';
+      } else if (regPassword2.value === regPassword.value) {
+        regPassword2.classList.add('valid');
+        regPassword2.classList.remove('invalid');
+        password2ErrorMsg.textContent = '';
+      } else {
+        regPassword2.classList.remove('valid');
+        regPassword2.classList.add('invalid');
+        password2ErrorMsg.textContent = 'Las contraseñas no coinciden.';
+      }
+    }
+    regPassword2.addEventListener('input', checkPasswordsMatch);
+    regPassword.addEventListener('input', checkPasswordsMatch);
 
     // Mostrar/ocultar contraseña
     document.getElementById('togglePass1').addEventListener('click', function() {
@@ -255,8 +369,8 @@
 
     document.getElementById('registerForm').addEventListener('submit', async function(e) {
       e.preventDefault();
-  const email = regEmail.value.trim();
-  const emailErrorMsg = document.getElementById('emailErrorMsg');
+      const email = regEmail.value.trim();
+      const emailErrorMsg = document.getElementById('emailErrorMsg');
       const phone = regPhone.value.trim();
       const password = regPassword.value;
       const password2 = document.getElementById('regPassword2').value;
@@ -307,8 +421,13 @@
         msg.className = 'error-msg';
         return;
       }
+      // Si hay 3 o más intentos fallidos, forzar reCAPTCHA
+      if (registerAttempts >= 3) {
+        showRecaptcha();
+        grecaptcha.execute(recaptchaWidgetId);
+        return;
+      }
       // Registro con Supabase
-      // Registro clásico con confirmación de correo
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -321,6 +440,9 @@
         }
       });
       if (error) {
+        registerAttempts++;
+        localStorage.setItem('registerAttempts', registerAttempts);
+        if (registerAttempts >= 3) showRecaptcha();
         let msgText = (error.message || '').toLowerCase();
         if (
           msgText.includes('already registered') ||
@@ -340,6 +462,7 @@
         return;
       }
       // Solo si NO hay error
+      localStorage.setItem('registerAttempts', '0');
       msg.textContent = '¡Registro exitoso! Revisa tu correo para confirmar tu cuenta.';
       msg.className = 'success-msg';
       document.getElementById('registerForm').reset();
@@ -355,7 +478,7 @@
   <footer class="footer" style="background:#181f2a;color:#bfc7d5;padding:40px 0 20px 0;margin-top:40px;width:100vw;">
     <div style="max-width:1200px;margin:0 auto;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:32px;">
       <div style="flex:1;min-width:220px;display:flex;flex-direction:column;align-items:center;">
-        <img src="img/Logo_Mision3d.jpg" alt="Mision3D Logo" style="width:110px;margin-bottom:12px;">
+  <img src="img/Logo_Mision3d.jpg" alt="Mision3D Logo" style="width:110px;margin-bottom:12px;" loading="lazy">
         <div style="font-size:1.1rem;font-weight:500;">Impresión 3D personalizada</div>
         <div style="font-size:0.98rem;color:#bfc7d5;">Transforma tus ideas en realidad</div>
       </div>
