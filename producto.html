@@ -252,6 +252,8 @@ if(typeof window.money !== 'function') {
 document.addEventListener('DOMContentLoaded', function() {
   // Dar tiempo a que script.js cargue PRODUCTS
   setTimeout(renderProductDetail, 100);
+  // Si luego llegan productos frescos desde Supabase, re-renderizar
+  document.addEventListener('productsReady', renderProductDetail, { once: false });
 });
 
 function getParam(name){return new URLSearchParams(location.search).get(name);} 
@@ -268,8 +270,24 @@ function renderProductDetail(){
   const breadcrumb=document.getElementById('breadcrumb');
   if(!p){info.innerHTML='<p>Producto no encontrado. <a href="catalogo.html">Volver al catálogo</a></p>';return;}
   breadcrumb.innerHTML=`<a href='index.html'>Inicio</a> › ${p.name}`;
-  // Galería simple (si en futuro p.gallery existe la usamos)
-  const gallery=(p.gallery&&p.gallery.length?p.gallery:[p.img]);
+  // Galería: combina imagen principal + galería adicional
+  let galleryImages = [p.img]; // Siempre incluir imagen principal
+  if(p.gallery) {
+    let additionalImages = [];
+    if(Array.isArray(p.gallery)) {
+      additionalImages = p.gallery;
+    } else if(typeof p.gallery === 'string') {
+      try {
+        additionalImages = JSON.parse(p.gallery);
+      } catch(e) {
+        additionalImages = [];
+      }
+    }
+    if(additionalImages.length > 0) {
+      galleryImages = galleryImages.concat(additionalImages.filter(url => url && url.trim() !== ''));
+    }
+  }
+  const gallery = galleryImages;
   const thumbs=document.getElementById('thumbs');
   thumbs.innerHTML=gallery.map((g,i)=>`<div class='product-thumb ${i===0?'active':''}' data-img='${g}'><img src='${g}' alt='thumb' loading='lazy'></div>`).join('');
   thumbs.querySelectorAll('.product-thumb').forEach(th=>th.onclick=()=>{document.getElementById('mainImage').src=th.dataset.img;thumbs.querySelectorAll('.product-thumb').forEach(x=>x.classList.remove('active'));th.classList.add('active');});
@@ -317,6 +335,30 @@ function renderProductDetail(){
     window.location.href = 'checkout.html';
   };
 }
+</script>
+<!-- Cargar productos desde Supabase para asegurar datos frescos (incluye gallery) -->
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+  const SUPABASE_URL = 'https://ytuwkynphdttotifgyaf.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0dXdreW5waGR0dG90aWZneWFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3ODUyMzYsImV4cCI6MjA3NzM2MTIzNn0.JIFDBzpYTcChc1fnmp6pFL0K9SZPnn2ltp4iKxLdSus';
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  async function cargarProductosDesdeSupabase() {
+    try {
+      const { data, error } = await supabase.from('productos').select('*');
+      if (error) throw error;
+      window.PRODUCTS = data || window.PRODUCTS || [];
+      try { localStorage.setItem('PRODUCTS', JSON.stringify(window.PRODUCTS)); } catch {}
+      document.dispatchEvent(new Event('productsReady'));
+    } catch (err) {
+      console.warn('[producto.html] No se pudieron cargar productos desde Supabase:', err?.message || err);
+      // fallback: usar lo que ya haya en window.PRODUCTS/localStorage
+      document.dispatchEvent(new Event('productsReady'));
+    }
+  }
+
+  // Ejecutar carga (no bloqueante, renderizará al llegar)
+  cargarProductosDesdeSupabase();
 </script>
 
 <!-- Productos relacionados -->
@@ -536,6 +578,5 @@ document.addEventListener('DOMContentLoaded', () => {
 <script src="wishlist.js"></script>
 <script src="ux-enhancements.js"></script>
 <script src="mobile-menu.js"></script>
-<script type="module" src="firebase-rtdb.js"></script>
 <!-- Scripts página producto -->
 </body></html>

@@ -401,84 +401,51 @@
   </script>
 
 <!-- Firebase RTDB (módulos) -->
+<!-- Supabase: Productos y Pedidos -->
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-  import { getDatabase, ref, get, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+  const SUPABASE_URL = 'https://ytuwkynphdttotifgyaf.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0dXdreW5waGR0dG90aWZneWFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3ODUyMzYsImV4cCI6MjA3NzM2MTIzNn0.JIFDBzpYTcChc1fnmp6pFL0K9SZPnn2ltp4iKxLdSus';
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  // ⚙️ Configuración: usa tu databaseURL
-  const firebaseConfig = {
-    databaseURL: "https://mision3d-72b4a-default-rtdb.firebaseio.com/"
-  };
-
-  // Inicializa
-  const app = initializeApp(firebaseConfig);
-  const db  = getDatabase(app);
-
-  // 👉 Cargar productos desde RTDB y renderizar catálogo
-  async function cargarProductosDesdeRTDB() {
+  // Cargar productos desde Supabase y renderizar catálogo
+  async function cargarProductosDesdeSupabase() {
     try {
-      const snap = await get(ref(db, "productos"));
-      if (snap.exists()) {
-        const data = snap.val();
-        // Convierte {id:{...}} -> [{id,...}]
-        window.PRODUCTS = Object.entries(data).map(([id, p]) => ({ id, ...p }));
-        
-        // IMPORTANTE: Actualizar localStorage para que coincida con Firebase
-        localStorage.setItem('PRODUCTS', JSON.stringify(window.PRODUCTS));
-        
-        // Disparar evento de productos listos
-        document.dispatchEvent(new Event('productsReady'));
-        console.log('✅ Productos cargados desde Firebase. Evento productsReady disparado.');
-        
-        // Renderizar productos en la página de inicio (máximo 5)
-        renderHomeProducts(window.PRODUCTS.slice(0, 5));
-      } else {
-        console.warn("No hay productos en RTDB. Uso fallback local si existe.");
-        // Si no hay nada en RTDB, limpiar localStorage también
-        localStorage.removeItem('PRODUCTS');
-        // Si no hay nada en RTDB, usar productos del fallback en script.js
-        if (window.PRODUCTS && window.PRODUCTS.length > 0) {
-          document.dispatchEvent(new Event('productsReady'));
-          console.log('✅ Usando productos fallback. Evento productsReady disparado.');
-          renderHomeProducts(window.PRODUCTS.slice(0, 5));
-        }
-      }
-      // Tu función de pintado ya existe en script.js (para catalogo.html)
+      const { data, error } = await supabase.from('productos').select('*');
+      if (error) throw error;
+      window.PRODUCTS = data || [];
+      localStorage.setItem('PRODUCTS', JSON.stringify(window.PRODUCTS));
+      document.dispatchEvent(new Event('productsReady'));
+      renderHomeProducts(window.PRODUCTS.slice(0, 5));
       if (typeof window.renderCatalog === "function") renderCatalog("");
     } catch (err) {
       console.error("Error cargando productos:", err);
-      // Si falla la conexión, usar productos locales si existen
       if (window.PRODUCTS && window.PRODUCTS.length > 0) {
         document.dispatchEvent(new Event('productsReady'));
-        console.log('✅ Error en Firebase, usando productos fallback. Evento productsReady disparado.');
         renderHomeProducts(window.PRODUCTS.slice(0, 5));
       }
       if (typeof window.renderCatalog === "function") renderCatalog("");
     }
   }
-    // Función para renderizar productos en la página de inicio
+
   function renderHomeProducts(products) {
     const grid = document.getElementById('homeProductsGrid');
     if (!grid) return;
-    
     if (!products || products.length === 0) {
       grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#888">No hay productos disponibles</p>';
       return;
     }
-    
     grid.innerHTML = products.map(p => {
       const desc = p.name.includes('Calendario') ? 'Calendario 3D con circuitos' :
                    p.name.includes('Beyblade') ? 'Personalizable con tu nombre' :
                    p.name.includes('Mascota') ? 'Tu mascota en 3D' :
                    p.name.includes('Pokebola') ? 'Pokebola coleccionable' : 
                    'Personalizado con tu logo';
-      
       const price = p.price ? `$${p.price.toLocaleString('es-CL')}` : 'Consultar';
-      
       return `
         <div class="card">
           <a href="producto.html?id=${p.id}" class="prod-link">
-            <img src="${p.img || 'img/placeholder.png'}" alt="${p.name}">
+            <img src="${p.img || 'img/placeholder.png'}" alt="${p.name}" data-product-id="${p.id}">
           </a>
           <h4>
             <a href="producto.html?id=${p.id}" class="prod-link">${p.name}</a>
@@ -489,8 +456,6 @@
         </div>
       `;
     }).join('');
-    
-    // Conectar eventos de los botones "Agregar"
     grid.querySelectorAll('.add').forEach(btn => {
       btn.addEventListener('click', () => {
         if (typeof window.add === 'function') {
@@ -498,19 +463,27 @@
         }
       });
     });
+    // Adjuntar carrusel hover en las imágenes de inicio
+    try {
+      // getGalleryImages y attachHoverCarousel están en script.js; si no están, no rompe
+      grid.querySelectorAll('img[data-product-id]').forEach(img => {
+        const pid = img.getAttribute('data-product-id');
+        const prod = (window.PRODUCTS || []).find(p => String(p.id) === String(pid));
+        if (typeof attachHoverCarousel === 'function') {
+          attachHoverCarousel(img, prod);
+        }
+      });
+    } catch (e) { /* silencioso */ }
   }
 
   // Llama al cargar inicio
-  cargarProductosDesdeRTDB();
+  cargarProductosDesdeSupabase();
 
-  // 👉 Guardar pedido en RTDB desde checkout.html (si esa página está abierta)
-  // Nos “enganchamos” al botón Confirmar si existe en el DOM.
+  // Guardar pedido en Supabase desde checkout.html (si esa página está abierta)
   document.addEventListener("DOMContentLoaded", () => {
     const btnConfirm = document.getElementById("btnConfirmOrder");
-    if (!btnConfirm) return; // esta línea corre en index y en otras páginas también
-
+    if (!btnConfirm) return;
     btnConfirm.addEventListener("click", async () => {
-      // Lee campos del checkout (todos existen en tu checkout.html):contentReference[oaicite:3]{index=3}
       const pedido = {
         email:       document.getElementById("inputEmail")?.value?.trim() || "",
         nombre:      document.getElementById("inputName")?.value?.trim() || "",
@@ -522,25 +495,20 @@
         telefono:    document.getElementById("inputTelefono")?.value?.trim() || "",
         postal:      document.getElementById("inputPostal")?.value?.trim() || "",
         notas:       document.getElementById("inputNotes")?.value?.trim() || "",
-        // método de envío visible en la UI (por pagar / santiago)
         envio:       (document.querySelector('input[name="shipMethod"]:checked')?.value) || (document.getElementById("inputEnvio")?.value) || "",
-        // método de pago (si agregas radios como en tu UI de pago):contentReference[oaicite:4]{index=4}
         pago:        (document.querySelector('input[name="payMethod"]:checked')?.value) || "",
-        // Carrito (intenta leer de localStorage, con fallback)
         items:       (() => { try { return JSON.parse(localStorage.getItem("cart") || "[]"); } catch { return []; } })(),
         totalCLP:    (() => {
-                        // si ya calculas total en el sidebar, podrías leerlo del DOM; aquí hacemos sumatoria
                         const items = JSON.parse(localStorage.getItem("cart") || "[]");
                         return items.reduce((s, it) => s + (it.price * (it.qty || 1)), 0);
                       })(),
         estado:      "pendiente",
-        createdAt:   serverTimestamp()
+        createdAt:   new Date().toISOString()
       };
-
       try {
-        const refNuevo = await push(ref(db, "pedidos"), pedido);
-        alert("✅ Pedido registrado. ID: " + refNuevo.key + "\nTe contactaremos por correo/WhatsApp.");
-        // Limpia carrito si quieres:
+        const { error } = await supabase.from('pedidos').insert([pedido]);
+        if (error) throw error;
+        alert("✅ Pedido registrado. Te contactaremos por correo/WhatsApp.");
         localStorage.removeItem("cart");
         window.location.href = "index.html";
       } catch (e) {
@@ -553,6 +521,5 @@
 
 <script src="ux-enhancements.js"></script>
 <script src="mobile-menu.js"></script>
-<script type="module" src="firebase-rtdb.js"></script>
 <!-- Scripts página producto -->
 </body></html>

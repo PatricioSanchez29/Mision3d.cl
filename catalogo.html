@@ -18,14 +18,14 @@
   <meta name="keywords" content="catálogo, impresión 3D, productos, personalizado, Chile, tienda">
   <meta property="og:title" content="Catálogo - Misión 3D"/>
   <meta property="og:description" content="Descubre nuestro catálogo de productos de impresión 3D personalizada en Chile."/>
-  <meta property="og:image" content="https://tudominio.cl/img/Logo_Mision3d.jpg"/>
-  <meta property="og:url" content="https://tudominio.cl/catalogo.html"/>
+  <meta property="og:image" content="https://mision3d.cl/img/Logo_Mision3d.jpg"/>
+  <meta property="og:url" content="https://mision3d.cl/catalogo.html"/>
   <meta property="og:type" content="website"/>
   <meta name="twitter:card" content="summary_large_image"/>
   <meta name="twitter:title" content="Catálogo - Misión 3D"/>
   <meta name="twitter:description" content="Descubre nuestro catálogo de productos de impresión 3D personalizada en Chile."/>
-  <meta name="twitter:image" content="https://tudominio.cl/img/Logo_Mision3d.jpg"/>
-  <link rel="canonical" href="https://tudominio.cl/catalogo.html"/>
+  <meta name="twitter:image" content="https://mision3d.cl/img/Logo_Mision3d.jpg"/>
+  <link rel="canonical" href="https://mision3d.cl/catalogo.html"/>
   <meta name="robots" content="index, follow"/>
   <title>Catálogo - Misión 3D</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -307,6 +307,28 @@
 
 <script src="ux-enhancements.js"></script>
 <script src="mobile-menu.js"></script>
-<script type="module" src="firebase-rtdb.js"></script>
-<!-- Scripts página producto -->
+<!-- Cargar productos desde Supabase en catálogo para asegurar datos frescos (incluye gallery) -->
+<script type="module">
+  // Cargar productos desde Supabase en catálogo para asegurar datos frescos (incluye gallery)
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+  const SUPABASE_URL = 'https://ytuwkynphdttotifgyaf.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0dXdreW5waGR0dG90aWZneWFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3ODUyMzYsImV4cCI6MjA3NzM2MTIzNn0.JIFDBzpYTcChc1fnmp6pFL0K9SZPnn2ltp4iKxLdSus';
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  async function cargarProductosDesdeSupabase() {
+    try {
+      const { data, error } = await supabase.from('productos').select('*');
+      if (error) throw error;
+      window.PRODUCTS = data || window.PRODUCTS || [];
+      try { localStorage.setItem('PRODUCTS', JSON.stringify(window.PRODUCTS)); } catch {}
+      document.dispatchEvent(new Event('productsReady'));
+      if (typeof window.renderCatalog === 'function') window.renderCatalog('');
+    } catch (err) {
+      console.warn('[catalogo.html] No se pudieron cargar productos desde Supabase:', err?.message || err);
+      document.dispatchEvent(new Event('productsReady'));
+      if (typeof window.renderCatalog === 'function') window.renderCatalog('');
+    }
+  }
+  cargarProductosDesdeSupabase();
+</script>
 </body></html>

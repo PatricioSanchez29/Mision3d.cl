@@ -211,8 +211,9 @@ function showSearchSuggestions(text) {
 
 /* ==================== Fallback de productos ==================== */
 // Campos extra: category, dateAdded (YYYY-MM-DD), discount (% entero)
-// Si Firebase RTDB los trae, window.PRODUCTS será sobrescrito allí.
 // Productos por defecto (se pueden sobreescribir por localStorage o Firebase)
+// Productos por defecto (se pueden sobreescribir por localStorage)
+// IMPORTANTE: Si existe una versión en localStorage, usarla temporalmente
 window.PRODUCTS = window.PRODUCTS || [
   {id:'f1',  name:'Calendario Formula 1', price:12990, img:'img/calendario-f1.png', stars:5, reviews:3, stock:'disponible', category:'Calendarios',    dateAdded:'2025-08-25', discount:0},
   {id:'bey', name:'Caja Beyblade',        price:12990, img:'img/caja-beyblade.png',stars:5, reviews:5, stock:'disponible', category:'Cajas',          dateAdded:'2025-09-05', discount:0},
@@ -239,7 +240,9 @@ try {
         stock: p.stock || 'disponible',
         category: p.category || 'Otros',
         dateAdded: p.dateAdded || new Date().toISOString().slice(0,10),
-        discount: Number(p.discount ?? 0)
+          discount: Number(p.discount ?? 0),
+          // Mantener galería si existe (array o string JSON)
+          gallery: (typeof p.gallery !== 'undefined') ? p.gallery : undefined
       }));
     }
   }
@@ -250,6 +253,47 @@ let currentCategory = 'all';
 let currentSort = 'rating-desc';
 let viewMode = 'grid';
 let priceMin = null, priceMax = null, stockFilter = 'all';
+
+// Devuelve [imgPrincipal, ...galeria] como array plano y limpio
+function getGalleryImages(product){
+  if(!product) return [];
+  const base = product.img ? [String(product.img)] : [];
+  let extras = [];
+  if(product.gallery){
+    if(Array.isArray(product.gallery)){
+      extras = product.gallery;
+    } else if(typeof product.gallery === 'string'){
+      try { const parsed = JSON.parse(product.gallery); if(Array.isArray(parsed)) extras = parsed; } catch{}
+    }
+  }
+  const all = base.concat(extras || []);
+  // limpiar vacíos y duplicados conservando orden
+  const seen = new Set();
+  const cleaned = [];
+  all.forEach(u=>{ const url=(u||'').trim(); if(url && !seen.has(url)){ seen.add(url); cleaned.push(url);} });
+  return cleaned;
+}
+
+// Adjunta rotación de imágenes en hover
+function attachHoverCarousel(imgEl, product){
+  try{
+    const imgs = getGalleryImages(product);
+    if(!imgEl || !imgs || imgs.length <= 1) return; // nada que rotar
+    let idx = 0; let timer = null; const original = imgEl.src;
+    const start = ()=>{
+      stop();
+      timer = setInterval(()=>{
+        idx = (idx + 1) % imgs.length;
+        imgEl.src = imgs[idx];
+      }, 1200);
+    };
+    const stop = ()=>{ if(timer){ clearInterval(timer); timer=null; imgEl.src = imgs[0] || original; idx = 0; } };
+    imgEl.addEventListener('mouseenter', start);
+    imgEl.addEventListener('mouseleave', stop);
+    imgEl.addEventListener('touchstart', start, {passive:true});
+    imgEl.addEventListener('touchend', stop, {passive:true});
+  }catch(e){ /* silencioso */ }
+}
 
 function applySort(list){
   switch(currentSort){
@@ -376,10 +420,26 @@ function renderCatalog(filterText = ""){
     const priceOriginal = p.discount? `<span style="text-decoration:line-through;color:#888;font-size:.8rem;margin-right:6px">${money(p.price)}</span>`:'';
     const finalPrice = p.discount? Math.round(p.price*(1-p.discount/100)) : p.price;
 
+    // Verificar si hay galería
+    let galleryCount = 0;
+    if(p.gallery) {
+      if(Array.isArray(p.gallery)) {
+        galleryCount = p.gallery.filter(url => url && url.trim() !== '').length;
+      } else if(typeof p.gallery === 'string') {
+        try {
+          const parsed = JSON.parse(p.gallery);
+          galleryCount = Array.isArray(parsed) ? parsed.filter(url => url && url.trim() !== '').length : 0;
+        } catch(e) {
+          galleryCount = 0;
+        }
+      }
+    }
+    const galleryIndicator = galleryCount > 0 ? `<div class="gallery-indicator" title="${galleryCount + 1} fotos">📸 ${galleryCount + 1}</div>` : '';
+
     if(viewMode==='list'){
       card.innerHTML = `
         <img src="${p.img}" loading="lazy" data-link>
-        <div class="badge-wrap">${badges}</div>
+        <div class="badge-wrap">${badges}${galleryIndicator}</div>
         <div class="name" style="font-size:1.15rem;font-weight:600">${p.name}</div>
         <div style="display:flex;flex-direction:column;gap:4px">
           <div class="price" style="margin:0">${priceOriginal}${money(finalPrice)}</div>
@@ -394,7 +454,7 @@ function renderCatalog(filterText = ""){
     } else {
       card.innerHTML = `
         <img src="${p.img}" loading="lazy" data-link>
-        <div class="badge-wrap">${badges}</div>
+        <div class="badge-wrap">${badges}${galleryIndicator}</div>
         <div class="price">${priceOriginal}${money(finalPrice)}</div>
         <div class="name" data-link>${p.name}</div>
         <div class="desc">${desc}</div>
@@ -416,6 +476,9 @@ function renderCatalog(filterText = ""){
         window.location.href = `producto.html?id=${p.id}`;
       });
     });
+    // Adjuntar carrusel en hover a la imagen principal de la card
+    const imgEl = card.querySelector('img');
+    attachHoverCarousel(imgEl, p);
   });
 
   $$('.add').forEach(b=>b.onclick=()=>add(b.dataset.id));

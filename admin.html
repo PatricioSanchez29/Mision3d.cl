@@ -24,6 +24,15 @@
     .form-row label { flex: 1; display: flex; flex-direction: column; font-size: .95rem; }
     .form-row input, .form-row textarea, .form-row select { padding: 8px 10px; border: 1px solid #ccc; border-radius: 6px; font-size: .97rem; }
     .form-actions { display: flex; gap: 10px; }
+    .gallery-manager { border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin-bottom: 12px; background: #fafafa; }
+    .gallery-item { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+    .gallery-item input { flex: 1; }
+    .gallery-item img { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; border: 2px solid #ddd; }
+    .btn-gallery { padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; font-size: .9rem; }
+    .btn-gallery.add { background: #20bf6b; color: #fff; }
+    .btn-gallery.remove { background: #eb3b5a; color: #fff; }
+    .gallery-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .gallery-header h4 { margin: 0; font-size: 1rem; }
   </style>
 </head>
 <body>
@@ -38,7 +47,6 @@
       <div id="loginError" style="color:#c00;font-size:.95rem;margin-top:10px;display:none"></div>
     </form>
   </div>
-
   <!-- Panel -->
   <div class="admin-panel" style="display:none">
     <h1>Panel de Administración</h1>
@@ -46,320 +54,381 @@
       <div class="tab active" id="tabProductos">Productos</div>
       <div class="tab" id="tabPedidos">Pedidos</div>
     </div>
-
-    <!-- Productos -->
-    <div id="productosPanel">
-      <button class="btn add" id="btnAddProducto">+ Agregar producto</button>
-      <table class="admin-table" id="productosTable">
-        <thead>
-          <tr><th>Imagen</th><th>Nombre</th><th>Precio</th><th>Stock</th><th>Categoría</th><th>Acciones</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-
-      <div id="productoFormWrap" style="display:none">
-          <script>window.GA_MEASUREMENT_ID = window.GA_MEASUREMENT_ID || 'G-XXXXXXXXXX';</script>
-          <script src="consent.js"></script>
-        <h3 id="formTitle">Agregar producto</h3>
-        <form id="productoForm">
-          <div class="form-row">
-            <label>Nombre<input id="prodName" required></label>
-            <label>Precio (CLP)<input id="prodPrice" type="number" min="0" required></label>
-          </div>
-          <div class="form-row">
-            <label>Imagen URL<input id="prodImg" required placeholder="img/archivo.png o https://..."></label>
-            <label>Stock
-              <select id="prodStock">
-                <option value="disponible">Disponible</option>
-                <option value="bajo">Bajo</option>
-              </select>
-            </label>
-          </div>
-          <div class="form-row">
-            <label>Categoría
-              <input id="prodCat" list="catList" placeholder="Ej: Calendarios">
-              <datalist id="catList"></datalist>
-            </label>
-            <label>Descuento (%)<input id="prodDiscount" type="number" min="0" max="90" value="0"></label>
-          </div>
-          <div class="form-row">
-            <label>Descripción<textarea id="prodDesc" rows="2" placeholder="Opcional"></textarea></label>
-          </div>
-          <div class="form-actions">
-            <button type="submit" class="btn add" id="btnSave">Guardar</button>
-            <button type="button" class="btn delete" id="cancelForm">Cancelar</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- Pedidos -->
-    <div id="pedidosPanel" style="display:none">
-      <table class="admin-table" id="pedidosTable">
-        <thead>
-          <tr><th>ID</th><th>Cliente</th><th>Email</th><th>Total</th><th>Estado</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
+    <div id="productosPanel"></div>
+    <div id="pedidosPanel" style="display:none"></div>
   </div>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+    document.addEventListener('DOMContentLoaded', () => {
+      const PASSWORD = "admin123";
+      const SUPABASE_URL = 'https://ytuwkynphdttotifgyaf.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0dXdreW5waGR0dG90aWZneWFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3ODUyMzYsImV4cCI6MjA3NzM2MTIzNn0.JIFDBzpYTcChc1fnmp6pFL0K9SZPnn2ltp4iKxLdSus';
+      const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      const money = v => Number(v||0).toLocaleString('es-CL',{style:'currency',currency:'CLP'});
+      const toNum  = v => Number(v)||0;
+      let PRODUCTS = [];
+      let mapProductos = {};
+      let editingId = null;
+      let galleryImages = [];
 
-  <script>
-    /*********** CONFIG ***********/
-    const PASSWORD = "admin123";
-    const DB_ROOT = "https://mision3d-72b4a-default-rtdb.firebaseio.com"; // << tu RTDB
-    const money = v => Number(v||0).toLocaleString('es-CL',{style:'currency',currency:'CLP'});
-    const toNum  = v => Number(v)||0;
-
-    /*********** ESTADO ***********/
-    let PRODUCTS = [];                 // arreglo de productos {id, name, price, img, stock...}
-    let mapProductos = {};             // mapa id -> objeto
-    let editingId = null;              // id que se está editando
-
-    /*********** LOGIN ***********/
-    const loginPanel = document.getElementById('loginPanel');
-    const adminPanel = document.querySelector('.admin-panel');
-    adminPanel.style.display = 'none';
-    loginPanel.style.display = '';
-
-    document.getElementById('loginForm').onsubmit = (e)=>{
-      e.preventDefault();
-      const pass = document.getElementById('adminPass').value;
-      if(pass === PASSWORD){
-        loginPanel.style.display = 'none';
-        adminPanel.style.display = '';
-        initAdmin(); // carga datos al entrar
-      }else{
-        const err = document.getElementById('loginError');
-        err.textContent = 'Contraseña incorrecta'; err.style.display = '';
+      async function supaGetProductos() {
+        const { data, error } = await supabase.from('productos').select('*');
+        if (error) throw error;
+        mapProductos = Object.fromEntries((data||[]).map(p=>[p.id, p]));
+        PRODUCTS = data || [];
       }
-    };
-
-    /*********** TABS ***********/
-    const tabProductos = document.getElementById('tabProductos');
-    const tabPedidos   = document.getElementById('tabPedidos');
-    const productosPanel = document.getElementById('productosPanel');
-    const pedidosPanel   = document.getElementById('pedidosPanel');
-    tabProductos.onclick = ()=>{
-      tabProductos.classList.add('active'); tabPedidos.classList.remove('active');
-      productosPanel.style.display=''; pedidosPanel.style.display='none';
-    };
-    tabPedidos.onclick = ()=>{
-      tabPedidos.classList.add('active'); tabProductos.classList.remove('active');
-      productosPanel.style.display='none'; pedidosPanel.style.display='';
-    };
-
-    /*********** DATA: Firebase (REST) ***********/
-    async function rtdbGetProductos(){
-      const r = await fetch(`${DB_ROOT}/productos.json`);
-      if(!r.ok) throw new Error('RTDB GET productos falló');
-      const data = await r.json() || {};
-      // data es un objeto { id: {name, price...}, ... }
-      mapProductos = data;
-      PRODUCTS = Object.entries(data).map(([id, p]) => ({ id, ...p }));
-    }
-
-    async function rtdbPutProducto(id, producto){
-      // Crea/actualiza /productos/{id}
-      const r = await fetch(`${DB_ROOT}/productos/${encodeURIComponent(id)}.json`, {
-        method: 'PUT',
-        headers: { 'Content-Type':'application/json' },
-        body: JSON.stringify(producto)
-      });
-      if(!r.ok){
-        const t = await r.text().catch(()=> '');
-        throw new Error(`RTDB PUT ${r.status} ${t}`);
+      async function supaUpsertProducto(id, producto) {
+        // Si id existe (editar), lo incluimos; si no, lo omitimos (crear)
+        let prod = { ...producto };
+        if (id) prod.id = id;
+        // Solo enviar campos válidos según la tabla
+  const camposValidos = ['id','name','price','img','stock','descripcion','category','discount','stars','reviews','gallery'];
+        let prodFinal = {};
+        for(const k of camposValidos){
+          if(typeof prod[k] !== 'undefined') prodFinal[k] = prod[k];
+        }
+        const { error } = await supabase.from('productos').upsert([prodFinal]);
+        if (error) throw error;
       }
-      return await r.json();
-    }
-
-    async function rtdbDeleteProducto(id){
-      const r = await fetch(`${DB_ROOT}/productos/${encodeURIComponent(id)}.json`, { method:'DELETE' });
-      if(!r.ok){
-        const t = await r.text().catch(()=> '');
-        throw new Error(`RTDB DELETE ${r.status} ${t}`);
+      async function supaDeleteProducto(id) {
+        const { error } = await supabase.from('productos').delete().eq('id', id);
+        if (error) throw error;
       }
-    }
-
-    /*********** UI Helpers ***********/
-    function showAdminToast(msg, type='success'){
-      let toast = document.getElementById('adminToast');
-      if(!toast){
-        toast = document.createElement('div');
-        toast.id = 'adminToast';
-        toast.style.position = 'fixed';
-        toast.style.bottom = '32px';
-        toast.style.left = '50%';
-        toast.style.transform = 'translateX(-50%)';
-        toast.style.background = (type==='success') ? '#20bf6b' : '#eb3b5a';
-        toast.style.color = '#fff';
-        toast.style.padding = '14px 32px';
-        toast.style.borderRadius = '8px';
-        toast.style.fontSize = '1.1rem';
-        toast.style.boxShadow = '0 2px 8px rgba(0,0,0,.12)';
-        toast.style.zIndex = 9999;
-        document.body.appendChild(toast);
+      function showAdminToast(msg, type='success'){
+        let toast = document.getElementById('adminToast');
+        if(!toast){
+          toast = document.createElement('div');
+          toast.id = 'adminToast';
+          toast.style.position = 'fixed';
+          toast.style.bottom = '32px';
+          toast.style.left = '50%';
+          toast.style.transform = 'translateX(-50%)';
+          toast.style.background = (type==='success') ? '#20bf6b' : '#eb3b5a';
+          toast.style.color = '#fff';
+          toast.style.padding = '14px 32px';
+          toast.style.borderRadius = '8px';
+          toast.style.fontSize = '1.1rem';
+          toast.style.boxShadow = '0 2px 8px rgba(0,0,0,.12)';
+          toast.style.zIndex = 9999;
+          document.body.appendChild(toast);
+        }
+        toast.textContent = msg;
+        toast.style.display = '';
+        setTimeout(()=> toast.style.display='none', 1800);
       }
-      toast.textContent = msg;
-      toast.style.display = '';
-      setTimeout(()=> toast.style.display='none', 1800);
-    }
-
-    function slugify(str){
-      return (str||'')
-        .toLowerCase()
-        .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-        .replace(/[^a-z0-9]+/g,'-')
-        .replace(/(^-|-$)/g,'')
-        .slice(0,40) || ('p-'+Date.now());
-    }
-
-    /*********** RENDER ***********/
-    function renderProductos(){
-      const tbody = document.querySelector('#productosTable tbody');
-      tbody.innerHTML = (PRODUCTS.length===0)
-        ? `<tr><td colspan="5" style="color:#888">Sin productos</td></tr>` : '';
-
-      PRODUCTS.forEach((p) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td><img src="${p.img}" alt="img"></td>
-          <td>${p.name||''}</td>
-          <td>${money(p.price)}</td>
-          <td>${p.stock||''}</td>
-          <td>${p.category||'Otros'}</td>
-          <td>
-            <button class='btn edit' data-id='${p.id}'>Editar</button>
-            <button class='btn delete' data-id='${p.id}'>Eliminar</button>
-          </td>`;
-        tbody.appendChild(tr);
-      });
-
-      tbody.querySelectorAll('.edit').forEach(btn => btn.onclick = ()=> showForm(btn.dataset.id));
-      tbody.querySelectorAll('.delete').forEach(btn => btn.onclick = ()=> deleteProducto(btn.dataset.id));
-    }
-
-    function showForm(id=null){
-      editingId = id; // null = agregar
-      const wrap = document.getElementById('productoFormWrap');
-      const p = id ? (PRODUCTS.find(x=>x.id===id) || {}) :
-        { name:'', price:0, img:'', stock:'disponible', desc:'', category:'', discount:0 };
-
-      document.getElementById('formTitle').textContent = id ? 'Editar producto' : 'Agregar producto';
-      document.getElementById('prodName').value = p.name || '';
-      document.getElementById('prodPrice').value = p.price || 0;
-      document.getElementById('prodImg').value = p.img || '';
-      document.getElementById('prodStock').value = p.stock || 'disponible';
-      document.getElementById('prodDesc').value = p.desc || '';
-      document.getElementById('prodCat').value = p.category || '';
-      document.getElementById('prodDiscount').value = p.discount || 0;
-
-      wrap.style.display = '';
-    }
-    function hideForm(){ document.getElementById('productoFormWrap').style.display='none'; }
-
-    async function deleteProducto(id){
-      if(!confirm('¿Eliminar producto?')) return;
-      try{
-        await rtdbDeleteProducto(id);
-      }catch(err){
-        console.warn('[RTDB] DELETE falló, intento localStorage:', err);
+      function slugify(str){
+        return (str||'')
+          .toLowerCase()
+          .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+          .replace(/[^a-z0-9]+/g,'-')
+          .replace(/(^-|-$)/g,'')
+          .slice(0,40) || ('p-'+Date.now());
       }
-      // Actualiza estado local
-      PRODUCTS = PRODUCTS.filter(x=>x.id!==id);
-      delete mapProductos[id];
-      localStorage.setItem('PRODUCTS', JSON.stringify(PRODUCTS));
-      renderProductos();
-      showAdminToast('Producto eliminado', 'success');
-    }
-
-    /*********** EVENTOS UI ***********/
-    document.getElementById('cancelForm').onclick = hideForm;
-    document.getElementById('btnAddProducto').onclick = ()=> showForm(null);
-
-    document.getElementById('productoForm').onsubmit = async (e)=>{
-      e.preventDefault();
-      const btn = document.getElementById('btnSave');
-      btn.disabled = true; btn.textContent = 'Guardando...';
-
-      const data = {
-        name: document.getElementById('prodName').value.trim(),
-        price: toNum(document.getElementById('prodPrice').value),
-        img: document.getElementById('prodImg').value.trim(),
-        stock: document.getElementById('prodStock').value,
-        desc: document.getElementById('prodDesc').value.trim(),
-        category: document.getElementById('prodCat').value.trim(),
-        discount: toNum(document.getElementById('prodDiscount').value),
-        stars: toNum((mapProductos[editingId]?.stars) ?? 5),
-        reviews: toNum((mapProductos[editingId]?.reviews) ?? 0),
-        dateAdded: (mapProductos[editingId]?.dateAdded) || new Date().toISOString().slice(0,10)
-      };
-
-      if(!data.name || !data.img || data.price<0){
-        alert('Completa nombre, imagen y precio válido.'); btn.disabled=false; btn.textContent='Guardar'; return;
-      }
-
-      try{
-        // id: si edito uso el mismo; si no, genero por nombre
-        const id = editingId || slugify(data.name);
-
-        // Grabar en RTDB (PUT /productos/{id})
-        await rtdbPutProducto(id, data);
-
-        // Actualiza estado local
-        mapProductos[id] = data;
-        const idx = PRODUCTS.findIndex(x=>x.id===id);
-        if(idx>=0) PRODUCTS[idx] = { id, ...data };
-        else PRODUCTS.push({ id, ...data });
-
-        localStorage.setItem('PRODUCTS', JSON.stringify(PRODUCTS)); // cache local
-        renderProductos();
-        hideForm();
-        showAdminToast('Producto guardado correctamente', 'success');
-      }catch(err){
-        console.error('[RTDB] Guardar falló:', err);
-        // Fallback: guarda local si RTDB falla
-        const id = editingId || slugify(data.name);
-        const idx = PRODUCTS.findIndex(x=>x.id===id);
-        if(idx>=0) PRODUCTS[idx] = { id, ...data };
-        else PRODUCTS.push({ id, ...data });
-        localStorage.setItem('PRODUCTS', JSON.stringify(PRODUCTS));
-        renderProductos();
-        hideForm();
-        showAdminToast('Guardado local (sin conexión RTDB)', 'error');
-      }finally{
-        btn.disabled = false; btn.textContent = 'Guardar';
-        editingId = null;
-      }
-    };
-
-    /*********** INICIALIZACIÓN ***********/
-    async function initAdmin(){
-      // Carga desde RTDB con fallback a localStorage
-      try{
-        await rtdbGetProductos();
-        console.log('[Admin] Productos desde RTDB:', PRODUCTS.length);
-      }catch(err){
-        console.warn('[Admin] RTDB no disponible, usando localStorage:', err);
-        PRODUCTS = JSON.parse(localStorage.getItem('PRODUCTS')||'[]');
-        mapProductos = Object.fromEntries(PRODUCTS.map(p=>[p.id||slugify(p.name), {...p}]));
-      }
-      // Poblar datalist de categorías
-      const dl = document.getElementById('catList');
-      if(dl){
-        dl.innerHTML = '';
-        const cats = Array.from(new Set(PRODUCTS.map(p=>p.category).filter(Boolean)));
-        cats.forEach(c=>{
-          const opt = document.createElement('option');
-          opt.value = c; dl.appendChild(opt);
+      
+      // Funciones para manejar la galería
+      function renderGallery(){
+        const container = document.getElementById('galleryContainer');
+        if(!container) return;
+        container.innerHTML = '';
+        
+        if(galleryImages.length === 0){
+          container.innerHTML = '<p style="color:#888;font-size:.9rem;margin:0">No hay imágenes adicionales. Usa el botón "+" para agregar.</p>';
+          return;
+        }
+        
+        galleryImages.forEach((imgUrl, index) => {
+          const div = document.createElement('div');
+          div.className = 'gallery-item';
+          div.innerHTML = `
+            <input type="text" value="${imgUrl}" data-index="${index}" placeholder="img/foto.png o https://...">
+            ${imgUrl ? `<img src="${imgUrl}" onerror="this.style.display='none'">` : ''}
+            <button type="button" class="btn-gallery remove" data-index="${index}">🗑️ Eliminar</button>
+          `;
+          container.appendChild(div);
+          
+          // Event listener para actualizar la URL
+          const input = div.querySelector('input');
+          input.addEventListener('input', (e) => {
+            galleryImages[index] = e.target.value.trim();
+            renderGallery();
+          });
+          
+          // Event listener para eliminar
+          const btnRemove = div.querySelector('.btn-gallery.remove');
+          btnRemove.addEventListener('click', () => {
+            galleryImages.splice(index, 1);
+            renderGallery();
+          });
         });
       }
-      renderProductos();
-
-      // Pedidos pendiente (placeholder)
-      const tbody = document.querySelector('#pedidosTable tbody');
-      if(tbody) tbody.innerHTML = '<tr><td colspan="5">(Integración pendiente)</td></tr>';
-    }
+      
+      function addGalleryImage(){
+        galleryImages.push('');
+        renderGallery();
+      }
+      function renderProductos(){
+        // Asegura que la tabla y el botón siempre estén presentes
+        let productosPanel = document.getElementById('productosPanel');
+        if (!productosPanel) return;
+        productosPanel.innerHTML = `
+          <button class="btn add" id="btnAddProducto">+ Agregar producto</button>
+          <table class="admin-table" id="productosTable">
+            <thead>
+              <tr><th>Imagen</th><th>Nombre</th><th>Precio</th><th>Stock</th><th>Categoría</th><th>Acciones</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+          <div id="productoFormWrap" style="display:none">
+            <h3 id="formTitle">Agregar producto</h3>
+            <form id="productoForm">
+              <div class="form-row">
+                <label>Nombre<input id="prodName" required></label>
+                <label>Precio (CLP)<input id="prodPrice" type="number" min="0" required></label>
+              </div>
+              <div class="form-row">
+                <label>Imagen Principal (URL)<input id="prodImg" required placeholder="img/archivo.png o https://..."></label>
+                <label>Stock
+                  <select id="prodStock">
+                    <option value="disponible">Disponible</option>
+                    <option value="bajo">Bajo</option>
+                  </select>
+                </label>
+              </div>
+              <div class="gallery-manager">
+                <div class="gallery-header">
+                  <h4>📸 Galería de Imágenes Adicionales</h4>
+                  <button type="button" class="btn-gallery add" id="btnAddGalleryImg">+ Agregar imagen</button>
+                </div>
+                <div id="galleryContainer"></div>
+              </div>
+              <div class="form-row">
+                <label>Categoría
+                  <input id="prodCat" list="catList" placeholder="Ej: Calendarios">
+                  <datalist id="catList"></datalist>
+                </label>
+                <label>Descuento (%)<input id="prodDiscount" type="number" min="0" max="90" value="0"></label>
+              </div>
+              <div class="form-row">
+                <label>Descripción<textarea id="prodDesc" rows="2" placeholder="Opcional"></textarea></label>
+              </div>
+              <div class="form-actions">
+                <button type="submit" class="btn add" id="btnSave">Guardar</button>
+                <button type="button" class="btn delete" id="cancelForm">Cancelar</button>
+              </div>
+            </form>
+          </div>
+        `;
+        // Renderiza productos en el tbody
+        const tbody = productosPanel.querySelector('#productosTable tbody');
+        if (PRODUCTS.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" style="color:#888">Sin productos</td></tr>`;
+        } else {
+          tbody.innerHTML = '';
+          PRODUCTS.forEach((p) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td><img src="${p.img}" alt="img"></td>
+              <td>${p.name||''}</td>
+              <td>${money(p.price)}</td>
+              <td>${p.stock||''}</td>
+              <td>${p.category||'Otros'}</td>
+              <td>
+                <button class='btn edit' data-id='${p.id}'>Editar</button>
+                <button class='btn delete' data-id='${p.id}'>Eliminar</button>
+              </td>`;
+            tbody.appendChild(tr);
+          });
+        }
+        // Reasignar eventos
+        productosPanel.querySelectorAll('.edit').forEach(btn => btn.onclick = ()=> showForm(btn.dataset.id));
+        productosPanel.querySelectorAll('.delete').forEach(btn => btn.onclick = ()=> deleteProducto(btn.dataset.id));
+        const btnCancel = productosPanel.querySelector('#cancelForm');
+        if(btnCancel) btnCancel.onclick = hideForm;
+        const btnAdd = productosPanel.querySelector('#btnAddProducto');
+        if(btnAdd) btnAdd.onclick = ()=> showForm(null);
+        const form = productosPanel.querySelector('#productoForm');
+        if(form) form.onsubmit = async (e)=>{
+          e.preventDefault();
+          const btn = productosPanel.querySelector('#btnSave');
+          btn.disabled = true; btn.textContent = 'Guardando...';
+          const data = {
+            name: productosPanel.querySelector('#prodName').value.trim(),
+            price: toNum(productosPanel.querySelector('#prodPrice').value),
+            img: productosPanel.querySelector('#prodImg').value.trim(),
+            stock: productosPanel.querySelector('#prodStock').value,
+            descripcion: productosPanel.querySelector('#prodDesc').value.trim(),
+            category: productosPanel.querySelector('#prodCat').value.trim(),
+            discount: toNum(productosPanel.querySelector('#prodDiscount').value),
+            stars: toNum((mapProductos[editingId]?.stars) ?? 5),
+            reviews: toNum((mapProductos[editingId]?.reviews) ?? 0),
+            gallery: galleryImages.filter(url => url.trim() !== '')
+          };
+          if(!data.name || !data.img || data.price<0){
+            alert('Completa nombre, imagen y precio válido.'); btn.disabled=false; btn.textContent='Guardar'; return;
+          }
+          try {
+            const id = editingId || slugify(data.name);
+            try {
+              await supaUpsertProducto(id, data);
+              await supaGetProductos();
+              renderProductos();
+              hideForm();
+              showAdminToast('Producto guardado correctamente', 'success');
+            } catch (err) {
+              // Mostrar error detallado de Supabase
+              if (err && err.message) {
+                console.error('[Supabase] Error:', err.message, err.details || '', err.hint || '', err.code || '');
+                alert('Error Supabase: ' + err.message + (err.details ? ('\n' + err.details) : ''));
+              } else {
+                console.error('[Supabase] Error:', err);
+              }
+              showAdminToast('Error guardando en Supabase', 'error');
+            }
+          } finally {
+            btn.disabled = false; btn.textContent = 'Guardar';
+            editingId = null;
+          }
+        };
+      }
+      function showForm(id=null){
+        const wrap = document.getElementById('productoFormWrap');
+        editingId = id;
+        if(!id){
+          document.getElementById('formTitle').textContent = 'Agregar producto';
+          document.getElementById('prodName').value = '';
+          document.getElementById('prodPrice').value = 0;
+          document.getElementById('prodImg').value = '';
+          document.getElementById('prodStock').value = 'disponible';
+          document.getElementById('prodDesc').value = '';
+          document.getElementById('prodCat').value = '';
+          document.getElementById('prodDiscount').value = 0;
+          galleryImages = [];
+        }else{
+          const p = mapProductos[id] || {};
+          document.getElementById('formTitle').textContent = id ? 'Editar producto' : 'Agregar producto';
+          document.getElementById('prodName').value = p.name || '';
+          document.getElementById('prodPrice').value = p.price || 0;
+          document.getElementById('prodImg').value = p.img || '';
+          // Cargar galería existente
+          if(p.gallery && Array.isArray(p.gallery)){
+            galleryImages = [...p.gallery];
+          } else if(p.gallery && typeof p.gallery === 'string'){
+            try {
+              galleryImages = JSON.parse(p.gallery);
+            } catch(e) {
+              galleryImages = [];
+            }
+          } else {
+            galleryImages = [];
+          }
+          document.getElementById('prodStock').value = p.stock || 'disponible';
+          document.getElementById('prodDesc').value = p.descripcion || '';
+          document.getElementById('prodCat').value = p.category || '';
+          document.getElementById('prodDiscount').value = p.discount || 0;
+        }
+        renderGallery();
+        wrap.style.display = '';
+        
+        // Configurar botón de agregar imagen
+        const btnAddImg = document.getElementById('btnAddGalleryImg');
+        if(btnAddImg){
+          btnAddImg.onclick = addGalleryImage;
+        }
+      }
+      function hideForm(){ document.getElementById('productoFormWrap').style.display='none'; }
+      async function deleteProducto(id){
+        if(!confirm('¿Eliminar producto?')) return;
+        try {
+          await supaDeleteProducto(id);
+          PRODUCTS = PRODUCTS.filter(x=>x.id!==id);
+          delete mapProductos[id];
+          renderProductos();
+          showAdminToast('Producto eliminado', 'success');
+        } catch (err) {
+          showAdminToast('Error eliminando en Supabase', 'error');
+        }
+      }
+      const btnCancel = document.getElementById('cancelForm');
+      if(btnCancel) btnCancel.onclick = hideForm;
+      const btnAdd = document.getElementById('btnAddProducto');
+      if(btnAdd) btnAdd.onclick = ()=> showForm(null);
+      const form = document.getElementById('productoForm');
+      if(form) form.onsubmit = async (e)=>{
+        e.preventDefault();
+        const btn = document.getElementById('btnSave');
+        btn.disabled = true; btn.textContent = 'Guardando...';
+        const data = {
+          name: document.getElementById('prodName').value.trim(),
+          price: toNum(document.getElementById('prodPrice').value),
+          img: document.getElementById('prodImg').value.trim(),
+          stock: document.getElementById('prodStock').value,
+          descripcion: document.getElementById('prodDesc').value.trim(),
+          category: document.getElementById('prodCat').value.trim(),
+          discount: toNum(document.getElementById('prodDiscount').value),
+          stars: toNum((mapProductos[editingId]?.stars) ?? 5),
+          reviews: toNum((mapProductos[editingId]?.reviews) ?? 0),
+          dateAdded: (mapProductos[editingId]?.dateAdded) || new Date().toISOString().slice(0,10)
+        };
+        if(!data.name || !data.img || data.price<0){
+          alert('Completa nombre, imagen y precio válido.'); btn.disabled=false; btn.textContent='Guardar'; return;
+        }
+        try {
+          const id = editingId || slugify(data.name);
+          await supaUpsertProducto(id, data);
+          await supaGetProductos();
+          renderProductos();
+          hideForm();
+          showAdminToast('Producto guardado correctamente', 'success');
+        } catch (err) {
+          showAdminToast('Error guardando en Supabase', 'error');
+        } finally {
+          btn.disabled = false; btn.textContent = 'Guardar';
+          editingId = null;
+        }
+      };
+      async function initAdmin(){
+        // Carga desde Supabase
+        try {
+          await supaGetProductos();
+          console.log('[Admin] Productos desde Supabase:', PRODUCTS.length);
+        } catch (err) {
+          showAdminToast('Error cargando productos de Supabase', 'error');
+          PRODUCTS = [];
+          mapProductos = {};
+        }
+        // Poblar datalist de categorías
+        const dl = document.getElementById('catList');
+        if(dl){
+          dl.innerHTML = '';
+          const cats = Array.from(new Set(PRODUCTS.map(p=>p.category).filter(Boolean)));
+          cats.forEach(c=>{
+            const opt = document.createElement('option');
+            opt.value = c; dl.appendChild(opt);
+          });
+        }
+        renderProductos();
+        // Pedidos pendiente (placeholder)
+        const tbody = document.querySelector('#pedidosTable tbody');
+        if(tbody) tbody.innerHTML = '<tr><td colspan="5">(Integración pendiente)</td></tr>';
+      }
+      const loginPanel = document.getElementById('loginPanel');
+      const adminPanel = document.querySelector('.admin-panel');
+      if(adminPanel) adminPanel.style.display = 'none';
+      if(loginPanel) loginPanel.style.display = '';
+      const loginForm = document.getElementById('loginForm');
+      if(loginForm) loginForm.onsubmit = (e)=>{
+        e.preventDefault();
+        const pass = document.getElementById('adminPass').value;
+        if(pass === PASSWORD){
+          if(loginPanel) loginPanel.style.display = 'none';
+          if(adminPanel) adminPanel.style.display = '';
+          initAdmin(); // carga datos al entrar
+        }else{
+          const err = document.getElementById('loginError');
+          if(err){ err.textContent = 'Contraseña incorrecta'; err.style.display = ''; }
+        }
+      };
+    });
   </script>
-</body>
+  </body>
 </html>

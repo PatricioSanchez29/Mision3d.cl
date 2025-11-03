@@ -50,6 +50,7 @@
 .badge {font-size:.7rem;font-weight:600;letter-spacing:.5px;padding:3px 7px;border-radius:14px;text-transform:uppercase;display:inline-block}
 .badge.new {background:linear-gradient(135deg, #10b981, #06b6d4);color:#fff}
 .badge.discount {background:linear-gradient(135deg, #f59e0b, #ef4444);color:#fff}
+.gallery-indicator {background:rgba(0,0,0,0.75);color:#fff;font-size:.7rem;font-weight:600;padding:3px 7px;border-radius:14px;display:inline-flex;align-items:center;gap:4px}
 .card .stock {
 	color: #dc2626;
 	font-size: 0.95rem;
