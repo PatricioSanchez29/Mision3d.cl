@@ -299,7 +299,7 @@
     console.error('[checkout] Error cargando productos de Supabase:', error);
   } else {
     // Convertir formato Supabase a formato esperado por script.js
-    window.PRODUCTS = productos.map(p => ({
+    const supaProducts = (productos||[]).map(p => ({
       id: p.id,
       name: p.name,
       price: p.price,
@@ -308,7 +308,29 @@
       category: p.category || '',
       gallery: p.gallery || []
     }));
-    console.log('[checkout] Productos cargados desde Supabase:', window.PRODUCTS.length);
+
+    // Si ya existen PRODUCTS (por ejemplo, cargados por script.js/Firebase), no sobrescribir: fusionar por ID
+    if (Array.isArray(window.PRODUCTS) && window.PRODUCTS.length > 0) {
+      const map = new Map(window.PRODUCTS.map(p => [String(p.id), p]));
+      for (const sp of supaProducts) {
+        const key = String(sp.id);
+        if (map.has(key)) {
+          // Actualizar campos conocidos, mantener otros existentes
+          const existing = map.get(key);
+          existing.name = sp.name ?? existing.name;
+          existing.price = typeof sp.price === 'number' ? sp.price : existing.price;
+          existing.img = sp.img || existing.img;
+          existing.description = sp.description || existing.description;
+          existing.category = sp.category || existing.category;
+          existing.gallery = sp.gallery || existing.gallery;
+        } else {
+          window.PRODUCTS.push(sp);
+        }
+      }
+    } else {
+      window.PRODUCTS = supaProducts;
+    }
+    console.log('[checkout] Productos cargados desde Supabase:', (window.PRODUCTS||[]).length);
     
     // Disparar evento para que checkout sepa que los productos están listos
     window.dispatchEvent(new CustomEvent('productsLoaded'));
