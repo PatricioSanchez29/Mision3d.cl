@@ -287,6 +287,49 @@
 
 <!-- Cargar productos desde Supabase ANTES de script.js -->
 <script type="module">
+  // En local, evita intentar llamar a Supabase (para no llenar la consola si hay DNS/firewall)
+  const isLocal = /localhost|127\.0\.0\.1/.test(location.hostname);
+  const forceRemote = Boolean(window.FORCE_REMOTE_PRODUCTS);
+
+  // Función utilitaria para fusionar productos en window.PRODUCTS
+  const mergeProducts = (arr) => {
+    if (!Array.isArray(arr)) return;
+    if (Array.isArray(window.PRODUCTS) && window.PRODUCTS.length > 0) {
+      const map = new Map(window.PRODUCTS.map(p => [String(p.id), p]));
+      for (const sp of arr) {
+        const key = String(sp.id);
+        if (map.has(key)) {
+          const existing = map.get(key);
+          existing.name = sp.name ?? existing.name;
+          existing.price = typeof sp.price === 'number' ? sp.price : existing.price;
+          existing.img = sp.img || existing.img;
+          existing.description = sp.description || existing.description;
+          existing.category = sp.category || existing.category;
+          existing.gallery = sp.gallery || existing.gallery;
+        } else {
+          window.PRODUCTS.push(sp);
+        }
+      }
+    } else {
+      window.PRODUCTS = arr;
+    }
+  };
+
+  // Si estamos en local y no se fuerza el remoto, usa PRODUCTS de localStorage o los existentes y no consultes Supabase
+  if (isLocal && !forceRemote) {
+    try {
+      const ls = JSON.parse(localStorage.getItem('PRODUCTS')||'[]');
+      if (Array.isArray(ls) && ls.length > 0) {
+        mergeProducts(ls);
+        console.log('[checkout] Usando PRODUCTS desde localStorage (modo local)');
+        window.dispatchEvent(new CustomEvent('productsLoaded'));
+        // Salir para no hacer request remoto
+        throw new Error('skip-remote-in-local');
+      }
+    } catch {}
+    // Si no hay en localStorage, igual seguimos con el remoto (puede fallar, pero hay fallback más abajo)
+  }
+
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
   const supabase = createClient(
     'https://gxypkkmhczpdvgjqhkgw.supabase.co',
@@ -308,28 +351,8 @@
       category: p.category || '',
       gallery: p.gallery || []
     }));
-
-    // Si ya existen PRODUCTS (por ejemplo, cargados por script.js/Firebase), no sobrescribir: fusionar por ID
-    if (Array.isArray(window.PRODUCTS) && window.PRODUCTS.length > 0) {
-      const map = new Map(window.PRODUCTS.map(p => [String(p.id), p]));
-      for (const sp of supaProducts) {
-        const key = String(sp.id);
-        if (map.has(key)) {
-          // Actualizar campos conocidos, mantener otros existentes
-          const existing = map.get(key);
-          existing.name = sp.name ?? existing.name;
-          existing.price = typeof sp.price === 'number' ? sp.price : existing.price;
-          existing.img = sp.img || existing.img;
-          existing.description = sp.description || existing.description;
-          existing.category = sp.category || existing.category;
-          existing.gallery = sp.gallery || existing.gallery;
-        } else {
-          window.PRODUCTS.push(sp);
-        }
-      }
-    } else {
-      window.PRODUCTS = supaProducts;
-    }
+    // Fusionar con existentes
+    mergeProducts(supaProducts);
   console.log('[checkout] Productos cargados desde Supabase:', (window.PRODUCTS||[]).length);
   try { localStorage.setItem('PRODUCTS', JSON.stringify(window.PRODUCTS||[])); } catch {}
     
