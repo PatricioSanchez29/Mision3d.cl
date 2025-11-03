@@ -391,6 +391,9 @@ app.post("/api/payments/flow", paymentLimiter, async (req, res) => {
       return res.status(400).json({ error: "items vacíos" });
     }
 
+    // Log detallado de items recibidos
+    console.log("[Flow] Items recibidos:", JSON.stringify(items, null, 2));
+
     const apiKey = process.env.FLOW_API_KEY;
     const secret = process.env.FLOW_SECRET;
     const commerceId = process.env.FLOW_COMMERCE_ID; // opcional
@@ -422,6 +425,7 @@ app.post("/api/payments/flow", paymentLimiter, async (req, res) => {
     const envioN = norm(envioMeta);
 
     const { subtotal } = calcCartTotals(items);
+    console.log("[Flow] Subtotal calculado:", subtotal);
 
     let ship = 0;
     const clientShip = toNum(shippingCost);
