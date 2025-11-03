@@ -457,6 +457,18 @@ app.post("/api/payments/flow", paymentLimiter, async (req, res) => {
       total
     );
 
+    // Validación: Flow requiere mínimo $350 CLP
+    if (total < 350) {
+      console.warn("⚠️ [Flow] Monto menor al mínimo permitido:", total);
+      return res.status(400).json({
+        error: "Monto inválido",
+        message: "El monto mínimo para pagar con Flow es $350 CLP",
+        detail: `El total calculado es $${total} CLP, pero Flow requiere mínimo $350 CLP. Agrega más productos al carrito.`,
+        total,
+        minimum: 350
+      });
+    }
+
     const params = {
       apiKey,
       commerceOrder: "ORD-" + Date.now(),
