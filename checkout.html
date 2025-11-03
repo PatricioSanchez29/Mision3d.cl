@@ -296,7 +296,7 @@
   // Cargar productos desde Supabase
   const { data: productos, error } = await supabase.from('productos').select('*');
   if (error) {
-    console.error('[checkout] Error cargando productos de Supabase:', error);
+    console.warn('[checkout] Error cargando productos de Supabase (se usará fallback/localStorage si existe):', error);
   } else {
     // Convertir formato Supabase a formato esperado por script.js
     const supaProducts = (productos||[]).map(p => ({
@@ -330,7 +330,8 @@
     } else {
       window.PRODUCTS = supaProducts;
     }
-    console.log('[checkout] Productos cargados desde Supabase:', (window.PRODUCTS||[]).length);
+  console.log('[checkout] Productos cargados desde Supabase:', (window.PRODUCTS||[]).length);
+  try { localStorage.setItem('PRODUCTS', JSON.stringify(window.PRODUCTS||[])); } catch {}
     
     // Disparar evento para que checkout sepa que los productos están listos
     window.dispatchEvent(new CustomEvent('productsLoaded'));
@@ -441,15 +442,21 @@ document.addEventListener("DOMContentLoaded", ()=>{
   if (window.PRODUCTS && window.PRODUCTS.length > 0) {
     checkCartAndRender();
   } else {
-    // Timeout de seguridad de 3 segundos
-    setTimeout(() => {
-      if (typeof window.PRODUCTS === 'undefined' || window.PRODUCTS.length === 0) {
-        console.error('[checkout] Productos no se cargaron a tiempo');
-        alert('Error cargando productos. Por favor recarga la página.');
-      } else {
+    // Reintento suave: esperar hasta 5s sin bloquear con alertas
+    const startedAt = Date.now();
+    const retry = () => {
+      if (window.PRODUCTS && window.PRODUCTS.length > 0) {
         checkCartAndRender();
+        return;
       }
-    }, 3000);
+      if (Date.now() - startedAt > 5000) {
+        console.warn('[checkout] Productos no disponibles tras 5s; usando lo que haya en fallback/localStorage');
+        checkCartAndRender();
+        return;
+      }
+      setTimeout(retry, 400);
+    };
+    retry();
   }
   
   // Conectar botón principal con confirmCheckout (definida en script.js)
