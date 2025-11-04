@@ -1249,7 +1249,7 @@ app.get('/api/pedidos/by-email/:email', async (req, res) => {
     // Consultar pedidos por email (case-insensitive)
     const { data, error } = await supabase
       .from('pedidos')
-      .select('id, email, estado, status, items, total, total_clp, created_at, commerce_order, flow_order, payment_method')
+      .select('*')
       .ilike('email', email)
       .order('created_at', { ascending: false });
 
