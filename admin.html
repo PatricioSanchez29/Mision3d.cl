@@ -93,7 +93,7 @@
       async function renderPedidos() {
         const tbody = document.querySelector('#pedidosTable tbody');
         tbody.innerHTML = '<tr><td colspan="6">Cargando pedidos...</td></tr>';
-        let { data, error } = await supabase.from('pedidos').select('*').order('createdAt', { ascending: false });
+  let { data, error } = await supabase.from('pedidos').select('*').order('created_at', { ascending: false });
         if(error) {
           tbody.innerHTML = `<tr><td colspan="6" style="color:#c00">Error cargando pedidos: ${error.message}</td></tr>`;
           return;
@@ -107,17 +107,18 @@
           const tr = document.createElement('tr');
           // Convertir fecha a hora de Chile
           let fechaChile = '';
-          if (pedido.createdAt) {
+          const _createdAt = pedido.created_at || pedido.createdAt || pedido.createdat;
+          if (_createdAt) {
             try {
-              const d = new Date(pedido.createdAt);
+              const d = new Date(_createdAt);
               fechaChile = d.toLocaleString('es-CL', { timeZone: 'America/Santiago' });
             } catch {
-              fechaChile = pedido.createdAt.slice(0,16).replace('T',' ');
+              fechaChile = String(_createdAt).slice(0,16).replace('T',' ');
             }
           }
           tr.innerHTML = `
             <td>${pedido.id}</td>
-            <td>${pedido.user_id||''}</td>
+            <td>${pedido.email || pedido.user_id || ''}</td>
             <td>
               <select data-id="${pedido.id}" class="estado-select">
                 <option value="pendiente"${pedido.estado==='pendiente'?' selected':''}>pendiente</option>
@@ -126,9 +127,10 @@
                 <option value="cancelado"${pedido.estado==='cancelado'?' selected':''}>cancelado</option>
               </select>
             </td>
-            <td>${money(pedido.totalCLP||0)}</td>
+            <td>${money(pedido.total_clp || pedido.total || 0)}</td>
             <td>${fechaChile}</td>
             <td>
+              <button data-id="${pedido.id}" class="mark-paid-btn" style="color:#fff;background:#16a34a;border:none;padding:4px 8px;border-radius:4px;margin-right:8px;">Marcar pagado + email</button>
               <button data-id="${pedido.id}" class="eliminar-btn" style="color:#fff;background:#e11d48;border:none;padding:4px 8px;border-radius:4px;">Eliminar</button>
             </td>
           `;
@@ -139,7 +141,7 @@
           sel.addEventListener('change', async function() {
             const pedidoId = this.getAttribute('data-id');
             const nuevoEstado = this.value;
-            const { error } = await supabase.from('pedidos').update({ estado: nuevoEstado }).eq('id', pedidoId);
+            const { error } = await supabase.from('pedidos').update({ estado: nuevoEstado, status: nuevoEstado }).eq('id', pedidoId);
             if(error) {
               showAdminToast('Error actualizando estado: '+error.message, 'error');
             } else {
@@ -158,6 +160,35 @@
             } else {
               showAdminToast('Pedido eliminado', 'success');
               renderPedidos();
+            }
+          });
+        });
+        // Evento marcar pagado + email
+        tbody.querySelectorAll('.mark-paid-btn').forEach(btn => {
+          btn.addEventListener('click', async function() {
+            const id = this.getAttribute('data-id');
+            if(!confirm('¿Marcar como PAGADO y enviar correo de confirmación al cliente?')) return;
+            let adminKey = sessionStorage.getItem('ADMIN_KEY');
+            if (!adminKey) {
+              adminKey = prompt('Ingresa la ADMIN_KEY');
+              if (!adminKey) return;
+              sessionStorage.setItem('ADMIN_KEY', adminKey);
+            }
+            try {
+              const base = window.location.origin;
+              const resp = await fetch(base + '/api/admin/pedidos/' + encodeURIComponent(id) + '/marcar-pagado', {
+                method: 'POST',
+                headers: { 'x-admin-key': adminKey }
+              });
+              const data = await resp.json().catch(()=>({}));
+              if (!resp.ok) {
+                showAdminToast('Error: ' + (data?.detail || data?.error || resp.status), 'error');
+                return;
+              }
+              showAdminToast('Pedido marcado como pagado y correo enviado', 'success');
+              renderPedidos();
+            } catch(e){
+              showAdminToast('Error realizando la acción: ' + (e?.message||e), 'error');
             }
           });
         });
