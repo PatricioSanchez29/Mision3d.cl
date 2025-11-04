@@ -797,16 +797,67 @@ app.post("/api/orders/transfer", async (req, res) => {
 
     const commerceOrder = "ORD-" + Date.now();
 
-    // TODO: Guardar pedido de transferencia en Supabase
+    // Guardar pedido de transferencia en Supabase como pendiente
     let key = null;
+    try {
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabaseUrl = process.env.SUPABASE_URL;
+      const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+      if (!supabaseUrl || !supabaseKey) {
+        console.warn('[Transfer Create] Faltan credenciales de Supabase');
+      } else {
+        const supabase = createClient(supabaseUrl, supabaseKey);
+        const pedido = {
+          user_id: payer?.id || null,
+          email: payer?.email || null,
+          items: Array.isArray(items) ? items : [],
+          subtotal,
+          discount: disc,
+          shipping: ship,
+          total,
+          total_clp: total,
+          status: 'pendiente',
+          estado: 'pendiente',
+          commerce_order: commerceOrder,
+          flow_order: null,
+          created_at: new Date().toISOString(),
+          meta: meta || {},
+          payment_method: 'transferencia'
+        };
+        const { data: inserted, error: supaErr } = await supabase
+          .from('pedidos')
+          .insert([pedido])
+          .select('id')
+          .single();
+        if (supaErr) {
+          console.warn('[Transfer Create] Error insertando en Supabase:', supaErr.message);
+        } else {
+          key = inserted?.id || null;
+          console.log('[Transfer Create] Pedido de transferencia guardado con id', key);
+        }
+      }
+    } catch (dbErr) {
+      console.warn('[Transfer Create] Error al guardar en Supabase:', dbErr?.message || dbErr);
+    }
 
     // Email con instrucciones de transferencia (si hay proveedor de email configurado)
     try {
       if (payer?.email) {
         const totalFmt = total.toLocaleString("es-CL");
+        const itemsHtml = (Array.isArray(items) ? items : [])
+          .map(
+            (it) => `
+              <tr>
+                <td style="padding:8px;border-bottom:1px solid #eee">${it?.name || it?.title || 'Producto'}</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;text-align:right">${it?.qty || 1}</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;text-align:right">$${Number(it?.price||0).toLocaleString('es-CL')}</td>
+              </tr>`
+          )
+          .join('');
+
         const html = `
-          <h2>Pedido recibido en Misión 3D</h2>
-          <p>Seleccionaste <strong>Transferencia Bancaria</strong>. Realiza la transferencia usando estos datos:</p>
+          <h2>🧾 Pedido recibido - Misión 3D</h2>
+          <p>Gracias por tu compra. Seleccionaste <strong>Transferencia Bancaria</strong>. Para confirmar tu pedido, realiza la transferencia con estos datos:</p>
           <ul>
             <li>Titular: <strong>Patricio Germán Sánchez Casanova</strong></li>
             <li>RUT: <strong>192252148</strong></li>
@@ -815,12 +866,33 @@ app.post("/api/orders/transfer", async (req, res) => {
             <li>N° Cuenta: <strong>1034627294</strong></li>
             <li>Email: <a href="mailto:pgscasanova@gmail.com">pgscasanova@gmail.com</a></li>
           </ul>
-          <p>Monto a transferir: <strong>$${totalFmt}</strong></p>
-          <p>Envía el comprobante a <a href="mailto:pgscasanova@gmail.com">pgscasanova@gmail.com</a> indicando tu número de pedido <strong>${commerceOrder}</strong>.</p>
+          <p><strong>Monto a transferir:</strong> $${totalFmt}</p>
+          <p><strong>Orden:</strong> ${commerceOrder}</p>
+          ${itemsHtml ? `
+          <table style="border-collapse:collapse;width:100%;max-width:520px">
+            <thead>
+              <tr>
+                <th style="text-align:left;padding:8px;border-bottom:2px solid #111">Producto</th>
+                <th style="text-align:right;padding:8px;border-bottom:2px solid #111">Cant.</th>
+                <th style="text-align:right;padding:8px;border-bottom:2px solid #111">Precio</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsHtml}
+            </tbody>
+          </table>` : ''}
+          <div style="margin-top:12px">
+            <div><strong>Subtotal:</strong> $${subtotal.toLocaleString('es-CL')}</div>
+            ${disc ? `<div><strong>Descuento:</strong> -$${disc.toLocaleString('es-CL')}</div>` : ''}
+            <div><strong>Envío:</strong> $${ship.toLocaleString('es-CL')}</div>
+            <div style="margin-top:8px;font-size:1.1em"><strong>Total:</strong> $${totalFmt}</div>
+          </div>
+          <p style="margin-top:16px">Envía el comprobante a <a href="mailto:pgscasanova@gmail.com">pgscasanova@gmail.com</a> indicando tu número de pedido <strong>${commerceOrder}</strong>.</p>
+          <p>Una vez confirmado el pago, recibirás un correo de confirmación y comenzaremos el proceso de envío.</p>
         `;
         await sendEmail({
           to: payer.email,
-          subject: `Instrucciones de transferencia - ${commerceOrder}`,
+          subject: `Pedido recibido (transferencia) - ${commerceOrder}`,
           html,
           text: `Monto: $${totalFmt} - Orden: ${commerceOrder}`,
         });
