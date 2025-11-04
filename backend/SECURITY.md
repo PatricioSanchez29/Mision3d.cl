@@ -201,23 +201,18 @@ Limitar peticiones al webhook para prevenir ataques de fuerza bruta:
 ```javascript
 import rateLimit from 'express-rate-limit';
 
-const limiter = rateLimit({
-  windowMs: 5 * 60 * 1000,     // 5 minutos
-  max: 500,                    // Máx. 500 peticiones por IP en ese tiempo
-  message: {
-    error: "Demasiadas peticiones desde esta IP, intenta de nuevo más tarde.",
-    retryAfter: "5 minutos"
-  },
-  standardHeaders: true,       // Devuelve headers RateLimit-* estándar
-  legacyHeaders: false         // Desactiva los headers X-RateLimit-*
+const webhookLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minuto
+  max: 10, // máximo 10 peticiones por minuto
+  message: { error: 'Demasiadas peticiones, intenta más tarde' },
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 
 app.post("/flow/confirm", webhookLimiter, async (req, res) => {
   // ... resto del código
 });
-
-// Aplica el límite a todas las rutas
-app.use(limiter);
+```
 
 ---
 

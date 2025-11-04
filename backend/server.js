@@ -309,7 +309,7 @@ const apiLimiter = rateLimit({
     error: "Demasiadas peticiones desde esta IP, intenta de nuevo más tarde.",
     retryAfter: "5 minutos"
   },
-  standardHeaders: true,       // Devuelve headers RateLimit-* estándar
+  standardHeaders: true,       // Devuelve headerpos RateLimit-* estándar
   legacyHeaders: false         // Desactiva los headers X-RateLimit-*
 });
 
