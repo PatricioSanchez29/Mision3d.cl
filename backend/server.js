@@ -898,12 +898,12 @@ app.post("/api/orders/transfer", async (req, res) => {
           <h2>🧾 Pedido recibido - Misión 3D</h2>
           <p>Gracias por tu compra. Seleccionaste <strong>Transferencia Bancaria</strong>. Para confirmar tu pedido, realiza la transferencia con estos datos:</p>
           <ul>
-            <li>Titular: <strong>Patricio Germán Sánchez Casanova</strong></li>
-            <li>RUT: <strong>192252148</strong></li>
+            <li>Titular: <strong>Patricio Sánchez</strong></li>
+            <li>RUT: <strong>78.278.465-K</strong></li>
             <li>Banco: <strong>Mercado Pago</strong></li>
             <li>Tipo: <strong>Cuenta Vista</strong></li>
-            <li>N° Cuenta: <strong>1034627294</strong></li>
-            <li>Email: <a href="mailto:pgscasanova@gmail.com">pgscasanova@gmail.com</a></li>
+            <li>N° Cuenta: <strong>1021060622</strong></li>
+            <li>Email: <a href="mailto:mision3d.cl@gmail.com">mision3d.cl@gmail.com</a></li>
           </ul>
           <p><strong>Monto a transferir:</strong> $${totalFmt}</p>
           <p><strong>Orden:</strong> ${commerceOrder}</p>
@@ -927,7 +927,7 @@ app.post("/api/orders/transfer", async (req, res) => {
             <div style="margin-top:8px;font-size:1.1em"><strong>Total:</strong> $${totalFmt}</div>
           </div>
           ${retiroInfo.html}
-          <p style="margin-top:16px">Envía el comprobante a <a href="mailto:pgscasanova@gmail.com">pgscasanova@gmail.com</a> indicando tu número de pedido <strong>${commerceOrder}</strong>.</p>
+          <p style="margin-top:16px">Envía el comprobante a <a href="mailto:mision3d.cl@gmail.com">mision3d.cl@gmail.com</a> indicando tu número de pedido <strong>${commerceOrder}</strong>.</p>
           <p>Una vez confirmado el pago, recibirás un correo de confirmación${retiroInfo.esRetiro ? ' y te contactaremos por WhatsApp para coordinar el retiro' : ' y comenzaremos el proceso de envío'}.</p>
         `;
         await sendEmail({
