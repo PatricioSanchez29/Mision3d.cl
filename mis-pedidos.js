@@ -7,13 +7,15 @@ async function mostrarPedidosUsuario() {
     document.getElementById('pedidosList').innerHTML = '<p>Debes iniciar sesión para ver tus pedidos.</p>';
     return;
   }
+  // Buscar por user_id O por email (para pedidos hechos sin login)
   const { data, error } = await supabase
     .from('pedidos')
     .select('*')
-    .eq('user_id', user.id)
-    .order('createdAt', { ascending: false });
+    .or(`user_id.eq.${user.id},email.eq.${user.email}`)
+    .order('created_at', { ascending: false });
   if (error) {
     document.getElementById('pedidosList').innerHTML = '<p>Error cargando pedidos.</p>';
+    console.error('Error cargando pedidos:', error);
     return;
   }
   if (!data || data.length === 0) {
@@ -22,7 +24,18 @@ async function mostrarPedidosUsuario() {
   }
   let html = '<ul>';
   for (const pedido of data) {
-    html += `<li><b>ID:</b> ${pedido.id} | <b>Estado:</b> ${pedido.estado} | <b>Total:</b> $${pedido.totalCLP} | <b>Fecha:</b> ${pedido.createdAt}</li>`;
+    const total = pedido.total_clp || pedido.total || pedido.totalCLP || 0;
+    const fecha = pedido.created_at || pedido.createdat || pedido.createdAt || 'N/A';
+    const items = pedido.items || [];
+    const itemsText = items.map(it => `${it.name || it.title || 'Producto'} (x${it.qty || 1})`).join(', ') || 'Sin items';
+    
+    html += `<li>
+      <b>ID:</b> ${pedido.id} | 
+      <b>Estado:</b> ${pedido.estado} | 
+      <b>Items:</b> ${itemsText} | 
+      <b>Total:</b> $${total.toLocaleString('es-CL')} | 
+      <b>Fecha:</b> ${new Date(fecha).toLocaleString('es-CL')}
+    </li>`;
   }
   html += '</ul>';
   document.getElementById('pedidosList').innerHTML = html;
