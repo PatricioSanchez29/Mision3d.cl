@@ -56,6 +56,17 @@
     </div>
     <div id="productosPanel"></div>
     <div id="pedidosPanel" style="display:none">
+      <div style="display:flex;gap:12px;align-items:center;margin:8px 0 12px 0;flex-wrap:wrap">
+        <input id="pedidoSearch" type="text" placeholder="Buscar por email, orden o ID" style="flex:1;min-width:220px;padding:8px 10px;border:1px solid #ccc;border-radius:6px">
+        <select id="pedidoFilter" style="padding:8px 10px;border:1px solid #ccc;border-radius:6px">
+          <option value="todos">Todos</option>
+          <option value="pendiente">Pendiente</option>
+          <option value="pagado">Pagado</option>
+          <option value="enviado">Enviado</option>
+          <option value="cancelado">Cancelado</option>
+        </select>
+        <button id="pedidoRefresh" class="btn" style="background:#0ea5e9;color:#fff">Actualizar</button>
+      </div>
       <table class="admin-table" id="pedidosTable">
         <thead>
           <tr><th>ID</th><th>Usuario</th><th>Estado</th><th>Total</th><th>Fecha</th><th>Acciones</th></tr>
@@ -93,7 +104,7 @@
       async function renderPedidos() {
         const tbody = document.querySelector('#pedidosTable tbody');
         tbody.innerHTML = '<tr><td colspan="6">Cargando pedidos...</td></tr>';
-  let { data, error } = await supabase.from('pedidos').select('*').order('created_at', { ascending: false });
+        let { data, error } = await supabase.from('pedidos').select('*').order('created_at', { ascending: false });
         if(error) {
           tbody.innerHTML = `<tr><td colspan="6" style="color:#c00">Error cargando pedidos: ${error.message}</td></tr>`;
           return;
@@ -102,6 +113,19 @@
           tbody.innerHTML = '<tr><td colspan="6" style="color:#888">No hay pedidos registrados.</td></tr>';
           return;
         }
+        // Aplicar filtros
+        const q = (document.getElementById('pedidoSearch')?.value || '').trim().toLowerCase();
+        const f = (document.getElementById('pedidoFilter')?.value || 'todos');
+        data = data.filter(p => {
+          const estado = p.estado || p.status || '';
+          if (f !== 'todos' && estado !== f) return false;
+          if (!q) return true;
+          const hay = [p.email, p.user_id, p.commerce_order, p.commerceOrder, p.id]
+            .map(v => String(v||'').toLowerCase())
+            .some(s => s.includes(q));
+          return hay;
+        });
+
         tbody.innerHTML = '';
         for(const pedido of data) {
           const tr = document.createElement('tr');
@@ -192,6 +216,13 @@
             }
           });
         });
+        // Filtros: listeners
+        const search = document.getElementById('pedidoSearch');
+        const filter = document.getElementById('pedidoFilter');
+        const refresh = document.getElementById('pedidoRefresh');
+        if (search && !search._binded) { search._binded = true; search.addEventListener('input', () => renderPedidos()); }
+        if (filter && !filter._binded) { filter._binded = true; filter.addEventListener('change', () => renderPedidos()); }
+        if (refresh && !refresh._binded) { refresh._binded = true; refresh.addEventListener('click', () => renderPedidos()); }
       }
       const PASSWORD = "admin123";
       const SUPABASE_URL = 'https://ytuwkynphdttotifgyaf.supabase.co';
