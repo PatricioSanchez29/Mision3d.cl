@@ -141,6 +141,41 @@ function flowSign(params, secret) {
   return crypto.createHmac("sha256", secret).update(ordered).digest("hex");
 }
 
+// ===== Helper para información de retiro =====
+function getRetiroInfo(meta) {
+  const envio = String(meta?.envio || '').toLowerCase().trim();
+  const region = String(meta?.region || '').toLowerCase().trim();
+  
+  // Normalizar para comparación
+  const norm = (s) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  const envioN = norm(envio);
+  const regionN = norm(region);
+  
+  // Detectar retiro en La Florida
+  const esRetiroFlorida = (
+    envioN.includes('retiro') || 
+    envioN.includes('florida') || 
+    (regionN.includes('metropolitana') && envioN === '')
+  );
+  
+  if (esRetiroFlorida) {
+    return {
+      esRetiro: true,
+      html: `
+        <div style="background:#f0f9ff;border:1px solid #0ea5e9;border-radius:8px;padding:16px;margin:16px 0">
+          <h3 style="margin:0 0 8px;color:#0369a1">📍 Información de Retiro</h3>
+          <p style="margin:4px 0"><strong>Dirección:</strong> La Florida, Santiago</p>
+          <p style="margin:4px 0"><strong>Horario:</strong> Lunes a Viernes, 10:00 - 18:00 hrs</p>
+          <p style="margin:4px 0"><strong>Importante:</strong> Te contactaremos por WhatsApp para coordinar el retiro.</p>
+          <p style="margin:4px 0;color:#0369a1;font-size:0.95em">✓ Retiro gratis</p>
+        </div>
+      `
+    };
+  }
+  
+  return { esRetiro: false, html: '' };
+}
+
 // ===== Email (multi-proveedor: SMTP | SendGrid | Resend) =====
 function normalizeEmailHtml(html) {
   if (typeof html !== "string") return html;
@@ -668,6 +703,7 @@ app.post("/flow/confirm", webhookLimiter, async (req, res) => {
           const discount = tmp?.discount ?? null;
           const shipping = tmp?.shippingCost ?? null;
           const commerceOrder = tmp?.commerceOrder || paymentData?.commerceOrder || '';
+          const retiroInfo = getRetiroInfo(tmp?.meta || {});
 
           const html = `
             <h2>✅ Pago confirmado - Misión 3D</h2>
@@ -705,7 +741,8 @@ app.post("/flow/confirm", webhookLimiter, async (req, res) => {
                 total
               )}</div>
             </div>
-            <p style="margin-top:16px">Pronto te contactaremos con los detalles de envío.</p>
+            ${retiroInfo.html}
+            <p style="margin-top:16px">${retiroInfo.esRetiro ? 'Te contactaremos por WhatsApp para coordinar el retiro.' : 'Pronto te contactaremos con los detalles de envío.'}</p>
           `;
 
           await sendEmail({
@@ -855,6 +892,8 @@ app.post("/api/orders/transfer", async (req, res) => {
           )
           .join('');
 
+        const retiroInfo = getRetiroInfo(meta);
+
         const html = `
           <h2>🧾 Pedido recibido - Misión 3D</h2>
           <p>Gracias por tu compra. Seleccionaste <strong>Transferencia Bancaria</strong>. Para confirmar tu pedido, realiza la transferencia con estos datos:</p>
@@ -887,8 +926,9 @@ app.post("/api/orders/transfer", async (req, res) => {
             <div><strong>Envío:</strong> $${ship.toLocaleString('es-CL')}</div>
             <div style="margin-top:8px;font-size:1.1em"><strong>Total:</strong> $${totalFmt}</div>
           </div>
+          ${retiroInfo.html}
           <p style="margin-top:16px">Envía el comprobante a <a href="mailto:pgscasanova@gmail.com">pgscasanova@gmail.com</a> indicando tu número de pedido <strong>${commerceOrder}</strong>.</p>
-          <p>Una vez confirmado el pago, recibirás un correo de confirmación y comenzaremos el proceso de envío.</p>
+          <p>Una vez confirmado el pago, recibirás un correo de confirmación${retiroInfo.esRetiro ? ' y te contactaremos por WhatsApp para coordinar el retiro' : ' y comenzaremos el proceso de envío'}.</p>
         `;
         await sendEmail({
           to: payer.email,
@@ -1337,6 +1377,7 @@ app.post('/api/admin/pedidos/:id/marcar-pagado', async (req, res) => {
         const shipping = Number(pedido.shipping || pedido.shipping_cost || 0);
         const total = Number(pedido.total || pedido.total_clp || 0);
         const commerceOrder = pedido.commerce_order || pedido.commerceOrder || pedido.id;
+        const retiroInfo = getRetiroInfo(pedido.meta || {});
 
         const html = `
           <h2>✅ Pago confirmado - Misión 3D</h2>
@@ -1361,7 +1402,8 @@ app.post('/api/admin/pedidos/:id/marcar-pagado', async (req, res) => {
             <div><strong>Envío:</strong> $${fmt(shipping)}</div>
             <div style="margin-top:8px;font-size:1.1em"><strong>Total pagado:</strong> $${fmt(total)}</div>
           </div>
-          <p style="margin-top:16px">Pronto te contactaremos con los detalles de envío.</p>
+          ${retiroInfo.html}
+          <p style="margin-top:16px">${retiroInfo.esRetiro ? 'Te contactaremos por WhatsApp para coordinar el retiro.' : 'Pronto te contactaremos con los detalles de envío.'}</p>
         `;
 
         await sendEmail({
