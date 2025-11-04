@@ -629,12 +629,12 @@ app.post("/flow/confirm", webhookLimiter, async (req, res) => {
             discount: tmp?.discount ?? null,
             shipping: tmp?.shippingCost ?? null,
             total: tmp?.total || paymentData?.amount || 0,
-            totalCLP: tmp?.total || paymentData?.amount || 0,
+            total_clp: tmp?.total || paymentData?.amount || 0,
             status: 'pagado',
             estado: 'pagado',
-            commerceOrder: tmp?.commerceOrder || paymentData?.commerceOrder || '',
-            flowOrder: paymentData?.flowOrder || null,
-            createdAt: new Date().toISOString(),
+            commerce_order: tmp?.commerceOrder || paymentData?.commerceOrder || '',
+            flow_order: paymentData?.flowOrder || null,
+            created_at: new Date().toISOString(),
             meta: tmp?.meta || {},
           };
           const { error: supaErr } = await supabase.from('pedidos').insert([pedido]);
