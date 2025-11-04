@@ -168,7 +168,12 @@
             }
           }
           const items = Array.isArray(pedido.items) ? pedido.items : [];
-          const itemsText = items.map(it => `${it?.name || it?.title || 'Producto'} (x${it?.qty || 1})`).join(', ') || 'Sin items';
+          const itemsText = items.map(it => {
+            const name = it?.name || it?.title || 'Producto';
+            const qty = Number(it?.qty || 1);
+            const unit = Number((it?.price ?? it?.unit_price) || 0);
+            return `${name} (x${qty} a ${money(unit)})`;
+          }).join(', ') || 'Sin items';
           tr.innerHTML = `
             <td>${pedido.id}</td>
             <td>${pedido.email || pedido.user_id || ''}</td>
@@ -294,7 +299,13 @@
               total: Number(p.total_clp || p.total || 0),
               created_at: p.created_at || p.createdAt || p.createdat || '',
               commerce_order: p.commerce_order || p.commerceOrder || '',
-              items_count: Array.isArray(p.items) ? p.items.length : 0
+              items_count: Array.isArray(p.items) ? p.items.length : 0,
+              items: (Array.isArray(p.items) ? p.items : []).map(it => {
+                const name = it?.name || it?.title || 'Producto';
+                const qty = Number(it?.qty || 1);
+                const unit = Number((it?.price ?? it?.unit_price) || 0);
+                return `${name} (x${qty} a ${money(unit)})`;
+              }).join(' | ')
             }));
             if (!rows.length) { showAdminToast('No hay datos para exportar', 'error'); return; }
             const header = Object.keys(rows[0]);
@@ -324,13 +335,51 @@
               total: Number(p.total_clp || p.total || 0),
               created_at: p.created_at || p.createdAt || p.createdat || '',
               commerce_order: p.commerce_order || p.commerceOrder || '',
-              items_count: Array.isArray(p.items) ? p.items.length : 0
+              items_count: Array.isArray(p.items) ? p.items.length : 0,
+              items: (Array.isArray(p.items) ? p.items : []).map(it => {
+                const name = it?.name || it?.title || 'Producto';
+                const qty = Number(it?.qty || 1);
+                const unit = Number((it?.price ?? it?.unit_price) || 0);
+                return `${name} (x${qty} a ${money(unit)})`;
+              }).join(' | ')
             }));
             if (!rows.length) { showAdminToast('No hay datos para exportar', 'error'); return; }
             try {
-              const ws = XLSX.utils.json_to_sheet(rows);
               const wb = XLSX.utils.book_new();
-              XLSX.utils.book_append_sheet(wb, ws, 'Pedidos');
+              // Hoja 1: Pedidos (resumen con Items en una sola celda)
+              const wsResumen = XLSX.utils.json_to_sheet(rows);
+              XLSX.utils.book_append_sheet(wb, wsResumen, 'Pedidos');
+
+              // Mejora opcional: Hoja 2 con detalle por ítem
+              const detalle = [];
+              (window._pedidosFiltered || []).forEach(p => {
+                const items = Array.isArray(p.items) ? p.items : [];
+                const base = {
+                  pedido_id: p.id,
+                  email: p.email || p.user_id || '',
+                  estado: p.estado || p.status || '',
+                  created_at: p.created_at || p.createdAt || p.createdat || '',
+                };
+                if (items.length === 0) {
+                  detalle.push({ ...base, item: '', qty: 0, unit_price: 0, total_item: 0 });
+                } else {
+                  items.forEach(it => {
+                    const qty = Number(it?.qty || 1);
+                    const price = Number(it?.price || 0);
+                    detalle.push({
+                      ...base,
+                      item: it?.name || it?.title || 'Producto',
+                      qty,
+                      unit_price: price,
+                      total_item: qty * price
+                    });
+                  });
+                }
+              });
+              if (detalle.length) {
+                const wsDetalle = XLSX.utils.json_to_sheet(detalle);
+                XLSX.utils.book_append_sheet(wb, wsDetalle, 'DetalleItems');
+              }
               XLSX.writeFile(wb, 'pedidos.xlsx');
             } catch(e){
               console.error('XLSX export error:', e);

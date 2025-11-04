@@ -110,11 +110,10 @@ app.get("/api", (req, res) => {
   });
 });
 
-// Servir archivos estáticos del frontend (HTML, CSS, JS, imágenes)
-// Los archivos están en la carpeta padre (..)
+// NOTA: NO mover express.static antes de las rutas API
+// Las rutas API deben definirse ANTES de express.static para evitar conflictos
 const frontendPath = path.join(__dirname, "..");
-app.use(express.static(frontendPath));
-console.log("📂 Sirviendo frontend desde:", frontendPath);
+console.log("📂 Frontend path configurado:", frontendPath);
 
 // Almacenamiento temporal de pedidos creados vía Flow (solo en memoria)
 // Clave: token de Flow -> Valor: resumen del pedido
@@ -1472,6 +1471,10 @@ app.post("/api/webhooks/supabase/pedidos", webhookLimiter, async (req, res) => {
     res.status(500).json({ error: "server", detail: err?.message || String(err) });
   }
 });
+
+// ===== Servir archivos estáticos (DESPUÉS de todas las rutas API) =====
+app.use(express.static(frontendPath));
+console.log("📂 Sirviendo archivos estáticos desde:", frontendPath);
 
 // ===== Static: fallback a index.html =====
 app.use((req, res, next) => {
