@@ -303,14 +303,14 @@ app.get("/api/email-config", (req, res) => {
 
 // ===== Rate Limiting (Protección DDoS y fuerza bruta) =====
 const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100, // máximo 100 peticiones por IP
+ windowMs: 5 * 60 * 1000,     // 5 minutos
+  max: 500,                    // Máx. 500 peticiones por IP en ese tiempo
   message: {
     error: "Demasiadas peticiones desde esta IP, intenta de nuevo más tarde.",
-    retryAfter: "15 minutos",
+    retryAfter: "5 minutos"
   },
-  standardHeaders: true,
-  legacyHeaders: false,
+  standardHeaders: true,       // Devuelve headers RateLimit-* estándar
+  legacyHeaders: false         // Desactiva los headers X-RateLimit-*
 });
 
 // Excluir /health del rate limit para Render
