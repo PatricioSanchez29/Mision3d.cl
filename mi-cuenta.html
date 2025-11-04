@@ -213,18 +213,37 @@
         $('#dName').textContent = displayName;
         $('#dEmail').textContent = user.email || '—';
 
-        // 🔒 Filtrar por user_id manualmente (en caso de que RLS no esté configurado)
-        const { data: orders, error } = await supabase
-          .from('pedidos')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('createdat', { ascending: false });
-
-        if (error) {
-          console.error('Error detallado:', error);
-          throw error;
+        // Consultar pedidos por email usando endpoint backend (evita problemas de RLS)
+        const email = user.email?.trim();
+        if (!email) {
+          ordersBody.innerHTML = '<tr><td colspan="6" style="color:#dc2626">No se pudo obtener el email del usuario.</td></tr>';
+          return;
         }
-        renderOrders(orders || []);
+
+        const response = await fetch(`/api/pedidos/by-email/${encodeURIComponent(email)}`);
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          console.error('Error consultando pedidos:', data);
+          throw new Error(data.error || 'Error desconocido');
+        }
+
+        // Mapear a formato esperado por renderOrders
+        const orders = (data.pedidos || []).map(p => ({
+          id: p.id,
+          createdat: p.fecha,
+          createdAt: p.fecha,
+          estado: p.estado,
+          items: p.items || [],
+          total: p.total,
+          commerce_order: p.orden,
+          direccion: (p.items[0]?.meta?.direccion || '—'),
+          comuna: (p.items[0]?.meta?.comuna || '—'),
+          region: (p.items[0]?.meta?.region || '—'),
+          estado_entrega: p.estado === 'enviado' ? 'Enviado' : (p.estado === 'pagado' ? 'En preparación' : 'Pendiente')
+        }));
+
+        renderOrders(orders);
       } catch (e) {
         console.error('Error cargando pedidos:', e);
         ordersBody.innerHTML = '<tr><td colspan="6">Error al cargar pedidos: ' + (e.message || 'Desconocido') + '</td></tr>';
@@ -239,21 +258,27 @@
       }
 
       const rows = orders.map((o, idx) => {
-        const nro = o.id || `#${idx + 1}`;
-        const fecha = o.createdat ? new Date(o.createdat).toLocaleString('es-CL') : (o.createdAt ? new Date(o.createdAt).toLocaleString('es-CL') : '—');
-        const estado = o.estado || 'Pendiente';
+        const nro = o.commerce_order || o.id || `#${idx + 1}`;
+        const fecha = o.createdat ? new Date(o.createdat).toLocaleString('es-CL', { timeZone: 'America/Santiago' }) : (o.createdAt ? new Date(o.createdAt).toLocaleString('es-CL', { timeZone: 'America/Santiago' }) : '—');
+        const estado = (o.estado || 'pendiente').toLowerCase();
+        const badgeClass = estado === 'pagado' || estado === 'enviado' ? 'green' : 'gray';
+        const badgeIcon = estado === 'pagado' ? '✅' : estado === 'enviado' ? '📦' : estado === 'pendiente' ? '⏳' : '❌';
+        
+        // Items
+        const items = o.items || [];
+        const itemsText = items.map(it => `${it.name || it.title || 'Producto'} (x${it.qty || 1})`).join(', ') || 'Sin detalles';
+        const total = Number(o.total || 0).toLocaleString('es-CL');
+        
         const envio = `${o.direccion || '—'}, ${o.comuna || '—'}, ${o.region || '—'}`;
-        const entrega = o.estado_entrega || 'Pendiente';
-        const accion = `<a href="pedido.html?id=${encodeURIComponent(o.id)}" style="color:#0ea5e9">Ver</a>`;
-        const badgeClass = /pagado|paid|complet/i.test(estado) ? 'green' : 'gray';
+        const entrega = o.estado_entrega || (estado === 'enviado' ? 'Enviado' : estado === 'pagado' ? 'En preparación' : 'Pendiente');
 
         return `<tr>
-          <td>${nro}</td>
+          <td><strong>${nro}</strong><br><small style="color:#6b7280">${itemsText}</small><br><small style="color:#111;font-weight:600">Total: $${total}</small></td>
           <td>${fecha}</td>
-          <td><span class="badge ${badgeClass}">${estado}</span></td>
+          <td><span class="badge ${badgeClass}">${badgeIcon} ${estado.charAt(0).toUpperCase() + estado.slice(1)}</span></td>
           <td>${envio}</td>
           <td>${entrega}</td>
-          <td>${accion}</td>
+          <td>—</td>
         </tr>`;
       }).join('');
 
