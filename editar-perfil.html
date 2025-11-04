@@ -99,12 +99,11 @@
     </div>
   </div>
 
-  <script>
+  <script type="module">
     // Tema oscuro si aplica
     if(localStorage.getItem('theme')==='dark') document.body.classList.add('dark');
 
-    function getUsers(){ try{ return JSON.parse(localStorage.getItem('registeredUsers')||'[]'); }catch{ return []; } }
-    function setUsers(arr){ localStorage.setItem('registeredUsers', JSON.stringify(arr)); }
+    import { supabase } from './supabase-orders.js';
 
     const editForm = document.getElementById('editForm');
     const emailEl = document.getElementById('email');
@@ -114,26 +113,6 @@
     const confPassEl = document.getElementById('confirmPassword');
     const errBox = document.getElementById('errorBox');
     const okBox = document.getElementById('successBox');
-
-    // Cargar sesión y prellenar
-    let session=null; try{ session = JSON.parse(localStorage.getItem('userSession')||'null'); }catch{}
-    if(!session || session.guest){
-      alert('Debes iniciar sesión para editar tus datos.');
-      window.location.href = 'login.html';
-    }
-
-    const users = getUsers();
-    const meIdx = users.findIndex(u => (u.email||'').toLowerCase() === (session.email||'').toLowerCase());
-    const me = meIdx>=0 ? users[meIdx] : null;
-    if(!me){
-      // Si no está en registeredUsers, redireccionar a login
-      alert('No pudimos encontrar tu cuenta registrada.');
-      window.location.href = 'login.html';
-    }
-
-    // Prefill
-    emailEl.value = me.email || session.email || '';
-    phoneEl.value = me.phone || session.phone || '';
 
     function showError(msg){ errBox.textContent = msg; errBox.style.display='block'; okBox.classList.remove('active'); }
     function clearError(){ errBox.style.display='none'; errBox.textContent=''; }
@@ -147,66 +126,62 @@
       return true;
     }
 
-    editForm.addEventListener('submit', (e)=>{
-      e.preventDefault();
-      clearError();
-
-      const email = emailEl.value.trim().toLowerCase();
-      const phone = phoneEl.value.trim();
-      const currentPassword = curPassEl.value;
-      const newPassword = newPassEl.value;
-      const confirmPassword = confPassEl.value;
-
-      if(!email || !phone || !currentPassword){
-        return showError('Por favor completa los campos obligatorios.');
+    // Cargar sesión Supabase y prellenar
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if(!user){
+        alert('Debes iniciar sesión para editar tus datos.');
+        window.location.href = 'login.html';
+        return;
       }
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if(!emailRegex.test(email)) return showError('Ingresa un email válido.');
-      if(!/^[0-9]{8,11}$/.test(phone)) return showError('Ingresa un teléfono válido (solo números, 8-11 dígitos).');
+      emailEl.value = user.email || '';
+      emailEl.readOnly = true; // por ahora no permitimos cambiar email desde aquí
+      const phone = user.user_metadata?.phone || '';
+      phoneEl.value = phone;
 
-      // Validar contraseña actual
-      if(me.password !== currentPassword){
-        return showError('La contraseña actual es incorrecta.');
-      }
+      editForm.addEventListener('submit', async (e)=>{
+        e.preventDefault();
+        clearError();
+        const email = (user.email || '').toLowerCase();
+        const phone = phoneEl.value.trim();
+        const currentPassword = curPassEl.value;
+        const newPassword = newPassEl.value;
+        const confirmPassword = confPassEl.value;
 
-      // Si cambia email, verificar duplicados
-      if(email !== me.email.toLowerCase()){
-        const dup = users.find(u => u.email.toLowerCase() === email);
-        if(dup) return showError('Ese correo ya está registrado por otro usuario.');
-      }
+        if(!email || !phone || !currentPassword){
+          return showError('Por favor completa los campos obligatorios.');
+        }
+        if(!/^[0-9]{8,11}$/.test(phone)) return showError('Ingresa un teléfono válido (solo números, 8-11 dígitos).');
 
-      // Si quiere cambiar contraseña
-      if(newPassword || confirmPassword){
-        if(newPassword !== confirmPassword) return showError('Las nuevas contraseñas no coinciden.');
-        if(!validatePassword(newPassword)) return showError('La nueva contraseña no cumple los requisitos.');
-      }
+        // Validar contraseña actual re-autenticando
+        const { error: signErr } = await supabase.auth.signInWithPassword({ email, password: currentPassword });
+        if(signErr) return showError('La contraseña actual es incorrecta.');
 
-      // Actualizar datos
-      const updated = { ...me, email, phone };
-      if(newPassword) updated.password = newPassword;
+        // Actualizar metadata (teléfono)
+        try {
+          const { error: metaErr } = await supabase.auth.updateUser({ data: { phone } });
+          if(metaErr) return showError('No se pudo actualizar el teléfono: ' + metaErr.message);
+        } catch(e){ return showError('Error actualizando datos: ' + (e?.message||e)); }
 
-      users[meIdx] = updated;
-      setUsers(users);
+        // Cambio de contraseña si corresponde
+        if(newPassword || confirmPassword){
+          if(newPassword !== confirmPassword) return showError('Las nuevas contraseñas no coinciden.');
+          if(!validatePassword(newPassword)) return showError('La nueva contraseña no cumple los requisitos.');
+          const { error: pwdErr } = await supabase.auth.updateUser({ password: newPassword });
+          if(pwdErr) return showError('No se pudo actualizar la contraseña: ' + pwdErr.message);
+        }
 
-      // Actualizar sesión
-      const nombre = updated.name || email.split('@')[0].replace(/[-._]/g,' ').replace(/\b\w/g, c=>c.toUpperCase());
-      localStorage.setItem('userSession', JSON.stringify({
-        name: nombre,
-        email: updated.email,
-        phone: updated.phone,
-        guest: false,
-        ts: Date.now()
-      }));
-
-      okBox.classList.add('active');
-      editForm.reset();
-      emailEl.value = updated.email;
-      phoneEl.value = updated.phone;
-
-      // Volver al perfil luego de 2.5s
-      setTimeout(()=>{ window.location.href = 'login.html'; }, 2500);
-    });
+        okBox.classList.add('active');
+        // Limpiar campos de contraseña
+        curPassEl.value = '';
+        newPassEl.value = '';
+        confPassEl.value = '';
+        // Volver a Mi Cuenta luego de 2.5s
+        setTimeout(()=>{ window.location.href = 'mi-cuenta.html#details'; }, 2500);
+      });
+    })();
   </script>
+  <script type="module" src="./auth-header.js"></script>
   <script src="mobile-menu.js"></script>
   <script src="script.js"></script>
 </body>
