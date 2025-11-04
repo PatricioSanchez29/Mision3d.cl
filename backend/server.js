@@ -610,17 +610,53 @@ app.post("/flow/confirm", webhookLimiter, async (req, res) => {
       // Intentar recuperar pedido temporal guardado al crear el pago
       const tmp = global.__PENDING_ORDERS__.get(token);
 
+
+      // Guardar pedido en Supabase
+      try {
+        // Importar createClient dinámicamente para evitar errores si no está instalado
+        const { createClient } = await import('@supabase/supabase-js');
+        const supabaseUrl = process.env.SUPABASE_URL;
+        const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        if (!supabaseUrl || !supabaseKey) {
+          console.warn('[Flow Confirm] Faltan credenciales de Supabase');
+        } else {
+          const supabase = createClient(supabaseUrl, supabaseKey);
+          const pedido = {
+            user_id: tmp?.payer?.id || null,
+            email: tmp?.payer?.email || paymentData?.email || null,
+            items: tmp?.items || [],
+            subtotal: tmp?.subtotal ?? null,
+            discount: tmp?.discount ?? null,
+            shipping: tmp?.shippingCost ?? null,
+            total: tmp?.total || paymentData?.amount || 0,
+            status: 'pagado',
+            commerceOrder: tmp?.commerceOrder || paymentData?.commerceOrder || '',
+            flowOrder: paymentData?.flowOrder || null,
+            createdAt: new Date().toISOString(),
+            meta: tmp?.meta || {},
+          };
+          const { error: supaErr } = await supabase.from('pedidos').insert([pedido]);
+          if (supaErr) {
+            console.warn('[Flow Confirm] Error insertando pedido en Supabase:', supaErr.message);
+          } else {
+            console.log('[Flow Confirm] Pedido guardado en Supabase');
+          }
+        }
+      } catch (dbErr) {
+        console.warn('[Flow Confirm] Error al guardar pedido en Supabase:', dbErr?.message || dbErr);
+      }
+
       // Armar correo de confirmación
       try {
         const emailTo = tmp?.payer?.email || paymentData?.email || null;
         if (emailTo) {
-          const fmt = (n) => Number(n || 0).toLocaleString("es-CL");
+          const fmt = (n) => Number(n || 0).toLocaleString('es-CL');
           const itemsHtml = (tmp?.items || [])
             .map(
               (it) => `
                 <tr>
                   <td style="padding:8px;border-bottom:1px solid #eee">${
-                    it?.name || it?.title || "Producto"
+                    it?.name || it?.title || 'Producto'
                   }</td>
                   <td style="padding:8px;border-bottom:1px solid #eee;text-align:right">${
                     it?.qty || 1
@@ -630,12 +666,12 @@ app.post("/flow/confirm", webhookLimiter, async (req, res) => {
                   )}</td>
                 </tr>`
             )
-            .join("");
+            .join('');
           const total = tmp?.total || paymentData?.amount || 0;
           const subtotal = tmp?.subtotal ?? null;
           const discount = tmp?.discount ?? null;
           const shipping = tmp?.shippingCost ?? null;
-          const commerceOrder = tmp?.commerceOrder || paymentData?.commerceOrder || "";
+          const commerceOrder = tmp?.commerceOrder || paymentData?.commerceOrder || '';
 
           const html = `
             <h2>✅ Pago confirmado - Misión 3D</h2>
@@ -650,24 +686,24 @@ app.post("/flow/confirm", webhookLimiter, async (req, res) => {
                 </tr>
               </thead>
               <tbody>
-                ${itemsHtml || ""}
+                ${itemsHtml || ''}
               </tbody>
             </table>
             <div style="margin-top:12px">
               ${
                 subtotal !== null
                   ? `<div><strong>Subtotal:</strong> $${fmt(subtotal)}</div>`
-                  : ""
+                  : ''
               }
               ${
                 discount
                   ? `<div><strong>Descuento:</strong> -$${fmt(discount)}</div>`
-                  : ""
+                  : ''
               }
               ${
                 shipping !== null
                   ? `<div><strong>Envío:</strong> $${fmt(shipping)}</div>`
-                  : ""
+                  : ''
               }
               <div style="margin-top:8px;font-size:1.1em"><strong>Total pagado:</strong> $${fmt(
                 total
@@ -682,12 +718,12 @@ app.post("/flow/confirm", webhookLimiter, async (req, res) => {
             html,
             text: `Pago confirmado. Orden: ${commerceOrder}. Total: $${fmt(total)}`,
           });
-          console.log("📧 Email de confirmación enviado a", emailTo);
+          console.log('📧 Email de confirmación enviado a', emailTo);
         } else {
-          console.warn("⚠️ [Flow Confirm] No se encontró email del comprador para token", token);
+          console.warn('⚠️ [Flow Confirm] No se encontró email del comprador para token', token);
         }
       } catch (mailErr) {
-        console.warn("⚠️ [Flow Confirm] Error enviando correo:", mailErr?.message || mailErr);
+        console.warn('⚠️ [Flow Confirm] Error enviando correo:', mailErr?.message || mailErr);
       }
 
       // Limpiar cache temporal
