@@ -1230,6 +1230,52 @@ Soporte: soporte@mision3d.cl
   }
 });
 
+// ===== Endpoint público: obtener pedidos por email (para vista de cliente) =====
+app.get('/api/pedidos/by-email/:email', async (req, res) => {
+  try {
+    const email = req.params.email?.trim().toLowerCase();
+    if (!email) {
+      return res.status(400).json({ error: 'Email requerido' });
+    }
+
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!supabaseUrl || !supabaseKey) {
+      return res.status(500).json({ error: 'server', detail: 'Supabase credentials missing' });
+    }
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Consultar pedidos por email (case-insensitive)
+    const { data, error } = await supabase
+      .from('pedidos')
+      .select('id, email, estado, status, items, total, total_clp, created_at, commerce_order, flow_order, payment_method')
+      .ilike('email', email)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('[API] Error consultando pedidos:', error);
+      return res.status(500).json({ error: 'query_failed', detail: error.message });
+    }
+
+    // Mapear a formato simple para el frontend
+    const pedidos = (data || []).map(p => ({
+      id: p.id,
+      estado: p.estado || p.status || 'pendiente',
+      items: p.items || [],
+      total: p.total_clp || p.total || 0,
+      fecha: p.created_at,
+      orden: p.commerce_order || p.flow_order || p.id,
+      metodoPago: p.payment_method || 'flow'
+    }));
+
+    res.json({ success: true, pedidos });
+  } catch (err) {
+    console.error('[API] Error en /api/pedidos/by-email:', err);
+    res.status(500).json({ error: 'server', detail: err?.message || String(err) });
+  }
+});
+
 // ===== Admin: marcar pedido como pagado (transferencia u otros) =====
 // Seguridad simple por header x-admin-key = ADMIN_KEY
 app.post('/api/admin/pedidos/:id/marcar-pagado', async (req, res) => {
