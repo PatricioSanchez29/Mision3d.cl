@@ -5,6 +5,8 @@
   <title>Panel de Administración | Mision3D</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <link rel="stylesheet" href="style.css">
+  <!-- XLSX para exportación a Excel -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     body { background: #f7f7f7; }
     .admin-panel { max-width: 900px; margin: 40px auto; background: #fff; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,.07); padding: 32px 28px; }
@@ -60,6 +62,13 @@
         <input id="pedidoSearch" type="text" placeholder="Buscar por email, orden o ID" style="flex:1;min-width:220px;padding:8px 10px;border:1px solid #ccc;border-radius:6px">
         <input id="pedidoFrom" type="date" style="padding:8px 10px;border:1px solid #ccc;border-radius:6px">
         <input id="pedidoTo" type="date" style="padding:8px 10px;border:1px solid #ccc;border-radius:6px">
+        <select id="pedidoQuickRange" style="padding:8px 10px;border:1px solid #ccc;border-radius:6px">
+          <option value="">Rango rápido</option>
+          <option value="today">Hoy</option>
+          <option value="7d">Últimos 7 días</option>
+          <option value="month">Este mes</option>
+          <option value="all">Todos</option>
+        </select>
         <select id="pedidoFilter" style="padding:8px 10px;border:1px solid #ccc;border-radius:6px">
           <option value="todos">Todos</option>
           <option value="pendiente">Pendiente</option>
@@ -69,6 +78,7 @@
         </select>
         <button id="pedidoRefresh" class="btn" style="background:#0ea5e9;color:#fff">Actualizar</button>
         <button id="pedidoExport" class="btn" style="background:#22c55e;color:#fff">Exportar CSV</button>
+        <button id="pedidoExportXlsx" class="btn" style="background:#10b981;color:#fff">Exportar XLSX</button>
       </div>
       <table class="admin-table" id="pedidosTable">
         <thead>
@@ -239,12 +249,38 @@
         const refresh = document.getElementById('pedidoRefresh');
         const fromInp = document.getElementById('pedidoFrom');
         const toInp   = document.getElementById('pedidoTo');
+        const quick   = document.getElementById('pedidoQuickRange');
         const exportBtn = document.getElementById('pedidoExport');
+        const exportXlsxBtn = document.getElementById('pedidoExportXlsx');
         if (search && !search._binded) { search._binded = true; search.addEventListener('input', () => renderPedidos()); }
         if (filter && !filter._binded) { filter._binded = true; filter.addEventListener('change', () => renderPedidos()); }
         if (refresh && !refresh._binded) { refresh._binded = true; refresh.addEventListener('click', () => renderPedidos()); }
         if (fromInp && !fromInp._binded) { fromInp._binded = true; fromInp.addEventListener('change', () => renderPedidos()); }
         if (toInp && !toInp._binded) { toInp._binded = true; toInp.addEventListener('change', () => renderPedidos()); }
+        if (quick && !quick._binded) {
+          quick._binded = true;
+          quick.addEventListener('change', () => {
+            const today = new Date();
+            const toStr = (d)=> d.toISOString().slice(0,10);
+            if (quick.value === 'today') {
+              const s = toStr(today);
+              if (fromInp) fromInp.value = s;
+              if (toInp) toInp.value = s;
+            } else if (quick.value === '7d') {
+              const past = new Date(today.getTime() - 6*24*60*60*1000);
+              if (fromInp) fromInp.value = toStr(past);
+              if (toInp) toInp.value = toStr(today);
+            } else if (quick.value === 'month') {
+              const first = new Date(today.getFullYear(), today.getMonth(), 1);
+              if (fromInp) fromInp.value = toStr(first);
+              if (toInp) toInp.value = toStr(today);
+            } else if (quick.value === 'all') {
+              if (fromInp) fromInp.value = '';
+              if (toInp) toInp.value = '';
+            }
+            renderPedidos();
+          });
+        }
         if (exportBtn && !exportBtn._binded) {
           exportBtn._binded = true;
           exportBtn.addEventListener('click', () => {
@@ -273,6 +309,30 @@
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
+          });
+        }
+        if (exportXlsxBtn && !exportXlsxBtn._binded) {
+          exportXlsxBtn._binded = true;
+          exportXlsxBtn.addEventListener('click', () => {
+            const rows = (window._pedidosFiltered || []).map(p => ({
+              id: p.id,
+              email: p.email || p.user_id || '',
+              estado: p.estado || p.status || '',
+              total: Number(p.total_clp || p.total || 0),
+              created_at: p.created_at || p.createdAt || p.createdat || '',
+              commerce_order: p.commerce_order || p.commerceOrder || '',
+              items_count: Array.isArray(p.items) ? p.items.length : 0
+            }));
+            if (!rows.length) { showAdminToast('No hay datos para exportar', 'error'); return; }
+            try {
+              const ws = XLSX.utils.json_to_sheet(rows);
+              const wb = XLSX.utils.book_new();
+              XLSX.utils.book_append_sheet(wb, ws, 'Pedidos');
+              XLSX.writeFile(wb, 'pedidos.xlsx');
+            } catch(e){
+              console.error('XLSX export error:', e);
+              showAdminToast('Error exportando a XLSX', 'error');
+            }
           });
         }
       }
