@@ -16,9 +16,10 @@ async function mostrarPedidosAdmin() {
   const { data, error } = await supabase
     .from('pedidos')
     .select('*')
-    .order('createdAt', { ascending: false });
+    .order('created_at', { ascending: false });
   if (error) {
     document.getElementById('adminPedidosList').innerHTML = '<p>Error cargando pedidos.</p>';
+    console.error('Error cargando pedidos:', error);
     return;
   }
   if (!data || data.length === 0) {
@@ -27,15 +28,21 @@ async function mostrarPedidosAdmin() {
   }
   let html = '<ul>';
   for (const pedido of data) {
+    const total = pedido.total_clp || pedido.total || 0;
+    const email = pedido.email || pedido.user_id || 'N/A';
+    const fecha = pedido.created_at || pedido.createdat || pedido.createdAt || 'N/A';
+    const items = pedido.items || [];
+    const itemsText = items.map(it => `${it.name || it.title || 'Producto'} (x${it.qty || 1})`).join(', ') || 'Sin items';
+    
     html += `<li>
-      <b>ID:</b> ${pedido.id} | <b>Usuario:</b> ${pedido.user_id} | <b>Estado:</b> 
+      <b>ID:</b> ${pedido.id} | <b>Email:</b> ${email} | <b>Estado:</b> 
       <select data-id="${pedido.id}" class="estado-select">
         <option value="pendiente"${pedido.estado === 'pendiente' ? ' selected' : ''}>pendiente</option>
         <option value="pagado"${pedido.estado === 'pagado' ? ' selected' : ''}>pagado</option>
         <option value="enviado"${pedido.estado === 'enviado' ? ' selected' : ''}>enviado</option>
         <option value="cancelado"${pedido.estado === 'cancelado' ? ' selected' : ''}>cancelado</option>
       </select>
-      | <b>Total:</b> $${pedido.totalCLP} | <b>Fecha:</b> ${pedido.createdAt}
+      | <b>Total:</b> $${total.toLocaleString('es-CL')} | <b>Items:</b> ${itemsText} | <b>Fecha:</b> ${new Date(fecha).toLocaleString('es-CL')}
       <button data-id="${pedido.id}" class="eliminar-btn" style="margin-left:10px;color:#fff;background:#e11d48;border:none;padding:4px 8px;border-radius:4px;">Eliminar</button>
     </li>`;
   }
