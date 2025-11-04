@@ -115,7 +115,7 @@ function render(highlightId, addedName){
   }
 
   if(cart.length===0){
-    c.innerHTML = '<p>Carrito vacío</p>';
+    c.innerHTML = '<p style="text-align:center;color:#999;padding:40px 20px;font-size:1rem;">🛒 Tu carrito está vacío<br><span style="font-size:0.85rem;margin-top:8px;display:block;">Agrega productos desde el catálogo</span></p>';
   } else {
     cart.forEach(it=>{
       const p = window.PRODUCTS?.find(x=>x.id===it.id);
