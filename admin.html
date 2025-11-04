@@ -82,7 +82,7 @@
       </div>
       <table class="admin-table" id="pedidosTable">
         <thead>
-          <tr><th>ID</th><th>Usuario</th><th>Estado</th><th>Total</th><th>Fecha</th><th>Acciones</th></tr>
+          <tr><th>ID</th><th>Usuario</th><th>Estado</th><th>Total</th><th>Items</th><th>Fecha</th><th>Acciones</th></tr>
         </thead>
         <tbody></tbody>
       </table>
@@ -167,6 +167,8 @@
               fechaChile = String(_createdAt).slice(0,16).replace('T',' ');
             }
           }
+          const items = Array.isArray(pedido.items) ? pedido.items : [];
+          const itemsText = items.map(it => `${it?.name || it?.title || 'Producto'} (x${it?.qty || 1})`).join(', ') || 'Sin items';
           tr.innerHTML = `
             <td>${pedido.id}</td>
             <td>${pedido.email || pedido.user_id || ''}</td>
@@ -179,6 +181,7 @@
               </select>
             </td>
             <td>${money(pedido.total_clp || pedido.total || 0)}</td>
+            <td>${itemsText}</td>
             <td>${fechaChile}</td>
             <td>
               <button data-id="${pedido.id}" class="mark-paid-btn" style="color:#fff;background:#16a34a;border:none;padding:4px 8px;border-radius:4px;margin-right:8px;">Marcar pagado + email</button>
