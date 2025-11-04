@@ -7,19 +7,34 @@ async function mostrarPedidosUsuario() {
     document.getElementById('pedidosList').innerHTML = '<p>Debes iniciar sesión para ver tus pedidos.</p>';
     return;
   }
+  
+  console.log('[mis-pedidos] Usuario actual:', { id: user.id, email: user.email });
+  
   // Buscar por user_id O por email (para pedidos hechos sin login)
-  const { data, error } = await supabase
+  // Primero intentar con filter más flexible
+  let query = supabase
     .from('pedidos')
     .select('*')
-    .or(`user_id.eq.${user.id},email.eq.${user.email}`)
     .order('created_at', { ascending: false });
+  
+  // Aplicar filtro: buscar por user_id O email que matchee (case-insensitive)
+  const { data, error } = await query.or(`user_id.eq.${user.id},email.ilike.${user.email}`);
+  
+  console.log('[mis-pedidos] Resultados:', { count: data?.length || 0, error });
+  
   if (error) {
     document.getElementById('pedidosList').innerHTML = '<p>Error cargando pedidos.</p>';
     console.error('Error cargando pedidos:', error);
     return;
   }
   if (!data || data.length === 0) {
-    document.getElementById('pedidosList').innerHTML = '<p>No tienes pedidos registrados.</p>';
+    document.getElementById('pedidosList').innerHTML = `
+      <p>No tienes pedidos registrados.</p>
+      <p style="font-size:0.9rem;color:#666;margin-top:12px;">
+        Buscando pedidos para: <b>${user.email}</b><br>
+        Si realizaste un pedido y no aparece aquí, verifica que usaste este email.
+      </p>
+    `;
     return;
   }
   let html = '<ul>';
