@@ -629,7 +629,9 @@ app.post("/flow/confirm", webhookLimiter, async (req, res) => {
             discount: tmp?.discount ?? null,
             shipping: tmp?.shippingCost ?? null,
             total: tmp?.total || paymentData?.amount || 0,
+            totalCLP: tmp?.total || paymentData?.amount || 0,
             status: 'pagado',
+            estado: 'pagado',
             commerceOrder: tmp?.commerceOrder || paymentData?.commerceOrder || '',
             flowOrder: paymentData?.flowOrder || null,
             createdAt: new Date().toISOString(),
@@ -1002,6 +1004,21 @@ app.get("/flow/retorno", async (req, res) => {
       </body>
       </html>
     `);
+  }
+});
+
+// Algunas integraciones o extensiones pueden intentar hacer POST al return URL.
+// Aceptamos POST y redirigimos al handler GET conservando el token.
+app.post("/flow/retorno", (req, res) => {
+  try {
+    const token = (req.body && req.body.token) || (req.query && req.query.token) || "";
+    if (token) {
+      return res.redirect(303, `/flow/retorno?token=${encodeURIComponent(token)}`);
+    }
+    return res.redirect(303, "/flow/retorno");
+  } catch (e) {
+    console.warn("[Flow Retorno POST] Error redirigiendo:", e?.message || e);
+    return res.redirect(303, "/flow/retorno");
   }
 });
 
