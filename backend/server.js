@@ -627,6 +627,7 @@ app.post("/flow/confirm", webhookLimiter, async (req, res) => {
             estado: 'pagado',
             commerce_order: tmp?.commerceOrder || paymentData?.commerceOrder || '',
             flow_order: paymentData?.flowOrder || null,
+            payment_method: 'flow',
             created_at: new Date().toISOString(),
             meta: tmp?.meta || {},
           };

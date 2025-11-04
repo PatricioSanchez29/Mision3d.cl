@@ -237,6 +237,7 @@
           items: p.items || [],
           total: p.total,
           commerce_order: p.orden,
+          payment_method: p.metodoPago || 'flow',
           direccion: (p.items[0]?.meta?.direccion || '—'),
           comuna: (p.items[0]?.meta?.comuna || '—'),
           region: (p.items[0]?.meta?.region || '—'),
@@ -269,11 +270,16 @@
         const itemsText = items.map(it => `${it.name || it.title || 'Producto'} (x${it.qty || 1})`).join(', ') || 'Sin detalles';
         const total = Number(o.total || 0).toLocaleString('es-CL');
         
+        // Método de pago
+        const metodo = o.payment_method || 'flow';
+        const metodoIcon = metodo === 'transferencia' ? '🏦' : '💳';
+        const metodoText = metodo === 'transferencia' ? 'Transferencia' : 'Flow';
+        
         const envio = `${o.direccion || '—'}, ${o.comuna || '—'}, ${o.region || '—'}`;
         const entrega = o.estado_entrega || (estado === 'enviado' ? 'Enviado' : estado === 'pagado' ? 'En preparación' : 'Pendiente');
 
         return `<tr>
-          <td><strong>${nro}</strong><br><small style="color:#6b7280">${itemsText}</small><br><small style="color:#111;font-weight:600">Total: $${total}</small></td>
+          <td><strong>${nro}</strong><br><small style="color:#6b7280">${itemsText}</small><br><small style="color:#111;font-weight:600">Total: $${total}</small><br><small style="color:#0ea5e9">${metodoIcon} ${metodoText}</small></td>
           <td>${fecha}</td>
           <td><span class="badge ${badgeClass}">${badgeIcon} ${estado.charAt(0).toUpperCase() + estado.slice(1)}</span></td>
           <td>${envio}</td>
