@@ -43,6 +43,7 @@ async function mostrarPedidosAdmin() {
         <option value="cancelado"${pedido.estado === 'cancelado' ? ' selected' : ''}>cancelado</option>
       </select>
       | <b>Total:</b> $${total.toLocaleString('es-CL')} | <b>Items:</b> ${itemsText} | <b>Fecha:</b> ${new Date(fecha).toLocaleString('es-CL')}
+      <button data-id="${pedido.id}" class="mark-paid-btn" style="margin-left:10px;color:#fff;background:#16a34a;border:none;padding:4px 8px;border-radius:4px;">Marcar pagado + email</button>
       <button data-id="${pedido.id}" class="eliminar-btn" style="margin-left:10px;color:#fff;background:#e11d48;border:none;padding:4px 8px;border-radius:4px;">Eliminar</button>
     </li>`;
   }
@@ -54,11 +55,41 @@ async function mostrarPedidosAdmin() {
     sel.addEventListener('change', async function() {
       const pedidoId = this.getAttribute('data-id');
       const nuevoEstado = this.value;
-      const { error } = await supabase.from('pedidos').update({ estado: nuevoEstado }).eq('id', pedidoId);
+      const { error } = await supabase.from('pedidos').update({ estado: nuevoEstado, status: nuevoEstado }).eq('id', pedidoId);
       if (error) {
         alert('Error actualizando estado: ' + error.message);
       } else {
         alert('Estado actualizado');
+      }
+    });
+  });
+
+  // Botón: marcar pagado + enviar correo
+  document.querySelectorAll('.mark-paid-btn').forEach(btn => {
+    btn.addEventListener('click', async function () {
+      const id = this.getAttribute('data-id');
+      if (!confirm('¿Marcar como PAGADO y enviar correo de confirmación al cliente?')) return;
+      let adminKey = sessionStorage.getItem('ADMIN_KEY');
+      if (!adminKey) {
+        adminKey = prompt('Ingresa la ADMIN_KEY');
+        if (!adminKey) return;
+        sessionStorage.setItem('ADMIN_KEY', adminKey);
+      }
+      try {
+        const base = window.location.origin;
+        const resp = await fetch(base + '/api/admin/pedidos/' + encodeURIComponent(id) + '/marcar-pagado', {
+          method: 'POST',
+          headers: { 'x-admin-key': adminKey }
+        });
+        const data = await resp.json().catch(()=>({}));
+        if (!resp.ok) {
+          alert('Error: ' + (data?.detail || data?.error || resp.status));
+          return;
+        }
+        alert('Pedido marcado como pagado y correo enviado.');
+        mostrarPedidosAdmin();
+      } catch (e) {
+        alert('Error realizando la acción: ' + (e?.message || e));
       }
     });
   });

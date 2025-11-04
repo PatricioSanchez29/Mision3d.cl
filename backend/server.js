@@ -1231,6 +1231,111 @@ Soporte: soporte@mision3d.cl
   }
 });
 
+// ===== Admin: marcar pedido como pagado (transferencia u otros) =====
+// Seguridad simple por header x-admin-key = ADMIN_KEY
+app.post('/api/admin/pedidos/:id/marcar-pagado', async (req, res) => {
+  try {
+    const provided = String(req.headers['x-admin-key'] || '').trim();
+    const expected = String(process.env.ADMIN_KEY || '').trim();
+    if (!expected) {
+      return res.status(401).json({ error: 'unauthorized', reason: 'ADMIN_KEY not configured' });
+    }
+    if (!provided || provided !== expected) {
+      return res.status(401).json({ error: 'unauthorized' });
+    }
+
+    const id = req.params.id;
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!supabaseUrl || !supabaseKey) {
+      return res.status(500).json({ error: 'server', detail: 'Supabase credentials missing' });
+    }
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Obtener pedido
+    const { data: pedido, error: getErr } = await supabase
+      .from('pedidos')
+      .select('*')
+      .eq('id', id)
+      .single();
+    if (getErr || !pedido) {
+      return res.status(404).json({ error: 'not_found', detail: getErr?.message || 'Pedido no encontrado' });
+    }
+
+    // Actualizar estado/status a pagado
+    const { error: updErr } = await supabase
+      .from('pedidos')
+      .update({ estado: 'pagado', status: 'pagado' })
+      .eq('id', id);
+    if (updErr) {
+      return res.status(500).json({ error: 'update_failed', detail: updErr.message });
+    }
+
+    // Enviar correo de confirmación
+    try {
+      const emailTo = pedido.email || null;
+      if (emailTo) {
+        const fmt = (n) => Number(n || 0).toLocaleString('es-CL');
+        const items = Array.isArray(pedido.items) ? pedido.items : [];
+        const itemsHtml = items.map(it => `
+          <tr>
+            <td style="padding:8px;border-bottom:1px solid #eee">${it?.name || it?.title || 'Producto'}</td>
+            <td style="padding:8px;border-bottom:1px solid #eee;text-align:right">${it?.qty || 1}</td>
+            <td style="padding:8px;border-bottom:1px solid #eee;text-align:right">$${fmt(it?.price || 0)}</td>
+          </tr>
+        `).join('');
+
+        const subtotal = Number(pedido.subtotal || 0);
+        const discount = Number(pedido.discount || 0);
+        const shipping = Number(pedido.shipping || pedido.shipping_cost || 0);
+        const total = Number(pedido.total || pedido.total_clp || 0);
+        const commerceOrder = pedido.commerce_order || pedido.commerceOrder || pedido.id;
+
+        const html = `
+          <h2>✅ Pago confirmado - Misión 3D</h2>
+          <p>Gracias por tu compra. Hemos recibido tu pago exitosamente.</p>
+          <p><strong>Orden:</strong> ${commerceOrder}</p>
+          ${itemsHtml ? `
+          <table style="border-collapse:collapse;width:100%;max-width:520px">
+            <thead>
+              <tr>
+                <th style="text-align:left;padding:8px;border-bottom:2px solid #111">Producto</th>
+                <th style="text-align:right;padding:8px;border-bottom:2px solid #111">Cant.</th>
+                <th style="text-align:right;padding:8px;border-bottom:2px solid #111">Precio</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsHtml}
+            </tbody>
+          </table>` : ''}
+          <div style="margin-top:12px">
+            ${subtotal ? `<div><strong>Subtotal:</strong> $${fmt(subtotal)}</div>` : ''}
+            ${discount ? `<div><strong>Descuento:</strong> -$${fmt(discount)}</div>` : ''}
+            <div><strong>Envío:</strong> $${fmt(shipping)}</div>
+            <div style="margin-top:8px;font-size:1.1em"><strong>Total pagado:</strong> $${fmt(total)}</div>
+          </div>
+          <p style="margin-top:16px">Pronto te contactaremos con los detalles de envío.</p>
+        `;
+
+        await sendEmail({
+          to: emailTo,
+          subject: `Pago confirmado - ${commerceOrder}`,
+          html,
+          text: `Pago confirmado. Orden: ${commerceOrder}. Total: $${fmt(total)}`,
+        });
+      }
+    } catch (mailErr) {
+      console.warn('[Admin marcar-pagado] Error enviando correo:', mailErr?.message || mailErr);
+    }
+
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error('[Admin marcar-pagado] Error:', err?.message || err);
+    return res.status(500).json({ error: 'server', detail: err?.message || String(err) });
+  }
+});
+
 // ===== Verificar token y restablecer contraseña =====
 app.post("/api/reset-password", async (req, res) => {
   try {
