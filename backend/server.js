@@ -47,41 +47,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ===== CORS =====
-// Puedes pasar múltiples orígenes separados por coma en CORS_ORIGIN
-const allowedOrigins = (process.env.CORS_ORIGIN || "")
-  .split(",")
-  .map((s) => s.trim())
-  .filter(Boolean);
-
-const corsOptions = {
-  origin: (origin, cb) => {
-    const isDevelopment = process.env.NODE_ENV !== "production";
-    const isLocalhost =
-      origin?.includes("localhost") || origin?.includes("127.0.0.1");
-
-    // Sin restricción en desarrollo si no hay CORS_ORIGIN
-    if (!allowedOrigins.length && isDevelopment) return cb(null, true);
-
-    // Llamadas server-to-server (sin header Origin)
-    if (!origin) return cb(null, true);
-
-    // Siempre permitir localhost para testing
-    if (isLocalhost) return cb(null, true);
-
-    // Permitir si está en la lista explícita
-    if (allowedOrigins.includes(origin)) return cb(null, true);
-
-    // Si no configuraste CORS_ORIGIN, permitir todo (modo permisivo)
-    if (!allowedOrigins.length) return cb(null, true);
-
-    console.warn("❌ CORS bloqueado para origen:", origin);
-    return cb(new Error("Not allowed by CORS"));
-  },
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-};
-app.use(cors(corsOptions));
+app.use(cors({
+  origin: ["https://www.mision3d.cl", "https://mision3dcl.pages.dev"],
+  credentials: true
+}));
 
 // ===== Health Check Endpoints (Render) =====
 app.get("/health", (req, res) => {
@@ -109,11 +78,6 @@ app.get("/api", (req, res) => {
     status: "running",
   });
 });
-
-// NOTA: NO mover express.static antes de las rutas API
-// Las rutas API deben definirse ANTES de express.static para evitar conflictos
-const frontendPath = path.join(__dirname, "..");
-console.log("📂 Frontend path configurado:", frontendPath);
 
 // Almacenamiento temporal de pedidos creados vía Flow (solo en memoria)
 // Clave: token de Flow -> Valor: resumen del pedido
@@ -407,11 +371,6 @@ app.post("/api/test-email", async (req, res) => {
     console.error("[Test Email] Error:", e?.message || e);
     return res.status(500).json({ error: "server", detail: e?.message });
   }
-});
-
-// Ruta raíz sirve index.html
-app.get("/", (req, res) => {
-  res.sendFile(path.join(frontendPath, "index.html"));
 });
 
 // ===== Endpoint Flow (crear pago) =====
@@ -1561,22 +1520,14 @@ app.post("/api/webhooks/supabase/pedidos", webhookLimiter, async (req, res) => {
   }
 });
 
-// ===== Servir archivos estáticos (DESPUÉS de todas las rutas API) =====
-app.use(express.static(frontendPath));
-console.log("📂 Sirviendo archivos estáticos desde:", frontendPath);
-
-// ===== Static: fallback a index.html =====
-app.use((req, res, next) => {
-  if (req.method !== "GET") return next();
-  // Si pides un archivo existente, Express.static ya respondió
-  // Para rutas SPA, devuelve index.html
-  res.sendFile(path.join(frontendPath, "index.html"));
-});
+// ===== Health Check para Render =====
+app.get("/api/health", (_, res) => res.json({ ok: true }));
 
 // ===== Start Server =====
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Mision3D API escuchando en http://localhost:${PORT}`);
+  console.log(`📡 Solo rutas API - Frontend servido por Cloudflare Pages`);
 });
 
 export default app;
