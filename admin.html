@@ -472,15 +472,21 @@
         variantsData.forEach((variant, index) => {
           const div = document.createElement('div');
           div.className = 'gallery-item';
+          div.style.flexWrap = 'wrap';
           div.innerHTML = `
             <input type="text" value="${variant.name || ''}" data-index="${index}" data-field="name" placeholder="Nombre (Ej: Grande, Azul, Con base)" style="flex:2">
             <input type="number" value="${variant.price || 0}" data-index="${index}" data-field="price" placeholder="Precio diferencial" min="0" style="flex:1">
             <button type="button" class="btn-gallery remove" data-index="${index}">🗑️</button>
+            <div style="width:100%;margin-top:8px;display:flex;gap:8px;align-items:center">
+              <input type="file" accept="image/*" data-index="${index}" data-field="image" style="flex:1;font-size:.9rem">
+              ${variant.image ? `<img src="${variant.image}" style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #ddd">` : ''}
+              ${variant.image ? `<span style="font-size:.85rem;color:#059669">✓ Imagen cargada</span>` : ''}
+            </div>
           `;
           container.appendChild(div);
           
           // Event listeners para actualizar
-          const inputs = div.querySelectorAll('input');
+          const inputs = div.querySelectorAll('input[type="text"], input[type="number"]');
           inputs.forEach(input => {
             input.addEventListener('input', (e) => {
               const idx = parseInt(e.target.dataset.index);
@@ -493,6 +499,41 @@
             });
           });
           
+          // Event listener para el archivo de imagen
+          const fileInput = div.querySelector('input[type="file"]');
+          if(fileInput){
+            fileInput.addEventListener('change', async (e) => {
+              const idx = parseInt(e.target.dataset.index);
+              const file = e.target.files[0];
+              if(!file) return;
+              
+              try {
+                // Subir imagen a Supabase Storage
+                const fileName = `variant-${Date.now()}-${file.name}`;
+                const { data: uploadData, error: uploadError } = await supabase.storage
+                  .from('productos')
+                  .upload(fileName, file, {
+                    cacheControl: '3600',
+                    upsert: false
+                  });
+                
+                if(uploadError) throw uploadError;
+                
+                // Obtener URL pública
+                const { data: urlData } = supabase.storage
+                  .from('productos')
+                  .getPublicUrl(fileName);
+                
+                variantsData[idx].image = urlData.publicUrl;
+                renderVariants();
+                showAdminToast('Imagen subida correctamente', 'success');
+              } catch (err) {
+                console.error('Error subiendo imagen:', err);
+                showAdminToast('Error subiendo imagen: ' + err.message, 'error');
+              }
+            });
+          }
+          
           // Botón eliminar
           const btnRemove = div.querySelector('.btn-gallery.remove');
           btnRemove.addEventListener('click', () => {
@@ -503,7 +544,7 @@
       }
       
       function addVariant(){
-        variantsData.push({ name: '', price: 0 });
+        variantsData.push({ name: '', price: 0, image: '' });
         renderVariants();
       }
       
