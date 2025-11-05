@@ -413,7 +413,7 @@
         let prod = { ...producto };
         if (id) prod.id = id;
         // Solo enviar campos válidos según la tabla
-  const camposValidos = ['id','name','price','img','stock','descripcion','category','discount','stars','reviews','gallery'];
+  const camposValidos = ['id','name','price','img','stock','descripcion','category','discount','stars','reviews','gallery','variants'];
         let prodFinal = {};
         for(const k of camposValidos){
           if(typeof prod[k] !== 'undefined') prodFinal[k] = prod[k];
