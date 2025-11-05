@@ -942,6 +942,23 @@ document.addEventListener('DOMContentLoaded', ()=>{
       console.log('🏷️ Filtro de descuento:', discountToggle.checked ? 'activado' : 'desactivado');
       renderCatalog($('#searchInput')?.value||'');
     });
+
+    // Permitir hacer click en cualquier parte del contenedor para alternar
+    const discountWrapper = discountToggle.closest('.discount-toggle');
+    if (discountWrapper) {
+      discountWrapper.addEventListener('click', (e) => {
+        // Si hicieron click fuera del input, alternar manualmente
+        if (!(e.target instanceof HTMLInputElement)) {
+          discountToggle.checked = !discountToggle.checked;
+          discountToggle.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      });
+    }
+
+    // Si la página se abre con el toggle marcado, aplicar filtro al cargar
+    if (discountToggle.checked) {
+      setTimeout(() => renderCatalog($('#searchInput')?.value||''), 0);
+    }
   }
   
   const viewGridBtn = document.getElementById('viewGrid');
