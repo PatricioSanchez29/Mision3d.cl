@@ -342,7 +342,7 @@ function renderProductDetail(){
         <div class='variants-grid' id='variantsGrid'>${variants.map((v,i)=>`<button class='variant-btn ${i===0?'active':''}' data-index='${i}' data-price='${v.price}'>${v.name}</button>`).join('')}</div>
         <div id="customNoteWrap" style="display:none;margin-top:10px">
           <label class='variants-label' style="margin-bottom:6px">Personaliza tu calendario</label>
-          <input id="customNoteInput" type="text" placeholder="Escribe nombre/texto para personalizar (máx 80)" maxlength="80" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:.95rem">
+          <input id="customNoteInput" type="text" placeholder="Escribe nombre/texto para personalizar (máx 15 letras)" maxlength="15" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:.95rem">
           <small style="color:#666">Este texto se enviará con tu pedido.</small>
         </div>
       </div>
