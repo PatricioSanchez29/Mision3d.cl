@@ -59,6 +59,26 @@ function add(id){
     return;
   }
   
+  // Si el producto tiene variantes, redirigir a la página del producto
+  let hasVariants = false;
+  if(prod.variants && Array.isArray(prod.variants)){
+    hasVariants = prod.variants.length > 0;
+  } else if(prod.variants && typeof prod.variants === 'string'){
+    try {
+      const parsed = JSON.parse(prod.variants);
+      hasVariants = parsed.length > 0;
+    } catch(e) {
+      hasVariants = false;
+    }
+  }
+  
+  if(hasVariants){
+    // Redirigir a la página del producto para elegir variante
+    window.location.href = `producto.html?id=${id}`;
+    return;
+  }
+  
+  // Si no tiene variantes, agregar directamente al carrito
   let it = cart.find(x=>x.id===id);
   if(it) it.qty++;
   else cart.push({id, qty:1});
