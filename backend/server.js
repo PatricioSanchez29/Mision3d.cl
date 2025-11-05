@@ -408,7 +408,8 @@ app.post("/api/payments/flow", paymentLimiter, async (req, res) => {
     }
     // Fallbacks seguros de URLs (siempre usar los correctos)
     if (!confirmUrl) confirmUrl = 'https://api.mision3d.cl/flow/confirm';
-    if (!returnUrl) returnUrl = 'https://www.mision3d.cl/confirmacion-flow.html';
+    // returnUrl debe ser un endpoint del backend que redirija al frontend
+    if (!returnUrl) returnUrl = 'https://api.mision3d.cl/flow/retorno';
 
     // CRÍTICO: Asegurar que las URLs sean correctas independientemente de lo que venga en .env
     // 1) confirmUrl SIEMPRE debe ir al backend (webhook server-to-server)
@@ -417,10 +418,10 @@ app.post("/api/payments/flow", paymentLimiter, async (req, res) => {
       confirmUrl = 'https://api.mision3d.cl/flow/confirm';
     }
     
-    // 2) returnUrl SIEMPRE debe ir a una página HTML del frontend (navegador)
-    if (returnUrl.includes('/flow/confirm') || returnUrl.includes('api.mision3d.cl')) {
-      console.warn("⚠️ [Flow] returnUrl apunta al webhook, corrigiendo:", returnUrl);
-      returnUrl = 'https://www.mision3d.cl/confirmacion-flow.html';
+    // 2) returnUrl DEBE ser el endpoint /flow/retorno del backend (Flow hace POST ahí)
+    if (!returnUrl.includes('api.mision3d.cl/flow/retorno')) {
+      console.warn("⚠️ [Flow] returnUrl NO apunta a api.mision3d.cl/flow/retorno, corrigiendo:", returnUrl);
+      returnUrl = 'https://api.mision3d.cl/flow/retorno';
     }
     
     console.log("✅ [Flow] URLs finales:", { confirmUrl, returnUrl });
@@ -931,9 +932,13 @@ app.post("/api/orders/transfer", async (req, res) => {
 });
 
 // ===== Retorno Flow (usuario vuelve) =====
-app.get("/flow/retorno", async (req, res) => {
+// Flow puede hacer GET o POST cuando redirige al usuario
+const handleFlowRetorno = async (req, res) => {
   try {
-    const { token } = req.query;
+    // Flow puede enviar el token por query (GET) o body (POST)
+    const token = req.query.token || req.body.token;
+    console.log("[Flow Retorno] Token recibido:", token, "Método:", req.method);
+    
     if (!token) {
       return res.send(`
         <!DOCTYPE html>
@@ -1092,7 +1097,11 @@ app.get("/flow/retorno", async (req, res) => {
       </html>
     `);
   }
-});
+};
+
+// Registrar ambas rutas (GET y POST) para /flow/retorno
+app.get("/flow/retorno", handleFlowRetorno);
+app.post("/flow/retorno", handleFlowRetorno);
 
 // Algunas integraciones o extensiones pueden intentar hacer POST al return URL.
 // Aceptamos POST y redirigimos al handler GET conservando el token.
