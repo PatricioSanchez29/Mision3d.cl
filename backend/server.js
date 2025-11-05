@@ -48,7 +48,11 @@ app.use(express.urlencoded({ extended: true }));
 
 // ===== CORS =====
 app.use(cors({
-  origin: ["https://www.mision3d.cl", "https://mision3dcl.pages.dev"],
+  origin: [
+    "https://mision3d.cl",
+    "https://www.mision3d.cl",
+    "https://mision3dcl.pages.dev"
+  ],
   credentials: true
 }));
 
@@ -68,6 +72,11 @@ app.get("/healthz", (req, res) => {
     uptime: process.uptime(),
     memory: process.memoryUsage(),
   });
+});
+
+// Root simple para no confundir (ya no servimos frontend desde aquí)
+app.get('/', (_, res) => {
+  res.json({ service: 'Mision3D API', ok: true, health: '/api/health' });
 });
 
 // Root endpoint
@@ -1525,7 +1534,7 @@ app.get("/api/health", (_, res) => res.json({ ok: true }));
 
 // ===== Start Server =====
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Mision3D API escuchando en http://localhost:${PORT}`);
   console.log(`📡 Solo rutas API - Frontend servido por Cloudflare Pages`);
 });

@@ -1,3 +1,14 @@
+// Config de backend compartida para todo el frontend
+(() => {
+  try {
+    if (!window.API_BASE_URL) {
+      const isLocal = /localhost|127\.0\.0\.1/.test(location.hostname);
+      window.API_BASE_URL = isLocal ? 'http://localhost:3001' : 'https://api.mision3d.cl';
+      // console.debug('[config] API_BASE_URL =', window.API_BASE_URL);
+    }
+  } catch {}
+})();
+
 // Actualiza el menú de usuario del header según el estado de sesión de Supabase
 import { supabase } from './supabase-orders.js';
 
