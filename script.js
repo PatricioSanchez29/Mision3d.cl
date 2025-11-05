@@ -141,6 +141,7 @@ function render(highlightId, addedName){
         <img src="${p.img}" alt="">
         <div>
           <div>${displayName}</div>
+          ${it.customNote ? `<div style="font-size:.8rem;color:#555;margin-top:2px">Personalización: ${it.customNote.replace(/</g,'&lt;')}</div>` : ''}
           <div>${money(itemPrice)} c/u</div>
           <div class="qty">
             <button>-</button><input type="number" min="1" value="${it.qty}" style="width:45px;text-align:center;border:1px solid #ddd;border-radius:4px;padding:4px;margin:0 4px;"><button>+</button>

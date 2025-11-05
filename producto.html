@@ -340,6 +340,11 @@ function renderProductDetail(){
       <div class='variants-section'>
         <label class='variants-label'>Modelos:</label>
         <div class='variants-grid' id='variantsGrid'>${variants.map((v,i)=>`<button class='variant-btn ${i===0?'active':''}' data-index='${i}' data-price='${v.price}'>${v.name}</button>`).join('')}</div>
+        <div id="customNoteWrap" style="display:none;margin-top:10px">
+          <label class='variants-label' style="margin-bottom:6px">Personaliza tu calendario</label>
+          <input id="customNoteInput" type="text" placeholder="Escribe nombre/texto para personalizar (máx 80)" maxlength="80" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:.95rem">
+          <small style="color:#666">Este texto se enviará con tu pedido.</small>
+        </div>
       </div>
     `;
   }
@@ -373,8 +378,22 @@ function renderProductDetail(){
         selectedVariant = variants[index];
         currentPrice = selectedVariant.price;
         document.getElementById('priceDisplay').textContent = money(currentPrice);
+
+        // Mostrar/ocultar campo de personalización si la variante es personalizada
+        const wrap = document.getElementById('customNoteWrap');
+        if (wrap) {
+          const isPersonalizada = /personaliz/i.test(selectedVariant?.name || '');
+          wrap.style.display = isPersonalizada ? '' : 'none';
+        }
       };
     });
+
+    // Estado inicial del campo personalizado (primera variante)
+    const wrap = document.getElementById('customNoteWrap');
+    if (wrap) {
+      const isPersonalizada = /personaliz/i.test(selectedVariant?.name || '');
+      wrap.style.display = isPersonalizada ? '' : 'none';
+    }
   }
   
   // Cantidad
@@ -385,15 +404,18 @@ function renderProductDetail(){
   function addBulk(id, cantidad, nombre){
     const itemKey = selectedVariant ? `${id}-${selectedVariant.name}` : id;
     let it = cart.find(x=>x.id===itemKey);
+    const customNoteVal = (document.getElementById('customNoteInput')?.value || '').trim();
     if(it) {
       it.qty += cantidad;
+      if (customNoteVal) it.customNote = customNoteVal;
     } else {
       cart.push({
         id: itemKey,
         originalId: id,
         qty: cantidad,
         variant: selectedVariant ? selectedVariant.name : null,
-        price: currentPrice
+        price: currentPrice,
+        customNote: customNoteVal || null
       });
     }
     save(); badge();
@@ -409,15 +431,18 @@ function renderProductDetail(){
     // Agregar productos seleccionados y redirigir a página de checkout dedicada
     const itemKey = selectedVariant ? `${p.id}-${selectedVariant.name}` : p.id;
     let it = cart.find(x=>x.id===itemKey);
+    const customNoteVal = (document.getElementById('customNoteInput')?.value || '').trim();
     if(it) {
       it.qty += qty;
+      if (customNoteVal) it.customNote = customNoteVal;
     } else {
       cart.push({
         id: itemKey,
         originalId: p.id,
         qty,
         variant: selectedVariant ? selectedVariant.name : null,
-        price: currentPrice
+        price: currentPrice,
+        customNote: customNoteVal || null
       });
     }
     save(); badge();
