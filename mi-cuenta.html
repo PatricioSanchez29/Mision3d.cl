@@ -224,12 +224,21 @@
         }
 
         const apiBase = window.API_BASE_URL || 'https://api.mision3d.cl';
-        const response = await fetch(`${apiBase}/api/pedidos/by-email/${encodeURIComponent(email)}`);
-        const data = await response.json();
+        let response, data;
+        
+        try {
+          response = await fetch(`${apiBase}/api/pedidos/by-email/${encodeURIComponent(email)}`);
+          data = await response.json();
+        } catch (fetchError) {
+          console.error('Error de conexión al servidor:', fetchError);
+          ordersBody.innerHTML = '<tr><td colspan="6" style="color:#f59e0b;text-align:center;padding:20px;">⚠️ No se pudo conectar al servidor. Por favor, intenta más tarde.<br><small style="color:#6b7280;margin-top:8px;display:block;">Si eres el administrador, verifica que el servidor backend esté funcionando.</small></td></tr>';
+          return;
+        }
 
         if (!response.ok || !data.success) {
           console.error('Error consultando pedidos:', data);
-          throw new Error(data.error || 'Error desconocido');
+          ordersBody.innerHTML = `<tr><td colspan="6" style="color:#dc2626;text-align:center;padding:20px;">❌ Error al cargar pedidos: ${data?.error || 'Error desconocido'}</td></tr>`;
+          return;
         }
 
         // Mapear a formato esperado por renderOrders
@@ -251,7 +260,7 @@
         renderOrders(orders);
       } catch (e) {
         console.error('Error cargando pedidos:', e);
-        ordersBody.innerHTML = '<tr><td colspan="6">Error al cargar pedidos: ' + (e.message || 'Desconocido') + '</td></tr>';
+        ordersBody.innerHTML = '<tr><td colspan="6" style="color:#dc2626;text-align:center;padding:20px;">❌ Error inesperado al cargar pedidos.<br><small style="color:#6b7280;margin-top:8px;display:block;">' + (e.message || 'Error desconocido') + '</small></td></tr>';
       }
     }
 

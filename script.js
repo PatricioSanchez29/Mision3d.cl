@@ -433,6 +433,12 @@ function renderCatalog(filterText = ""){
   
   if(stockFilter!=='all') productos = productos.filter(p=>p.stock===stockFilter);
 
+  // Filtrar por descuento
+  const discountToggle = document.getElementById('discountToggle');
+  if (discountToggle && discountToggle.checked) {
+    productos = productos.filter(p => p.discount && p.discount > 0);
+  }
+
   grid.innerHTML = "";
   const resultCount = document.getElementById('resultCount');
   if (productos.length === 0) {
@@ -457,7 +463,7 @@ function renderCatalog(filterText = ""){
 
     const daysDiff = (Date.now() - new Date(p.dateAdded).getTime()) / (1000*60*60*24);
     let badges = '';
-    if(daysDiff <= 21) badges += `<span class="badge new">Nuevo</span>`;
+    if(daysDiff <= 7) badges += `<span class="badge new">Nuevo</span>`;
     if(p.discount && p.discount>0) badges += `<span class="badge discount">-${p.discount}%</span>`;
 
     const fullStars = Math.floor(p.stars);
@@ -928,6 +934,16 @@ document.addEventListener('DOMContentLoaded', ()=>{
       renderCatalog($('#searchInput')?.value||'');
     });
   });
+  
+  // Toggle de descuento
+  const discountToggle = document.getElementById('discountToggle');
+  if(discountToggle) {
+    discountToggle.addEventListener('change', () => {
+      console.log('🏷️ Filtro de descuento:', discountToggle.checked ? 'activado' : 'desactivado');
+      renderCatalog($('#searchInput')?.value||'');
+    });
+  }
+  
   const viewGridBtn = document.getElementById('viewGrid');
   const viewListBtn = document.getElementById('viewList');
   if(viewGridBtn && viewListBtn){

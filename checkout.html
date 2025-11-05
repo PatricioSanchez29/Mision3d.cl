@@ -602,16 +602,25 @@ function renderCheckoutSummary(){
   let html='';
   let subtotal=0;
   cart.forEach(it=>{
-    const p = PRODUCTS.find(pr=>String(pr.id)===String(it.id));
+    // Buscar producto por originalId si existe (productos con variantes), sino por id normal
+    const productId = it.originalId || it.id;
+    const p = PRODUCTS.find(pr=>String(pr.id)===String(productId));
     if(!p) return; // ignora items huérfanos
-    const sub = p.price * it.qty;
+    
+    // Usar precio de la variante si existe, sino el precio del producto
+    const itemPrice = it.price || p.price;
+    const sub = itemPrice * it.qty;
     subtotal += sub;
+    
+    // Nombre con variante si existe
+    const displayName = it.variant ? `${p.name} (${it.variant})` : p.name;
+    
     html += `
       <div class="sum-item">
         <div class="sum-item-thumb"><img src="${p.img||'img/placeholder.png'}" alt="${p.name}"><span class="qty-badge">${it.qty}</span></div>
         <div style="flex:1">
-          <div style="font-weight:600;font-size:.78rem;margin-bottom:4px">${p.name}</div>
-          <div style="font-size:.7rem;color:#555">${it.qty} x ${p.price.toLocaleString('es-CL',{style:'currency',currency:'CLP'})}</div>
+          <div style="font-weight:600;font-size:.78rem;margin-bottom:4px">${displayName}</div>
+          <div style="font-size:.7rem;color:#555">${it.qty} x ${itemPrice.toLocaleString('es-CL',{style:'currency',currency:'CLP'})}</div>
         </div>
         <div style="font-weight:600;font-size:.75rem">${sub.toLocaleString('es-CL',{style:'currency',currency:'CLP'})}</div>
       </div>`;

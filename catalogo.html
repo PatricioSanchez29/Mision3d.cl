@@ -39,6 +39,42 @@
   <script type="module" src="auth-header.js"></script>
   <script>window.GA_MEASUREMENT_ID = window.GA_MEASUREMENT_ID || 'G-XXXXXXXXXX';</script>
   <script src="consent.js"></script>
+  <style>
+    .discount-toggle {
+      display: flex;
+      align-items: center;
+      padding: 8px 16px;
+      background: #f0f9ff;
+      border: 1px solid #0ea5e9;
+      border-radius: 8px;
+      margin-left: 12px;
+      transition: all 0.2s ease;
+    }
+    .discount-toggle:hover {
+      background: #e0f2fe;
+      box-shadow: 0 2px 8px rgba(14, 165, 233, 0.2);
+    }
+    .discount-toggle label {
+      margin: 0;
+      user-select: none;
+    }
+    .discount-toggle input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: #0ea5e9;
+    }
+    @media (max-width: 768px) {
+      .catalog-controls-advanced .left {
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .discount-toggle {
+        margin-left: 0;
+        width: 100%;
+      }
+    }
+  </style>
 </head>
 <body>
   <header class="header">
@@ -109,22 +145,6 @@
       <main class="catalog-main">
         <div class="catalog-controls-advanced">
           <div class="left">
-            <!-- Dropdown de Categorías -->
-            <div class="category-dropdown-wrapper">
-              <div class="custom-select" id="categorySelect">
-                <div class="select-trigger">
-                  <span id="selectedCategory">Todas las categorías</span>
-                  <span class="arrow">▼</span>
-                </div>
-                <div class="select-dropdown">
-                  <input type="text" class="category-search" placeholder="🔍 Buscar categoría..." id="categorySearchInput">
-                  <div class="select-options" id="categoryOptions">
-                    <!-- Las opciones se generarán dinámicamente -->
-                  </div>
-                </div>
-              </div>
-            </div>
-
             <select id="sortSelect" class="sort-select">
               <option value="name-asc">Alfabéticamente A-Z</option>
               <option value="name-desc">Alfabéticamente Z-A</option>
@@ -133,9 +153,14 @@
               <option value="rating-desc" selected>Mejor valoración</option>
               <option value="newest">Más nuevo</option>
             </select>
+            <div class="discount-toggle">
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.9rem;">
+                <input type="checkbox" id="discountToggle" style="cursor: pointer;">
+                <span>🏷️ Solo con descuento</span>
+              </label>
+            </div>
           </div>
           <div class="right">
-            <div class="compare-toggle"><label>Comparar <input type="checkbox" id="compareToggle"></label></div>
             <div class="view-toggle">
               <button id="viewGrid" class="view-btn active" title="Vista grid">▦</button>
               <button id="viewList" class="view-btn" title="Vista lista">☰</button>
@@ -255,11 +280,6 @@
   
     // Inicializar componentes cuando los productos estén cargados
     document.addEventListener('productsReady', () => {
-      // Reconstruir opciones del dropdown cuando los productos estén listos
-      if (typeof window.buildCategoryOptions === 'function') {
-        window.buildCategoryOptions();
-      }
-      
       // Leer parámetro de búsqueda de la URL
       const urlParams = new URLSearchParams(window.location.search);
       const searchQuery = urlParams.get('search');
