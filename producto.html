@@ -294,8 +294,32 @@ function renderProductDetail(){
   const breadcrumb=document.getElementById('breadcrumb');
   if(!p){info.innerHTML='<p>Producto no encontrado. <a href="catalogo.html">Volver al catálogo</a></p>';return;}
   breadcrumb.innerHTML=`<a href='index.html'>Inicio</a> › ${p.name}`;
-  // Galería: combina imagen principal + galería adicional
+  
+  // Preparar variantes primero para poder incluir sus imágenes
+  let variants = [];
+  if(p.variants && Array.isArray(p.variants)){
+    variants = p.variants;
+  } else if(p.variants && typeof p.variants === 'string'){
+    try {
+      variants = JSON.parse(p.variants);
+    } catch(e) {
+      variants = [];
+    }
+  }
+  
+  // Galería: combina imagen principal + imágenes de variantes + galería adicional
   let galleryImages = [p.img]; // Siempre incluir imagen principal
+  
+  // Agregar imágenes de variantes (si existen y no están duplicadas)
+  if(variants && variants.length > 0) {
+    variants.forEach(v => {
+      if(v.image && v.image.trim() !== '' && !galleryImages.includes(v.image)) {
+        galleryImages.push(v.image);
+      }
+    });
+  }
+  
+  // Agregar galería adicional
   if(p.gallery) {
     let additionalImages = [];
     if(Array.isArray(p.gallery)) {
@@ -308,9 +332,10 @@ function renderProductDetail(){
       }
     }
     if(additionalImages.length > 0) {
-      galleryImages = galleryImages.concat(additionalImages.filter(url => url && url.trim() !== ''));
+      galleryImages = galleryImages.concat(additionalImages.filter(url => url && url.trim() !== '' && !galleryImages.includes(url)));
     }
   }
+  
   const gallery = galleryImages;
   const thumbs=document.getElementById('thumbs');
   thumbs.innerHTML=gallery.map((g,i)=>`<div class='product-thumb ${i===0?'active':''}' data-img='${g}'><img src='${g}' alt='thumb' loading='lazy'></div>`).join('');
@@ -322,17 +347,7 @@ function renderProductDetail(){
   const priceOriginal=p.discount?`<span class='price-old'>${money(p.price)}</span>`:'';
   const finalPrice=p.discount?Math.round(p.price*(1-p.discount/100)):p.price;
   
-  // Preparar variantes
-  let variants = [];
-  if(p.variants && Array.isArray(p.variants)){
-    variants = p.variants;
-  } else if(p.variants && typeof p.variants === 'string'){
-    try {
-      variants = JSON.parse(p.variants);
-    } catch(e) {
-      variants = [];
-    }
-  }
+  // Las variantes ya fueron preparadas arriba (antes de la galería)
   
   let variantsHTML = '';
   if(variants.length > 0){
