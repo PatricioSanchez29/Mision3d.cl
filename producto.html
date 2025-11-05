@@ -382,8 +382,10 @@ function renderProductDetail(){
         // Mostrar/ocultar campo de personalización si la variante es personalizada
         const wrap = document.getElementById('customNoteWrap');
         if (wrap) {
-          const isPersonalizada = /personaliz/i.test(selectedVariant?.name || '');
-          wrap.style.display = isPersonalizada ? '' : 'none';
+          const variantName = (selectedVariant?.name || '').toLowerCase();
+          // Solo mostrar si contiene "personalizado" pero NO contiene "sin"
+          const isPersonalizada = variantName.includes('personalizado') && !variantName.includes('sin');
+          wrap.style.display = isPersonalizada ? 'block' : 'none';
         }
       };
     });
@@ -391,8 +393,10 @@ function renderProductDetail(){
     // Estado inicial del campo personalizado (primera variante)
     const wrap = document.getElementById('customNoteWrap');
     if (wrap) {
-      const isPersonalizada = /personaliz/i.test(selectedVariant?.name || '');
-      wrap.style.display = isPersonalizada ? '' : 'none';
+      const variantName = (selectedVariant?.name || '').toLowerCase();
+      // Solo mostrar si contiene "personalizado" pero NO contiene "sin"
+      const isPersonalizada = variantName.includes('personalizado') && !variantName.includes('sin');
+      wrap.style.display = isPersonalizada ? 'block' : 'none';
     }
   }
   
