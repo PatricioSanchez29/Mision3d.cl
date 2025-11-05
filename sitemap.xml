@@ -14,19 +14,7 @@
     <priority>0.9</priority>
   </url>
 
-  <!-- Detalle de productos -->
-  <url>
-    <loc>https://mision3d.cl/productos.html</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <!-- Página de contacto -->
-  <url>
-    <loc>https://mision3d.cl/contacto.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
+  <!-- Secciones internas están en index; no se listan como URLs separadas -->
 
   <!-- Carrito / Checkout -->
   <url>
@@ -44,7 +32,7 @@
 
   <!-- Políticas / Términos -->
   <url>
-    <loc>https://mision3d.cl/politica-de-privacidad.html</loc>
+    <loc>https://mision3d.cl/privacidad.html</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>

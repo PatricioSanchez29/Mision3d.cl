@@ -10,7 +10,12 @@
         "stock": "disponible",
         "category": "Calendarios",
         "dateAdded": "2025-08-25",
-        "discount": 0
+        "discount": 0,
+        "variants": [
+          {"name": "Tamaño Grande", "price": 15990},
+          {"name": "Tamaño Mediano", "price": 12990},
+          {"name": "Tamaño Pequeño", "price": 9990}
+        ]
       },
       "bey": {
         "name": "Caja Beyblade",
@@ -32,7 +37,12 @@
         "stock": "disponible",
         "category": "Figuras",
         "dateAdded": "2025-09-10",
-        "discount": 0
+        "discount": 0,
+        "variants": [
+          {"name": "Con base iluminada", "price": 29990},
+          {"name": "Sin base", "price": 24990},
+          {"name": "Con caja premium", "price": 27990}
+        ]
       },
       "poke": {
         "name": "Pokebola",

@@ -118,10 +118,19 @@ function render(highlightId, addedName){
     c.innerHTML = '<p style="text-align:center;color:#999;padding:40px 20px;font-size:1rem;">🛒 Tu carrito está vacío<br><span style="font-size:0.85rem;margin-top:8px;display:block;">Agrega productos desde el catálogo</span></p>';
   } else {
     cart.forEach(it=>{
-      const p = window.PRODUCTS?.find(x=>x.id===it.id);
+      // Buscar producto por originalId si existe (productos con variantes), sino por id normal
+      const productId = it.originalId || it.id;
+      const p = window.PRODUCTS?.find(x=>x.id===productId);
       if(!p) return;
-      const sub = p.price * it.qty;
+      
+      // Usar precio de la variante si existe, sino el precio del producto
+      const itemPrice = it.price || p.price;
+      const sub = itemPrice * it.qty;
       t += sub;
+      
+      // Nombre con variante si existe
+      const displayName = it.variant ? `${p.name} (${it.variant})` : p.name;
+      
       const e = document.createElement('div');
       e.className = 'cart-item';
       if(highlightId && it.id===highlightId){
@@ -131,8 +140,8 @@ function render(highlightId, addedName){
       e.innerHTML = `
         <img src="${p.img}" alt="">
         <div>
-          <div>${p.name}</div>
-          <div>${money(p.price)} c/u</div>
+          <div>${displayName}</div>
+          <div>${money(itemPrice)} c/u</div>
           <div class="qty">
             <button>-</button><input type="number" min="1" value="${it.qty}" style="width:45px;text-align:center;border:1px solid #ddd;border-radius:4px;padding:4px;margin:0 4px;"><button>+</button>
             <button style="margin-left:6px">🗑️</button>

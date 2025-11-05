@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>Panel de Administración | Mision3D</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="icon" type="image/jpeg" href="img/Logo_Mision3d.jpg">
   <link rel="apple-touch-icon" href="img/Logo_Mision3d.jpg">
   <link rel="stylesheet" href="style.css">
@@ -455,6 +456,57 @@
           .slice(0,40) || ('p-'+Date.now());
       }
       
+      // Funciones para manejar variantes/subproductos
+      let variantsData = [];
+      
+      function renderVariants(){
+        const container = document.getElementById('variantsContainer');
+        if(!container) return;
+        container.innerHTML = '';
+        
+        if(variantsData.length === 0){
+          container.innerHTML = '<p style="color:#888;font-size:.9rem;margin:0">No hay variantes. Ej: tamaños, colores, versiones.</p>';
+          return;
+        }
+        
+        variantsData.forEach((variant, index) => {
+          const div = document.createElement('div');
+          div.className = 'gallery-item';
+          div.innerHTML = `
+            <input type="text" value="${variant.name || ''}" data-index="${index}" data-field="name" placeholder="Nombre (Ej: Grande, Azul, Con base)" style="flex:2">
+            <input type="number" value="${variant.price || 0}" data-index="${index}" data-field="price" placeholder="Precio diferencial" min="0" style="flex:1">
+            <button type="button" class="btn-gallery remove" data-index="${index}">🗑️</button>
+          `;
+          container.appendChild(div);
+          
+          // Event listeners para actualizar
+          const inputs = div.querySelectorAll('input');
+          inputs.forEach(input => {
+            input.addEventListener('input', (e) => {
+              const idx = parseInt(e.target.dataset.index);
+              const field = e.target.dataset.field;
+              if(field === 'name'){
+                variantsData[idx].name = e.target.value.trim();
+              } else if(field === 'price'){
+                variantsData[idx].price = parseFloat(e.target.value) || 0;
+              }
+            });
+          });
+          
+          // Botón eliminar
+          const btnRemove = div.querySelector('.btn-gallery.remove');
+          btnRemove.addEventListener('click', () => {
+            variantsData.splice(index, 1);
+            renderVariants();
+          });
+        });
+      }
+      
+      function addVariant(){
+        variantsData.push({ name: '', price: 0 });
+        renderVariants();
+      }
+      
       // Funciones para manejar la galería
       function renderGallery(){
         const container = document.getElementById('galleryContainer');
@@ -531,6 +583,13 @@
                 </div>
                 <div id="galleryContainer"></div>
               </div>
+              <div class="gallery-manager" style="margin-top:16px">
+                <div class="gallery-header">
+                  <h4>🔀 Variantes / Subproductos</h4>
+                  <button type="button" class="btn-gallery add" id="btnAddVariant">+ Agregar variante</button>
+                </div>
+                <div id="variantsContainer"></div>
+              </div>
               <div class="form-row">
                 <label>Categoría
                   <input id="prodCat" list="catList" placeholder="Ej: Calendarios">
@@ -591,7 +650,8 @@
             discount: toNum(productosPanel.querySelector('#prodDiscount').value),
             stars: toNum((mapProductos[editingId]?.stars) ?? 5),
             reviews: toNum((mapProductos[editingId]?.reviews) ?? 0),
-            gallery: galleryImages.filter(url => url.trim() !== '')
+            gallery: galleryImages.filter(url => url.trim() !== ''),
+            variants: variantsData.filter(v => v.name && v.name.trim() !== '')
           };
           if(!data.name || !data.img || data.price<0){
             alert('Completa nombre, imagen y precio válido.'); btn.disabled=false; btn.textContent='Guardar'; return;
@@ -633,6 +693,7 @@
           document.getElementById('prodCat').value = '';
           document.getElementById('prodDiscount').value = 0;
           galleryImages = [];
+          variantsData = [];
         }else{
           const p = mapProductos[id] || {};
           document.getElementById('formTitle').textContent = id ? 'Editar producto' : 'Agregar producto';
@@ -651,18 +712,37 @@
           } else {
             galleryImages = [];
           }
+          // Cargar variantes existentes
+          if(p.variants && Array.isArray(p.variants)){
+            variantsData = [...p.variants];
+          } else if(p.variants && typeof p.variants === 'string'){
+            try {
+              variantsData = JSON.parse(p.variants);
+            } catch(e) {
+              variantsData = [];
+            }
+          } else {
+            variantsData = [];
+          }
           document.getElementById('prodStock').value = p.stock || 'disponible';
           document.getElementById('prodDesc').value = p.descripcion || '';
           document.getElementById('prodCat').value = p.category || '';
           document.getElementById('prodDiscount').value = p.discount || 0;
         }
         renderGallery();
+        renderVariants();
         wrap.style.display = '';
         
         // Configurar botón de agregar imagen
         const btnAddImg = document.getElementById('btnAddGalleryImg');
         if(btnAddImg){
           btnAddImg.onclick = addGalleryImage;
+        }
+        
+        // Configurar botón de agregar variante
+        const btnAddVariant = document.getElementById('btnAddVariant');
+        if(btnAddVariant){
+          btnAddVariant.onclick = addVariant;
         }
       }
       function hideForm(){ document.getElementById('productoFormWrap').style.display='none'; }
