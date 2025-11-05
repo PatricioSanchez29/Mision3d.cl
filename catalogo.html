@@ -311,6 +311,10 @@
 
 <script src="ux-enhancements.js"></script>
 <script src="mobile-menu.js"></script>
+<!-- Quick View (modal de variantes) -->
+<script src="quick-view.js"></script>
+<!-- Wishlist (favoritos) en catálogo -->
+<script src="wishlist.js"></script>
 <!-- Cargar productos (modo local sin Supabase) -->
 <script type="module">
   const isLocal = /localhost|127\.0\.0\.1/.test(location.hostname);
@@ -330,6 +334,8 @@
           ex.description = sp.description || ex.description;
           ex.category = sp.category || ex.category;
           ex.gallery = sp.gallery || ex.gallery;
+          // Asegurar que las variantes se mantengan actualizadas
+          ex.variants = (typeof sp.variants !== 'undefined') ? sp.variants : ex.variants;
         } else {
           window.PRODUCTS.push(sp);
         }

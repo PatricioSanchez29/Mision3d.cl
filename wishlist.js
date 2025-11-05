@@ -289,6 +289,7 @@ document.addEventListener('productsReady', () => {
 });
 
 // Exponer funciones globalmente
+// Exponer API pública en window
 window.wishlist = {
   add: addToWishlist,
   remove: removeFromWishlist,
@@ -297,5 +298,11 @@ window.wishlist = {
   getAll: () => [...wishlist],
   render: renderWishlistPage
 };
+
+// Compatibilidad con consumidores que esperan funciones sueltas
+window.toggleWishlist = toggleWishlist;
+window.isInWishlist = isInWishlist;
+window.updateWishlistBadge = updateWishlistBadge;
+window.addWishlistButtons = addWishlistButtons;
 
 console.log('❤️ Sistema de Favoritos cargado correctamente');

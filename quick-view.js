@@ -64,6 +64,19 @@
 
             <div class="qv-category" id="qvCategory"></div>
 
+            <!-- Variantes -->
+            <div class="qv-variants" id="qvVariants" style="display:none;">
+              <label>Opciones:</label>
+              <div class="qv-variants-grid" id="qvVariantsGrid"></div>
+            </div>
+
+            <!-- Campo de personalización -->
+            <div class="qv-customization" id="qvCustomization" style="display:none;">
+              <label>Personalización:</label>
+              <input type="text" id="qvCustomNote" placeholder="Escribe tu texto (máx 15 letras)" maxlength="15" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px">
+              <small style="color:#666;display:block;margin-top:4px">Este texto se enviará con tu pedido</small>
+            </div>
+
             <div class="qv-quantity">
               <label>Cantidad:</label>
               <div class="qty-box">
@@ -288,6 +301,96 @@
       catEl.innerHTML = `<span class="qv-cat-label">📂 Categoría:</span> <span class="qv-cat-value">${product.category}</span>`;
     }
 
+    // Variantes
+    let variants = [];
+    if(product.variants && Array.isArray(product.variants)){
+      variants = product.variants;
+    } else if(product.variants && typeof product.variants === 'string'){
+      try {
+        variants = JSON.parse(product.variants);
+      } catch(e) {
+        variants = [];
+      }
+    }
+
+    const variantsContainer = document.getElementById('qvVariants');
+    const variantsGrid = document.getElementById('qvVariantsGrid');
+    const customizationDiv = document.getElementById('qvCustomization');
+    
+    if(variants && variants.length > 0){
+      variantsContainer.style.display = 'block';
+      variantsGrid.innerHTML = variants.map((v, i) => `
+        <button class="qv-variant-btn ${i === 0 ? 'active' : ''}" data-index="${i}" data-price="${v.price}" data-image="${v.image || ''}">
+          ${v.name}
+        </button>
+      `).join('');
+      
+      // Inicializar precio y variante seleccionada
+      if (!window.qvSelectedVariant) window.qvSelectedVariant = variants[0];
+      
+      // Event listeners para botones de variantes
+      variantsGrid.querySelectorAll('.qv-variant-btn').forEach(btn => {
+        btn.addEventListener('click', function(){
+          // Desactivar todos
+          variantsGrid.querySelectorAll('.qv-variant-btn').forEach(b => b.classList.remove('active'));
+          // Activar el clickeado
+          this.classList.add('active');
+          
+          const index = parseInt(this.dataset.index);
+          window.qvSelectedVariant = variants[index];
+          
+          // Actualizar precio
+          const priceEl = document.getElementById('qvPrice');
+          const variantPrice = window.qvSelectedVariant.price;
+          if (product.discount && product.discount > 0) {
+            const discountedPrice = variantPrice * (1 - product.discount / 100);
+            priceEl.innerHTML = `
+              <span class="qv-price-current">$${Math.round(discountedPrice).toLocaleString('es-CL')}</span>
+              <span class="qv-price-old">$${variantPrice.toLocaleString('es-CL')}</span>
+              <span class="qv-discount">-${product.discount}%</span>
+            `;
+          } else {
+            priceEl.innerHTML = `<span class="qv-price-current">$${variantPrice.toLocaleString('es-CL')}</span>`;
+          }
+          
+          // Cambiar imagen si la variante tiene una
+          if (window.qvSelectedVariant.image && window.qvSelectedVariant.image.trim() !== '') {
+            document.getElementById('qvMainImage').src = window.qvSelectedVariant.image;
+          } else {
+            document.getElementById('qvMainImage').src = product.img;
+          }
+          
+          // Mostrar/ocultar campo de personalización
+          const variantName = (window.qvSelectedVariant?.name || '').toLowerCase();
+          const isPersonalizada = variantName.includes('personalizado') && !variantName.includes('sin');
+          customizationDiv.style.display = isPersonalizada ? 'block' : 'none';
+        });
+      });
+      
+      // Estado inicial del campo de personalización
+      const firstVariantName = (variants[0]?.name || '').toLowerCase();
+      const isFirstPersonalizada = firstVariantName.includes('personalizado') && !firstVariantName.includes('sin');
+      customizationDiv.style.display = isFirstPersonalizada ? 'block' : 'none';
+      
+      // Inicializar precio con primera variante
+      const priceEl = document.getElementById('qvPrice');
+      const variantPrice = variants[0].price;
+      if (product.discount && product.discount > 0) {
+        const discountedPrice = variantPrice * (1 - product.discount / 100);
+        priceEl.innerHTML = `
+          <span class="qv-price-current">$${Math.round(discountedPrice).toLocaleString('es-CL')}</span>
+          <span class="qv-price-old">$${variantPrice.toLocaleString('es-CL')}</span>
+          <span class="qv-discount">-${product.discount}%</span>
+        `;
+      } else {
+        priceEl.innerHTML = `<span class="qv-price-current">$${variantPrice.toLocaleString('es-CL')}</span>`;
+      }
+    } else {
+      variantsContainer.style.display = 'none';
+      customizationDiv.style.display = 'none';
+      window.qvSelectedVariant = null;
+    }
+
     // Imagen principal
     const mainImg = document.getElementById('qvMainImage');
     mainImg.src = product.img;
@@ -368,8 +471,57 @@
     if (!currentProduct) return;
 
     const qty = parseInt(document.getElementById('qvQty').textContent);
+    const customNote = document.getElementById('qvCustomNote')?.value?.trim() || '';
     
-    // Usar la función add() global
+    // Si tiene variantes, agregar con variante seleccionada
+    if (window.qvSelectedVariant) {
+      // Usar el carrito global si existe para mantener sincronía con la UI
+      const itemKey = `${currentProduct.id}-${window.qvSelectedVariant.name}`;
+      try {
+        if (Array.isArray(window.cart)) {
+          let existingItem = window.cart.find(x => x.id === itemKey);
+          if (existingItem) {
+            existingItem.qty += qty;
+            if (customNote) existingItem.customNote = customNote;
+          } else {
+            window.cart.push({
+              id: itemKey,
+              originalId: currentProduct.id,
+              qty: qty,
+              variant: window.qvSelectedVariant.name,
+              price: Number(window.qvSelectedVariant.price) || Number(currentProduct.price) || 0,
+              customNote: customNote || null
+            });
+          }
+          // Persistir y actualizar UI
+          if (typeof window.save === 'function') window.save();
+          if (typeof window.badge === 'function') window.badge();
+          if (typeof window.openCart === 'function') window.openCart();
+          if (typeof window.render === 'function') window.render(itemKey, `${currentProduct.name}${window.qvSelectedVariant.name?` (${window.qvSelectedVariant.name})`:''}`);
+        } else {
+          // Fallback solo localStorage si no existe window.cart
+          const lc = JSON.parse(localStorage.getItem('cart') || '[]');
+          let existingItem = lc.find(x => x.id === itemKey);
+          if (existingItem) {
+            existingItem.qty += qty;
+            if (customNote) existingItem.customNote = customNote;
+          } else {
+            lc.push({ id: itemKey, originalId: currentProduct.id, qty, variant: window.qvSelectedVariant.name, price: Number(window.qvSelectedVariant.price)||0, customNote: customNote||null });
+          }
+          localStorage.setItem('cart', JSON.stringify(lc));
+        }
+      } catch {}
+
+      if (typeof window.showToast === 'function') {
+        const variantText = window.qvSelectedVariant.name ? ` (${window.qvSelectedVariant.name})` : '';
+        window.showToast(`✅ ${qty}x ${currentProduct.name}${variantText} añadido al carrito`);
+      }
+
+      closeQuickView();
+      return;
+    }
+    
+    // Sin variantes: usar la función add() global
     if (typeof window.add === 'function') {
       for (let i = 0; i < qty; i++) {
         window.add(currentProduct.id);
@@ -397,7 +549,12 @@
   function toggleWishlistFromQuickView() {
     if (!currentProduct) return;
 
-    if (typeof window.toggleWishlist === 'function') {
+    // Usar API global de wishlist si está disponible
+    if (window.wishlist?.toggle) {
+      window.wishlist.toggle(currentProduct.id);
+      updateWishlistButton();
+    } else if (typeof window.toggleWishlist === 'function') {
+      // soporte legacy si se expone como función suelta
       window.toggleWishlist(currentProduct.id);
       updateWishlistButton();
     }
@@ -410,9 +567,9 @@
     if (!currentProduct) return;
 
     const btn = document.getElementById('qvWishlist');
-    const isInWishlist = typeof window.isInWishlist === 'function' 
-      ? window.isInWishlist(currentProduct.id) 
-      : false;
+    const isInWishlist = (window.wishlist?.isInWishlist)
+      ? window.wishlist.isInWishlist(currentProduct.id)
+      : (typeof window.isInWishlist === 'function' ? window.isInWishlist(currentProduct.id) : false);
 
     btn.innerHTML = isInWishlist ? '❤️' : '🤍';
     btn.title = isInWishlist ? 'Quitar de favoritos' : 'Agregar a favoritos';

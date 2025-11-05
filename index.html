@@ -429,6 +429,8 @@
           ex.description = sp.description || ex.description;
           ex.category = sp.category || ex.category;
           ex.gallery = sp.gallery || ex.gallery;
+          // Mantener/actualizar variantes al fusionar
+          ex.variants = (typeof sp.variants !== 'undefined') ? sp.variants : ex.variants;
         } else {
           window.PRODUCTS.push(sp);
         }
@@ -572,5 +574,9 @@
 
 <script src="ux-enhancements.js"></script>
 <script src="mobile-menu.js"></script>
+<!-- Quick View (modal de variantes) -->
+<script src="quick-view.js"></script>
+<!-- Wishlist (favoritos) también en home -->
+<script src="wishlist.js"></script>
 <!-- Scripts página producto -->
 </body></html>

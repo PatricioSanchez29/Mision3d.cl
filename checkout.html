@@ -314,6 +314,8 @@
           existing.description = sp.description || existing.description;
           existing.category = sp.category || existing.category;
           existing.gallery = sp.gallery || existing.gallery;
+          // Mantener/actualizar variantes
+          existing.variants = (typeof sp.variants !== 'undefined') ? sp.variants : existing.variants;
         } else {
           window.PRODUCTS.push(sp);
         }
@@ -354,7 +356,8 @@
       img: p.img,
       description: p.description || '',
       category: p.category || '',
-      gallery: p.gallery || []
+      gallery: p.gallery || [],
+      variants: (typeof p.variants !== 'undefined') ? p.variants : undefined
     }));
     // Fusionar con existentes
     mergeProducts(supaProducts);

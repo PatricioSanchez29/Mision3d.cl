@@ -3399,6 +3399,89 @@ body.dark .qv-cat-value {
   color: #a5b4fc;
 }
 
+/* Variants Section */
+.qv-variants {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 12px;
+}
+
+.qv-variants label {
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.95rem;
+}
+
+.qv-variants-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.qv-variant-btn {
+  padding: 10px 20px;
+  border: 2px solid #e5e7eb;
+  background: #fff;
+  color: #374151;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.qv-variant-btn:hover {
+  border-color: #e6462f;
+  background: #fef2f2;
+  color: #e6462f;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(230, 70, 47, 0.15);
+}
+
+.qv-variant-btn.active {
+  border-color: #e6462f;
+  background: #e6462f;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(230, 70, 47, 0.25);
+}
+
+/* Customization Section */
+.qv-customization {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  background: #fef3c7;
+  border-radius: 12px;
+  border: 2px solid #fbbf24;
+}
+
+.qv-customization input {
+  padding: 10px 14px;
+  border: 2px solid #fbbf24;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background: #fff;
+  color: #374151;
+  transition: all 0.2s;
+}
+
+.qv-customization input:focus {
+  outline: none;
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+}
+
+.qv-customization small {
+  color: #92400e;
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
 body.dark .qv-quantity label {
   color: #cbd5e1;
 }
@@ -3425,6 +3508,47 @@ body.dark .btn-icon.wishlist-qv {
 body.dark .btn-icon.wishlist-qv:hover {
   border-color: #ef4444;
   background: #7f1d1d;
+}
+
+/* Dark Mode for Variants & Customization */
+body.dark .qv-variants {
+  background: #0f172a;
+}
+
+body.dark .qv-variants label {
+  color: #e2e8f0;
+}
+
+body.dark .qv-variant-btn {
+  background: #1e293b;
+  color: #cbd5e1;
+  border-color: #334155;
+}
+
+body.dark .qv-variant-btn:hover {
+  background: #fef2f2;
+  color: #e6462f;
+  border-color: #e6462f;
+}
+
+body.dark .qv-variant-btn.active {
+  background: #e6462f;
+  color: #fff;
+}
+
+body.dark .qv-customization {
+  background: #422006;
+  border-color: #d97706;
+}
+
+body.dark .qv-customization input {
+  background: #1e293b;
+  color: #e2e8f0;
+  border-color: #d97706;
+}
+
+body.dark .qv-customization small {
+  color: #fbbf24;
 }
 
 /* Responsive */

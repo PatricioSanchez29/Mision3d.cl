@@ -59,22 +59,41 @@ function add(id){
     return;
   }
   
-  // Si el producto tiene variantes, redirigir a la página del producto
-  let hasVariants = false;
-  if(prod.variants && Array.isArray(prod.variants)){
-    hasVariants = prod.variants.length > 0;
-  } else if(prod.variants && typeof prod.variants === 'string'){
-    try {
-      const parsed = JSON.parse(prod.variants);
-      hasVariants = parsed.length > 0;
-    } catch(e) {
-      hasVariants = false;
-    }
+  // Evaluar cantidad de variantes
+  let variantsArr = [];
+  if (prod.variants && Array.isArray(prod.variants)) {
+    variantsArr = prod.variants;
+  } else if (prod.variants && typeof prod.variants === 'string') {
+    try { const parsed = JSON.parse(prod.variants); if (Array.isArray(parsed)) variantsArr = parsed; } catch {}
   }
-  
-  if(hasVariants){
-    // Redirigir a la página del producto para elegir variante
-    window.location.href = `producto.html?id=${id}`;
+
+  // Regla: 2 o más variantes => abrir modal; 1 variante => agregar directo con esa variante
+  if (variantsArr.length >= 2) {
+    if (typeof window.openQuickView === 'function') {
+      window.openQuickView(id);
+    } else {
+      window.location.href = `producto.html?id=${id}`;
+    }
+    return;
+  }
+
+  if (variantsArr.length === 1) {
+    const v = variantsArr[0] || {};
+    const itemKey = `${id}-${v.name||'var'}`;
+    let it = cart.find(x=>x.id===itemKey);
+    if(it) it.qty++;
+    else cart.push({ id: itemKey, originalId: id, qty: 1, variant: v.name || '', price: Number(v.price)||Number(prod.price)||0 });
+    save(); badge();
+
+    if (typeof window.animateCartButton === 'function') {
+      window.animateCartButton();
+    }
+    if (typeof showToast === 'function') {
+      const variantText = v.name ? ` (${v.name})` : '';
+      showToast(`¡${prod.name}${variantText} agregado al carrito!`, 'success');
+    }
+    openCart();
+    render(itemKey, prod?.name + (v.name? ` (${v.name})` : ''));
     return;
   }
   
@@ -272,7 +291,9 @@ try {
         dateAdded: p.dateAdded || new Date().toISOString().slice(0,10),
           discount: Number(p.discount ?? 0),
           // Mantener galería si existe (array o string JSON)
-          gallery: (typeof p.gallery !== 'undefined') ? p.gallery : undefined
+          gallery: (typeof p.gallery !== 'undefined') ? p.gallery : undefined,
+          // Mantener variantes si existen (array o string JSON)
+          variants: (typeof p.variants !== 'undefined') ? p.variants : undefined
       }));
     }
   }
@@ -466,6 +487,15 @@ function renderCatalog(filterText = ""){
     }
     const galleryIndicator = galleryCount > 0 ? `<div class="gallery-indicator" title="${galleryCount + 1} fotos">📸 ${galleryCount + 1}</div>` : '';
 
+    // Determinar texto del botón según cantidad de variantes
+    let vCount = 0;
+    if (p.variants && Array.isArray(p.variants)) {
+      vCount = p.variants.length;
+    } else if (p.variants && typeof p.variants === 'string') {
+      try { const parsed = JSON.parse(p.variants); if (Array.isArray(parsed)) vCount = parsed.length; } catch {}
+    }
+    const btnLabel = vCount >= 2 ? 'Elegir opciones' : 'Agregar';
+
     if(viewMode==='list'){
       card.innerHTML = `
         <img src="${p.img}" loading="lazy" data-link>
@@ -478,7 +508,7 @@ function renderCatalog(filterText = ""){
           <div>${starsHtml} <span style="color:#555">(${p.stars})</span> ${reviews}</div>
         </div>
         <div class="btns" style="justify-content:flex-end">
-          <button class="btn-options add" data-id="${p.id}">Agregar</button>
+          <button class="btn-options add" data-id="${p.id}">${btnLabel}</button>
           <button class="btn-options" data-view id="view-${p.id}">Ver</button>
         </div>`;
     } else {
@@ -494,7 +524,7 @@ function renderCatalog(filterText = ""){
         ${reviews}
         <div class="btns">
           <button class="btn-quick" data-view>Ver</button>
-          <button class="btn-options add" data-id="${p.id}">Elegir opciones</button>
+          <button class="btn-options add" data-id="${p.id}">${btnLabel}</button>
         </div>`;
     }
 
