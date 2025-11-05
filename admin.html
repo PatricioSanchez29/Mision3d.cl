@@ -723,8 +723,14 @@
             stars: toNum((mapProductos[editingId]?.stars) ?? 5),
             reviews: toNum((mapProductos[editingId]?.reviews) ?? 0),
             gallery: galleryImages.filter(url => url.trim() !== ''),
-            variants: variantsData.filter(v => v.name && v.name.trim() !== '')
+            variants: variantsData.filter(v => v.name && v.name.trim() !== '').map(v => ({
+              name: v.name,
+              price: v.price || 0,
+              image: v.image || ''
+            }))
           };
+          console.log('🔍 Datos a guardar:', data); // Debug
+          console.log('📦 Variantes con imágenes:', data.variants); // Debug
           if(!data.name || !data.img || data.price<0){
             alert('Completa nombre, imagen y precio válido.'); btn.disabled=false; btn.textContent='Guardar'; return;
           }
@@ -786,16 +792,26 @@
           }
           // Cargar variantes existentes
           if(p.variants && Array.isArray(p.variants)){
-            variantsData = [...p.variants];
+            variantsData = p.variants.map(v => ({
+              name: v.name || '',
+              price: v.price || 0,
+              image: v.image || ''
+            }));
           } else if(p.variants && typeof p.variants === 'string'){
             try {
-              variantsData = JSON.parse(p.variants);
+              const parsed = JSON.parse(p.variants);
+              variantsData = parsed.map(v => ({
+                name: v.name || '',
+                price: v.price || 0,
+                image: v.image || ''
+              }));
             } catch(e) {
               variantsData = [];
             }
           } else {
             variantsData = [];
           }
+          console.log('📦 Variantes cargadas desde BD:', variantsData); // Debug
           document.getElementById('prodStock').value = p.stock || 'disponible';
           document.getElementById('prodDesc').value = p.descripcion || '';
           document.getElementById('prodCat').value = p.category || '';
