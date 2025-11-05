@@ -962,7 +962,7 @@ const handleFlowRetorno = async (req, res) => {
             <div class="icon">❌</div>
             <h1>Error en el pago</h1>
             <p>No se recibió información del pago. Por favor, intenta nuevamente.</p>
-            <a href="../index.html" class="btn">Volver a la tienda</a>
+            <a href="https://www.mision3d.cl" class="btn">Volver a la tienda</a>
           </div>
         </body>
         </html>
@@ -1046,7 +1046,7 @@ const handleFlowRetorno = async (req, res) => {
             </div>
           </div>
 
-          <a href="../index.html" class="btn">Volver a la tienda</a>
+          <a href="https://www.mision3d.cl" class="btn">Volver a la tienda</a>
         </div>
         ${
           isSuccess
@@ -1092,7 +1092,7 @@ const handleFlowRetorno = async (req, res) => {
       <body>
         <h2>❌ Error al verificar el pago</h2>
         <p>Por favor, contacta con soporte.</p>
-        <a href="../index.html">Volver</a>
+        <a href="https://www.mision3d.cl">Volver</a>
       </body>
       </html>
     `);
