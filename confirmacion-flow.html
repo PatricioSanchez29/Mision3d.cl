@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Confirmación de Pago | Misión 3D</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="header-new-style.css"/>
+  <script type="module" src="auth-header.js"></script>
+  <style>
+    .wrap{max-width:820px;margin:40px auto;padding:24px}
+    .card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+    .ok{color:#059669;font-weight:700}
+    .muted{color:#6b7280}
+    .btn{display:inline-block;margin-top:16px;padding:12px 16px;border-radius:10px;background:#111;color:#fff;text-decoration:none}
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1 class="logo"><a href="index.html"><img src="img/Logo_Mision3d.jpg" alt="Misión 3D" class="logo-img"/></a></h1>
+    <nav class="nav"><a href="index.html">Inicio</a><a href="catalogo.html">Catálogo</a></nav>
+  </header>
+  <main class="wrap">
+    <div class="card">
+      <h2 class="ok">¡Gracias! Estamos procesando tu pago</h2>
+      <p class="muted">Si el pago fue aprobado, en unos instantes recibirás un correo de confirmación.</p>
+      <div id="orderInfo" class="muted" style="margin-top:8px"></div>
+      <a class="btn" href="mis-pedidos.html">Ver mis pedidos</a>
+    </div>
+  </main>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const token = params.get('token') || '';
+    const order = params.get('order') || '';
+    const el = document.getElementById('orderInfo');
+    if (el && (token || order)) {
+      el.textContent = `Orden: ${order || '—'}  Token: ${token || '—'}`;
+    }
+  </script>
+</body>
+</html>

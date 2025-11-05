@@ -394,11 +394,11 @@ app.post("/api/payments/flow", paymentLimiter, async (req, res) => {
     // Log detallado de items recibidos
     console.log("[Flow] Items recibidos:", JSON.stringify(items, null, 2));
 
-    const apiKey = process.env.FLOW_API_KEY;
-    const secret = process.env.FLOW_SECRET;
-    const commerceId = process.env.FLOW_COMMERCE_ID; // opcional
-    const returnUrl = process.env.FLOW_RETURN_URL;
-    const confirmUrl = process.env.FLOW_CONFIRM_URL;
+  const apiKey = process.env.FLOW_API_KEY;
+  const secret = process.env.FLOW_SECRET;
+  const commerceId = process.env.FLOW_COMMERCE_ID; // opcional
+  let returnUrl = process.env.FLOW_RETURN_URL;
+  let confirmUrl = process.env.FLOW_CONFIRM_URL;
     const baseUrl = process.env.FLOW_BASE_URL || "https://sandbox.flow.cl/api";
 
     if (!apiKey || !secret) {
@@ -406,10 +406,23 @@ app.post("/api/payments/flow", paymentLimiter, async (req, res) => {
         .status(500)
         .json({ error: "Faltan credenciales Flow (FLOW_API_KEY/FLOW_SECRET)" });
     }
-    if (!returnUrl || !confirmUrl) {
-      return res
-        .status(500)
-        .json({ error: "Faltan URLs (FLOW_RETURN_URL/FLOW_CONFIRM_URL)" });
+    // Fallbacks seguros de URLs
+    const proto = (req.headers["x-forwarded-proto"] || "https").split(',')[0];
+    const host = req.headers.host || "api.mision3d.cl";
+    if (!confirmUrl) confirmUrl = `${proto}://${host.replace(/^www\./,'')}/flow/confirm`;
+    if (!returnUrl) returnUrl = `https://www.mision3d.cl/confirmacion-flow.html`;
+
+    // Normalizaciones para evitar 405 por dominio equivocado
+    // 1) El webhook de confirmación DEBE ir al backend (api.mision3d.cl)
+    if (/^https?:\/\/(?:www\.)?mision3d\.cl\//.test(confirmUrl) && !/api\.mision3d\.cl/.test(confirmUrl)) {
+      console.warn("[Flow] Normalizando confirmUrl a api.mision3d.cl (evitar 405):", confirmUrl);
+      confirmUrl = confirmUrl.replace(/^https?:\/\/(?:www\.)?mision3d\.cl\//, 'https://api.mision3d.cl/');
+      if (!/\/flow\/confirm$/.test(confirmUrl)) confirmUrl = 'https://api.mision3d.cl/flow/confirm';
+    }
+    // 2) La URL de retorno es para el navegador; nunca debe apuntar al webhook
+    if (/\/flow\/confirm\b/.test(returnUrl)) {
+      console.warn("[Flow] Normalizando returnUrl a página del frontend (evitar POST 405 en navegador):", returnUrl);
+      returnUrl = 'https://www.mision3d.cl/confirmacion-flow.html';
     }
 
   // Recalcular envío en servidor
