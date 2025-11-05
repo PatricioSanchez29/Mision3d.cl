@@ -379,6 +379,28 @@ function renderProductDetail(){
         currentPrice = selectedVariant.price;
         document.getElementById('priceDisplay').textContent = money(currentPrice);
 
+        // Cambiar imagen principal si la variante tiene imagen
+        const mainImg = document.getElementById('mainImage');
+        if (selectedVariant.image && selectedVariant.image.trim() !== '') {
+          mainImg.src = selectedVariant.image;
+          // Actualizar miniaturas activas
+          const thumbs = document.querySelectorAll('.product-thumb');
+          thumbs.forEach(th => th.classList.remove('active'));
+          // Buscar si existe thumbnail con esta imagen, si no, usar la primera
+          const matchingThumb = Array.from(thumbs).find(th => th.dataset.img === selectedVariant.image);
+          if (matchingThumb) {
+            matchingThumb.classList.add('active');
+          } else if (thumbs.length > 0) {
+            thumbs[0].classList.add('active');
+          }
+        } else if (gallery && gallery.length > 0) {
+          // Si la variante no tiene imagen, volver a la primera imagen de la galería
+          mainImg.src = gallery[0];
+          const thumbs = document.querySelectorAll('.product-thumb');
+          thumbs.forEach(th => th.classList.remove('active'));
+          if (thumbs.length > 0) thumbs[0].classList.add('active');
+        }
+
         // Mostrar/ocultar campo de personalización si la variante es personalizada
         const wrap = document.getElementById('customNoteWrap');
         if (wrap) {
