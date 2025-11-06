@@ -853,7 +853,14 @@ async function confirmCheckout(){
   }
   // Si es 'porpagar' o 'retiro', el costo es 0 (se paga aparte)
   
-  const totalFinal = total + costoEnvio;
+  let totalFinal = total + costoEnvio;
+
+  // Fallback extra robusto: si por alguna razón el total quedó en 0/NaN
+  // pero el carrito tiene precios válidos, usa el subtotal directo del carrito
+  const subtotalFromCart = (cart || []).reduce((s, it) => s + ((Number(it?.price) || 0) * (it?.qty || 0)), 0);
+  if ((!Number.isFinite(totalFinal) || totalFinal < 350) && subtotalFromCart > 0) {
+    totalFinal = subtotalFromCart + costoEnvio;
+  }
 
   // Validación: Flow requiere mínimo $350 CLP
   if (payMethod === 'flow' && totalFinal < 350) {
