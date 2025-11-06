@@ -47,10 +47,19 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ===== CORS =====
+// Lista base + orígenes desde variables de entorno
+const envOrigins = String(process.env.ALLOWED_ORIGINS || process.env.CORS_ORIGIN || "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+
 const allowedOrigins = [
   "https://mision3d.cl",
   "https://www.mision3d.cl",
-  "https://mision3dcl.pages.dev"
+  // Cloudflare Pages (producción)
+  "https://mision3dcl.pages.dev",
+  "https://mision3d-cl.pages.dev",
+  ...envOrigins,
 ];
 
 // En desarrollo, permitir localhost y 127.0.0.1 con cualquier puerto
@@ -60,25 +69,31 @@ app.use(cors({
   origin: (origin, callback) => {
     // Permitir peticiones sin origin (como Postman, curl, etc.)
     if (!origin) return callback(null, true);
-    
+
     // En desarrollo, permitir localhost y 127.0.0.1
-    if (isDevelopment) {
-      if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
-        return callback(null, true);
-      }
+    if (isDevelopment && (origin.includes('localhost') || origin.includes('127.0.0.1'))) {
+      return callback(null, true);
     }
-    
-    // Verificar si el origin está en la lista permitida
+
+    // Permitir dominios principales mision3d.cl y www
+    if (/^https?:\/\/(www\.)?mision3d\.cl$/.test(origin)) {
+      return callback(null, true);
+    }
+
+    // Permitir proyecto de Cloudflare Pages y sus previews (subdominios)
+    if (origin === 'https://mision3dcl.pages.dev' || origin.endsWith('.mision3dcl.pages.dev')) {
+      return callback(null, true);
+    }
+    if (origin === 'https://mision3d-cl.pages.dev' || origin.endsWith('.mision3d-cl.pages.dev')) {
+      return callback(null, true);
+    }
+
+    // Permitir explícitos por variable de entorno
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
-    
-    // En desarrollo, permitir cualquier origin como fallback
-    if (isDevelopment) {
-      console.log(`[CORS] Permitiendo origin de desarrollo: ${origin}`);
-      return callback(null, true);
-    }
-    
+
+    console.warn(`[CORS] Origin bloqueado: ${origin}`);
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true
