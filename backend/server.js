@@ -140,12 +140,15 @@ const toNum = (v) => Number(v) || 0;
 
 // ===== Utilidades Flow =====
 function calcCartTotals(items) {
+  console.log("[calcCartTotals] Items recibidos:", JSON.stringify(items, null, 2));
   let subtotal = 0;
   (items || []).forEach((i) => {
     const price = toNum(i?.price);
     const qty = toNum(i?.qty);
+    console.log(`[calcCartTotals] Item: ${i?.name}, price: ${price}, qty: ${qty}, subtotal parcial: ${price * qty}`);
     subtotal += price * qty;
   });
+  console.log("[calcCartTotals] Subtotal final:", subtotal);
   return { subtotal: Math.round(subtotal) };
 }
 
@@ -428,6 +431,10 @@ app.post("/api/test-email", async (req, res) => {
 // ===== Endpoint Flow (crear pago) =====
 app.post("/api/payments/flow", paymentLimiter, async (req, res) => {
   try {
+    console.log("[Flow] ===== PAYLOAD COMPLETO RECIBIDO =====");
+    console.log(JSON.stringify(req.body, null, 2));
+    console.log("[Flow] ==========================================");
+    
     const { items, payer, shippingCost = 0, discount = 0, meta = {} } = req.body || {};
 
     if (!Array.isArray(items) || items.length === 0) {
