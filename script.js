@@ -799,7 +799,11 @@ async function confirmCheckout(){
             if (v && typeof v.price !== 'undefined') computed = Number(v.price) || 0;
           }
           if (!computed && typeof p.price !== 'undefined') computed = Number(p.price) || 0;
-          if (computed > 0) { clone.price = computed; changed = true; }
+          if (computed > 0) { 
+            clone.price = computed; 
+            changed = true;
+            console.log(`[checkout] Normalizando precio de ${clone.id}: ${computed}`);
+          }
         }
       }
       return clone;
@@ -840,9 +844,25 @@ async function confirmCheckout(){
 
   // Total usando soporte de variantes: priorizar it.price y buscar por originalId
   const total = cart.reduce((a, it) => {
-    const productId = it.originalId || it.id;
+    const productId = it.originalId || String(it.id || '').split('-')[0] || it.id;
     const p = window.PRODUCTS?.find(x => String(x.id) === String(productId));
-    const itemPrice = Number((it && typeof it.price !== 'undefined') ? it.price : (p?.price ?? 0)) || 0;
+    
+    // Prioridad: 1) it.price si existe y > 0, 2) buscar en variantes si tiene variant, 3) precio base del producto
+    let itemPrice = 0;
+    if (it.price && Number(it.price) > 0) {
+      itemPrice = Number(it.price);
+    } else if (it.variant && p) {
+      // Buscar precio de la variante en el producto
+      let variantsArr = [];
+      if (Array.isArray(p.variants)) variantsArr = p.variants;
+      else if (typeof p.variants === 'string') {
+        try { const parsed = JSON.parse(p.variants); if (Array.isArray(parsed)) variantsArr = parsed; } catch {}
+      }
+      const v = variantsArr.find(v => String(v?.name || '').toLowerCase() === String(it.variant || '').toLowerCase());
+      if (v && typeof v.price !== 'undefined') itemPrice = Number(v.price) || 0;
+    }
+    if (!itemPrice && p) itemPrice = Number(p.price) || 0;
+    
     return a + (itemPrice * (it.qty || 0));
   }, 0);
   
@@ -859,8 +879,11 @@ async function confirmCheckout(){
   // pero el carrito tiene precios válidos, usa el subtotal directo del carrito
   const subtotalFromCart = (cart || []).reduce((s, it) => s + ((Number(it?.price) || 0) * (it?.qty || 0)), 0);
   if ((!Number.isFinite(totalFinal) || totalFinal < 350) && subtotalFromCart > 0) {
+    console.log(`[checkout] Usando subtotal directo del carrito: ${subtotalFromCart} (total calculado era ${totalFinal})`);
     totalFinal = subtotalFromCart + costoEnvio;
   }
+
+  console.log(`[checkout] Total final: ${totalFinal} (subtotal: ${total}, envío: ${costoEnvio}, items:`, cart.map(it => ({ id: it.id, variant: it.variant, price: it.price, qty: it.qty })), `)`);
 
   // Validación: Flow requiere mínimo $350 CLP
   if (payMethod === 'flow' && totalFinal < 350) {
@@ -883,9 +906,24 @@ async function confirmCheckout(){
   }
 
   const cartItems = cart.map(it=>{
-    const productId = it.originalId || it.id;
+    const productId = it.originalId || String(it.id || '').split('-')[0] || it.id;
     const p = window.PRODUCTS?.find(x=> String(x.id) === String(productId)) || {};
-    const itemPrice = Number((typeof it.price !== 'undefined') ? it.price : (p.price ?? 0)) || 0;
+    
+    // Mismo algoritmo de precio que en el total
+    let itemPrice = 0;
+    if (it.price && Number(it.price) > 0) {
+      itemPrice = Number(it.price);
+    } else if (it.variant && p) {
+      let variantsArr = [];
+      if (Array.isArray(p.variants)) variantsArr = p.variants;
+      else if (typeof p.variants === 'string') {
+        try { const parsed = JSON.parse(p.variants); if (Array.isArray(parsed)) variantsArr = parsed; } catch {}
+      }
+      const v = variantsArr.find(v => String(v?.name || '').toLowerCase() === String(it.variant || '').toLowerCase());
+      if (v && typeof v.price !== 'undefined') itemPrice = Number(v.price) || 0;
+    }
+    if (!itemPrice && p) itemPrice = Number(p.price) || 0;
+    
     const displayName = it.variant ? `${p.name || productId} (${it.variant})` : (p.name || String(productId));
     return { id: p.id || productId, name: displayName, price: itemPrice, qty: it.qty };
   });
