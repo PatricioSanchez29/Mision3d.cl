@@ -100,7 +100,7 @@ function add(id){
   // Si no tiene variantes, agregar directamente al carrito
   let it = cart.find(x=>x.id===id);
   if(it) it.qty++;
-  else cart.push({id, qty:1});
+  else cart.push({id, qty:1, price: Number(prod.price)||0});
   save(); badge();
   
   // Animar botón del carrito

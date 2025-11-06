@@ -487,8 +487,8 @@ app.post("/api/payments/flow", paymentLimiter, async (req, res) => {
     const regionN = norm(regionMeta);
     const envioN = norm(envioMeta);
 
-    const { subtotal } = calcCartTotals(items);
-    console.log("[Flow] Subtotal calculado:", subtotal);
+  let { subtotal } = calcCartTotals(items);
+  console.log("[Flow] Subtotal calculado:", subtotal);
 
     let ship = 0;
     const clientShip = toNum(shippingCost);
@@ -500,6 +500,18 @@ app.post("/api/payments/flow", paymentLimiter, async (req, res) => {
       ship = 2990;
     } else {
       ship = 0;
+    }
+    // Fallback: si el subtotal es 0 pero el cliente envió totalCLP válido, usarlo como respaldo
+    try {
+      const clientTotal = toNum(meta?.totalCLP);
+      const clientShip = toNum(shippingCost);
+      const fallbackSubtotal = Math.max(0, clientTotal - clientShip);
+      if (subtotal <= 0 && fallbackSubtotal > 0) {
+        console.warn("⚠️  [SECURITY] Subtotal 0 en servidor. Usando fallback desde cliente (totalCLP - shippingCost).", { clientTotal, clientShip, fallbackSubtotal });
+        subtotal = fallbackSubtotal;
+      }
+    } catch (e) {
+      console.warn("⚠️  [Flow] Error aplicando fallback de subtotal:", e?.message || e);
     }
     if (clientShip !== ship) {
       console.warn(
