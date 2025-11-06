@@ -494,7 +494,13 @@
                    p.name.includes('Mascota') ? 'Tu mascota en 3D' :
                    p.name.includes('Pokebola') ? 'Pokebola coleccionable' : 
                    'Personalizado con tu logo';
-      const price = p.price ? `$${p.price.toLocaleString('es-CL')}` : 'Consultar';
+      const d = Number(p.discount || 0);
+      const hasDiscount = Number.isFinite(d) && d > 0;
+      const basePrice = Number(p.price || 0);
+      const finalPrice = hasDiscount ? Math.round(basePrice * (1 - d/100)) : basePrice;
+      const priceHtml = hasDiscount
+        ? `<span style="text-decoration:line-through;color:#888;font-size:.85rem;margin-right:6px">${(window.money? window.money(basePrice) : `$${basePrice.toLocaleString('es-CL')}`)}</span>${(window.money? window.money(finalPrice) : `$${finalPrice.toLocaleString('es-CL')}`)}`
+        : (window.money? window.money(basePrice) : (basePrice? `$${basePrice.toLocaleString('es-CL')}` : 'Consultar'));
       return `
         <div class="card">
           <a href="producto.html?id=${p.id}" class="prod-link">
@@ -504,7 +510,8 @@
             <a href="producto.html?id=${p.id}" class="prod-link">${p.name}</a>
           </h4>
           <p>${desc}</p>
-          <strong class="price">${price}</strong>
+          ${hasDiscount ? '<span class="badge discount">-' + d + '%</span>' : ''}
+          <strong class="price">${priceHtml}</strong>
           <button class="add" data-id="${p.id}">Agregar</button>
         </div>
       `;

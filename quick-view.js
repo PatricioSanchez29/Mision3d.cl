@@ -484,12 +484,16 @@
             existingItem.qty += qty;
             if (customNote) existingItem.customNote = customNote;
           } else {
+            // Precio con descuento si aplica en el producto
+            const base = Number(window.qvSelectedVariant.price) || Number(currentProduct.price) || 0;
+            const d = Number(currentProduct.discount || 0);
+            const finalPrice = d > 0 ? Math.round(base * (1 - d/100)) : base;
             window.cart.push({
               id: itemKey,
               originalId: currentProduct.id,
               qty: qty,
               variant: window.qvSelectedVariant.name,
-              price: Number(window.qvSelectedVariant.price) || Number(currentProduct.price) || 0,
+              price: finalPrice,
               customNote: customNote || null
             });
           }
@@ -506,7 +510,10 @@
             existingItem.qty += qty;
             if (customNote) existingItem.customNote = customNote;
           } else {
-            lc.push({ id: itemKey, originalId: currentProduct.id, qty, variant: window.qvSelectedVariant.name, price: Number(window.qvSelectedVariant.price)||0, customNote: customNote||null });
+            const base2 = Number(window.qvSelectedVariant.price) || Number(currentProduct.price) || 0;
+            const d2 = Number(currentProduct.discount || 0);
+            const final2 = d2 > 0 ? Math.round(base2 * (1 - d2/100)) : base2;
+            lc.push({ id: itemKey, originalId: currentProduct.id, qty, variant: window.qvSelectedVariant.name, price: final2, customNote: customNote||null });
           }
           localStorage.setItem('cart', JSON.stringify(lc));
         }

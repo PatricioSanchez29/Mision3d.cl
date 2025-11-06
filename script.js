@@ -81,8 +81,12 @@ function add(id){
     const v = variantsArr[0] || {};
     const itemKey = `${id}-${v.name||'var'}`;
     let it = cart.find(x=>x.id===itemKey);
+    // Calcular precio aplicando descuento si existe
+    const base = Number(v.price) || Number(prod.price) || 0;
+    const d = Number(prod.discount || 0);
+    const finalPrice = d > 0 ? Math.round(base * (1 - d/100)) : base;
     if(it) it.qty++;
-    else cart.push({ id: itemKey, originalId: id, qty: 1, variant: v.name || '', price: Number(v.price)||Number(prod.price)||0 });
+    else cart.push({ id: itemKey, originalId: id, qty: 1, variant: v.name || '', price: finalPrice });
     save(); badge();
 
     if (typeof window.animateCartButton === 'function') {
@@ -100,7 +104,12 @@ function add(id){
   // Si no tiene variantes, agregar directamente al carrito
   let it = cart.find(x=>x.id===id);
   if(it) it.qty++;
-  else cart.push({id, qty:1, price: Number(prod.price)||0});
+  else {
+    const base = Number(prod.price) || 0;
+    const d = Number(prod.discount || 0);
+    const finalPrice = d > 0 ? Math.round(base * (1 - d/100)) : base;
+    cart.push({id, qty:1, price: finalPrice});
+  }
   save(); badge();
   
   // Animar botón del carrito
@@ -799,6 +808,9 @@ async function confirmCheckout(){
             if (v && typeof v.price !== 'undefined') computed = Number(v.price) || 0;
           }
           if (!computed && typeof p.price !== 'undefined') computed = Number(p.price) || 0;
+          // Aplicar descuento si corresponde
+          const d = Number(p.discount || 0);
+          if (computed > 0 && d > 0) computed = Math.round(computed * (1 - d/100));
           if (computed > 0) { 
             clone.price = computed; 
             changed = true;
@@ -862,6 +874,11 @@ async function confirmCheckout(){
       if (v && typeof v.price !== 'undefined') itemPrice = Number(v.price) || 0;
     }
     if (!itemPrice && p) itemPrice = Number(p.price) || 0;
+    // Aplicar descuento si se derivó desde producto/variante
+    if ((!it.price || Number(it.price) <= 0) && p && itemPrice > 0) {
+      const d = Number(p.discount || 0);
+      if (d > 0) itemPrice = Math.round(itemPrice * (1 - d/100));
+    }
     
     return a + (itemPrice * (it.qty || 0));
   }, 0);
@@ -923,6 +940,11 @@ async function confirmCheckout(){
       if (v && typeof v.price !== 'undefined') itemPrice = Number(v.price) || 0;
     }
     if (!itemPrice && p) itemPrice = Number(p.price) || 0;
+    // Aplicar descuento si se derivó desde producto/variante
+    if ((!it.price || Number(it.price) <= 0) && p && itemPrice > 0) {
+      const d = Number(p.discount || 0);
+      if (d > 0) itemPrice = Math.round(itemPrice * (1 - d/100));
+    }
     
     const displayName = it.variant ? `${p.name || productId} (${it.variant})` : (p.name || String(productId));
     return { id: p.id || productId, name: displayName, price: itemPrice, qty: it.qty };
