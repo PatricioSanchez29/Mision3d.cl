@@ -657,24 +657,25 @@ function initReviewsCarousel(){
 // - Producción: same-origin ('')
 // - Local: si abrimos el frontend con Live Server (p.ej. 127.0.0.1:5500), enviar al backend en :3001
 //          si el backend sirve también el frontend (p.ej. :3000 o :3001), usar same-origin ('')
+// Base dinámica de API (se puede actualizar en runtime desde auth-header.js)
 const API_BASE = (function(){
   if (window.API_BASE_URL) return window.API_BASE_URL.replace(/\/$/, '');
   const isLocalHost = /localhost|127\.0\.0\.1/.test(location.hostname);
   if (isLocalHost) {
-    const backendPorts = new Set(['3000','3001']);
-    // Si estamos en el mismo puerto del backend, usamos same-origin
+    const backendPorts = new Set(['3000','3001','3002']);
     if (backendPorts.has(String(location.port || ''))) return '';
-    // Si estamos en otro puerto (p.ej. Live Server 5500), apuntar al backend local por defecto
-    // Preferimos 3001 (puerto actual del backend)
     return 'http://localhost:3001';
   }
-  // Producción: same-origin
   return '';
 })();
 
+// Nota: en desarrollo se debe levantar el backend local para evitar CORS.
+// No hacemos fallback automático a producción desde localhost.
+
 async function iniciarPago(payMethod, payload) {
   if (payMethod === 'flow') {
-    const res = await fetch(`${API_BASE}/api/payments/flow`, {
+    const base = (window.API_BASE_URL || API_BASE || '').replace(/\/$/,'');
+    const res = await fetch(`${base}/api/payments/flow`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
@@ -703,7 +704,8 @@ async function iniciarPago(payMethod, payload) {
       alert("MercadoPago todavía no está conectado en este flujo 🚧");
     }
   } else if (payMethod === 'webpay') {
-    const res = await fetch(`${API_BASE}/api/payments/webpay`, {
+    const base = (window.API_BASE_URL || API_BASE || '').replace(/\/$/,'');
+    const res = await fetch(`${base}/api/payments/webpay`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -726,7 +728,8 @@ async function iniciarPago(payMethod, payload) {
       throw new Error(data.error || 'Error creando pago en Webpay');
     }
   } else if (payMethod === 'khipu') {
-    const res = await fetch(`${API_BASE}/api/payments/khipu`, {
+    const base = (window.API_BASE_URL || API_BASE || '').replace(/\/$/,'');
+    const res = await fetch(`${base}/api/payments/khipu`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -802,9 +805,12 @@ async function confirmCheckout(){
     return;
   }
 
+  // Total usando soporte de variantes: priorizar it.price y buscar por originalId
   const total = cart.reduce((a, it) => {
-    const p = window.PRODUCTS?.find(x => x.id === it.id);
-    return a + (p ? p.price * it.qty : 0);
+    const productId = it.originalId || it.id;
+    const p = window.PRODUCTS?.find(x => String(x.id) === String(productId));
+    const itemPrice = Number((it && typeof it.price !== 'undefined') ? it.price : (p?.price ?? 0)) || 0;
+    return a + (itemPrice * (it.qty || 0));
   }, 0);
   
   // Calcular costo de envío basado en el método seleccionado
@@ -837,8 +843,11 @@ async function confirmCheckout(){
   }
 
   const cartItems = cart.map(it=>{
-    const p = window.PRODUCTS?.find(x=>x.id===it.id) || {};
-    return { id: p.id || it.id, name: p.name || '', price: p.price || 0, qty: it.qty };
+    const productId = it.originalId || it.id;
+    const p = window.PRODUCTS?.find(x=> String(x.id) === String(productId)) || {};
+    const itemPrice = Number((typeof it.price !== 'undefined') ? it.price : (p.price ?? 0)) || 0;
+    const displayName = it.variant ? `${p.name || productId} (${it.variant})` : (p.name || String(productId));
+    return { id: p.id || productId, name: displayName, price: itemPrice, qty: it.qty };
   });
 
   const payload = {

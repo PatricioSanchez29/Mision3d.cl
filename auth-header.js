@@ -6,6 +6,9 @@
       window.API_BASE_URL = isLocal ? 'http://localhost:3001' : 'https://api.mision3d.cl';
       // console.debug('[config] API_BASE_URL =', window.API_BASE_URL);
     }
+    // Health-check en local desactivado para evitar CORS desde 127.0.0.1 -> producción.
+    // Si el backend local no está levantado, los endpoints fallarán (y es esperado
+    // mientras desarrollas front). Inicia el backend para evitar ERR_CONNECTION_REFUSED.
   } catch {}
 })();
 

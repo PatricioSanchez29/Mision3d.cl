@@ -10,8 +10,6 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 10000
       - key: FLOW_API_KEY
         sync: false
       - key: FLOW_SECRET
@@ -22,8 +20,8 @@ services:
         value: https://mision3d.cl/flow/retorno
       - key: FLOW_CONFIRM_URL
         value: https://mision3d.cl/flow/confirm
-      - key: CORS_ORIGIN
-        value: https://mision3d.cl
+      - key: ALLOWED_ORIGINS
+        value: https://mision3d.cl,https://www.mision3d.cl,https://mision3dcl.pages.dev
       - key: SUPABASE_WEBHOOK_KEY
         sync: false
       - key: RESEND_API_KEY

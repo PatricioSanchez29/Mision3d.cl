@@ -23,8 +23,13 @@
   <link rel="stylesheet" href="style.css">
   <script>window.GA_MEASUREMENT_ID = window.GA_MEASUREMENT_ID || 'G-XXXXXXXXXX';</script>
   <script>
-    // Configuración global del backend para este documento
-    window.API_BASE_URL = 'https://api.mision3d.cl';
+    // Configuración dinámica del backend (local => http://localhost:3001, prod => https://api.mision3d.cl)
+    (function(){
+      try{
+        var isLocal = /localhost|127\.0\.0\.1/.test(location.hostname);
+        window.API_BASE_URL = isLocal ? 'http://localhost:3001' : 'https://api.mision3d.cl';
+      }catch(e){}
+    })();
   </script>
   <script type="module" src="auth-header.js"></script>
   <script src="consent.js"></script>
