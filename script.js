@@ -1208,6 +1208,87 @@ document.addEventListener('DOMContentLoaded', ()=>{
       }
     });
   }
+
+  // ========== Drawer de filtros (móvil) ==========
+  (function initFiltersDrawer(){
+    const openBtn = document.getElementById('openFilters');
+    if(!openBtn) return;
+
+    // Crear overlay y drawer si no existen
+    let overlay = document.getElementById('filtersOverlay');
+    let drawer  = document.getElementById('filtersDrawer');
+    if(!overlay){
+      overlay = document.createElement('div');
+      overlay.id = 'filtersOverlay';
+      overlay.className = 'filters-overlay';
+      document.body.appendChild(overlay);
+    }
+    if(!drawer){
+      drawer = document.createElement('div');
+      drawer.id = 'filtersDrawer';
+      drawer.className = 'filters-drawer';
+      drawer.innerHTML = `
+        <div class="drawer-hd">
+          <h3>Filtros</h3>
+          <button type="button" class="btn-close-x" aria-label="Cerrar">✕</button>
+        </div>
+        <div class="drawer-body">
+          <div class="filter-block">
+            <div class="filter-title">Disponibilidad</div>
+            <div class="filter-content" id="mobileStockFilters">
+              <label class="chk"><input type="radio" name="stockFilterMobile" value="all" checked> Todos</label>
+              <label class="chk"><input type="radio" name="stockFilterMobile" value="disponible"> En stock</label>
+              <label class="chk"><input type="radio" name="stockFilterMobile" value="bajo"> Stock bajo</label>
+            </div>
+          </div>
+        </div>
+        <div class="drawer-actions">
+          <button type="button" class="btn-close">Cerrar</button>
+          <button type="button" class="btn-apply">Aplicar</button>
+        </div>`;
+      document.body.appendChild(drawer);
+    }
+
+    function syncFromDesktopToMobile(){
+      const current = document.querySelector('input[name="stockFilter"]:checked');
+      const v = current ? current.value : 'all';
+      const m = drawer.querySelector(`input[name="stockFilterMobile"][value="${v}"]`);
+      if(m){ m.checked = true; }
+    }
+
+    function syncFromMobileToDesktop(){
+      const m = drawer.querySelector('input[name="stockFilterMobile"]:checked');
+      const v = m ? m.value : 'all';
+      const d = document.querySelector(`input[name="stockFilter"][value="${v}"]`);
+      if(d){
+        d.checked = true;
+        d.dispatchEvent(new Event('change', { bubbles:true }));
+      }
+    }
+
+    function open(){
+      syncFromDesktopToMobile();
+      drawer.classList.add('active');
+      overlay.classList.add('active');
+      openBtn.setAttribute('aria-expanded','true');
+      document.body.style.overflow = 'hidden';
+    }
+    function close(){
+      drawer.classList.remove('active');
+      overlay.classList.remove('active');
+      openBtn.setAttribute('aria-expanded','false');
+      document.body.style.overflow = '';
+    }
+
+    openBtn.addEventListener('click', open);
+    overlay.addEventListener('click', close);
+    drawer.querySelector('.btn-close')?.addEventListener('click', close);
+    drawer.querySelector('.btn-close-x')?.addEventListener('click', close);
+    drawer.querySelector('.btn-apply')?.addEventListener('click', ()=>{
+      syncFromMobileToDesktop();
+      close();
+    });
+  })();
 });
 
 
