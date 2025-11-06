@@ -774,6 +774,39 @@ async function iniciarPago(payMethod, payload) {
 
 /* ==================== Confirmar checkout ==================== */
 async function confirmCheckout(){
+  // Normalizar precios de ítems del carrito por compatibilidad (evita totales en 0 con variantes antiguas)
+  try {
+    let changed = false;
+    cart = (cart || []).map((it) => {
+      const clone = { ...it };
+      const productId = clone.originalId || String(clone.id || '').split('-')[0] || clone.id;
+      const p = (window.PRODUCTS || []).find(x => String(x.id) === String(productId));
+      if (p) {
+        // Preparar arreglo de variantes si existen
+        let variantsArr = [];
+        if (Array.isArray(p.variants)) variantsArr = p.variants;
+        else if (typeof p.variants === 'string') {
+          try { const parsed = JSON.parse(p.variants); if (Array.isArray(parsed)) variantsArr = parsed; } catch {}
+        }
+
+        // Si no hay precio o es 0, intentar completar
+        const hasPrice = typeof clone.price !== 'undefined' && !Number.isNaN(Number(clone.price));
+        const asNumber = Number(clone.price || 0);
+        if (!hasPrice || asNumber <= 0) {
+          let computed = 0;
+          if (clone.variant && variantsArr.length) {
+            const v = variantsArr.find(v => String(v?.name || '').toLowerCase() === String(clone.variant || '').toLowerCase());
+            if (v && typeof v.price !== 'undefined') computed = Number(v.price) || 0;
+          }
+          if (!computed && typeof p.price !== 'undefined') computed = Number(p.price) || 0;
+          if (computed > 0) { clone.price = computed; changed = true; }
+        }
+      }
+      return clone;
+    });
+    if (changed) { save(); }
+  } catch (e) { console.warn('[checkout] No se pudo normalizar precios del carrito:', e?.message); }
+
   const name      = $('#inputName')?.value.trim() || '';
   const apellido  = $('#inputApellido')?.value.trim() || '';
   const rut       = $('#inputRut')?.value.trim() || '';
