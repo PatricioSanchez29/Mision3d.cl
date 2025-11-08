@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import axios from "axios";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
+import helmet from "helmet"; // Seguridad de cabeceras HTTP
 // Proveedores alternativos de email
 import sgMail from "@sendgrid/mail";
 import { Resend } from "resend";
@@ -45,6 +46,24 @@ app.set("trust proxy", 1);
 app.use(express.json());
 // URL-encoded (necesario para webhooks que envían application/x-www-form-urlencoded como Flow)
 app.use(express.urlencoded({ extended: true }));
+
+// ===== Seguridad (Helmet) =====
+// Configuración básica: habilita cabeceras seguras y permite carga de imágenes remotas (cross-origin)
+// Ajustes mínimos para evitar bloqueo de assets externos y scripts inline necesarios.
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  // Desactivar CSP estricta por ahora para no romper scripts inline; se puede afinar luego.
+  contentSecurityPolicy: false,
+  // Evitar que X-Powered-By exponga tecnología
+  hidePoweredBy: true
+}));
+// Cabecera personalizada para reforzar framing y tipo de contenido.
+app.use((req, res, next) => {
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
 
 // ===== CORS =====
 // Lista base + orígenes desde variables de entorno
