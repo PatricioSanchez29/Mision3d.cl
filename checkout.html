@@ -1,6 +1,38 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<style>
+  /* Zoom en imagen del resumen checkout */
+  .sum-item-thumb {
+    position: relative;
+    overflow: visible;
+    display: inline-block;
+  }
+  .sum-item-thumb img {
+    transition: transform 0.25s cubic-bezier(.4,1.3,.5,1), box-shadow 0.2s;
+    z-index: 1;
+    border-radius: 6px;
+    max-width: 48px;
+    max-height: 48px;
+    box-shadow: none;
+  }
+  .sum-item-thumb:hover img {
+    transform: scale(2.2);
+    z-index: 10;
+    box-shadow: 0 4px 24px 0 rgba(0,0,0,0.18);
+  }
+  .sum-item-thumb {
+    cursor: zoom-in;
+  }
+  .sum-item-thumb:active img {
+    transform: scale(1.1);
+  }
+  @media (max-width: 600px) {
+    .sum-item-thumb img:hover {
+      transform: scale(1.2);
+    }
+  }
+</style>
   <meta charset="UTF-8">
   <title>Checkout | Mision3D</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -290,6 +322,10 @@
     <div class="price-line" style="display:none" id="lineShipping"><span>Envío</span><span id="shippingValue">$0</span></div>
     <div class="total-line"><span>Total</span><span>$0</span></div>
   </aside>
+  <section id="checkoutRecommendations" style="background:#f8fafc;padding:18px 20px 20px 20px;border-radius:12px;margin-top:18px;box-shadow:0 1px 6px #0001">
+    <h4 style="margin:0 0 12px 0;font-size:1rem;color:#0052cc;font-weight:700">Te puede interesar</h4>
+    <div id="recommendGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:16px;"></div>
+  </section>
  </main>
 <script src="ui-components.js"></script>
 <script src="validations.js"></script>
@@ -588,7 +624,30 @@ document.addEventListener("DOMContentLoaded", ()=>{
   payRadios.forEach(r=>r.addEventListener('change',()=>{}));
 });
 
-// Renderizar resumen del carrito usando datos ya manejados en script.js
+// Renderizar productos recomendados en checkout
+function renderCheckoutRecommendations() {
+  const grid = document.getElementById('recommendGrid');
+  if (!grid || !window.PRODUCTS) return;
+  // Excluir productos ya en el carrito
+  const cart = JSON.parse(localStorage.getItem('cart')||'[]');
+  const cartIds = cart.map(it => String(it.originalId || it.id));
+  // Elegir hasta 4 productos aleatorios que no estén en el carrito
+  const pool = window.PRODUCTS.filter(p => !cartIds.includes(String(p.id)));
+  if (pool.length === 0) {
+    grid.innerHTML = '<p style="color:#888;font-size:.9rem">No hay más productos para recomendar.</p>';
+    return;
+  }
+  // Mezclar y tomar 4
+  const shuffled = pool.sort(()=>0.5-Math.random()).slice(0,4);
+  grid.innerHTML = shuffled.map(p => `
+    <div class="rec-card" tabindex="0" aria-label="${p.name}" style="background:#fff;border-radius:8px;box-shadow:0 1px 4px #0001;padding:10px 8px;display:flex;flex-direction:column;align-items:center;gap:7px;transition:box-shadow .18s">
+      <img src="${p.img||'img/placeholder.png'}" alt="${p.name}" style="width:70px;height:70px;object-fit:cover;border-radius:7px;box-shadow:0 1px 4px #0001">
+      <div style="font-size:.85rem;font-weight:600;text-align:center;line-height:1.2">${p.name}</div>
+      <div style="font-size:.8rem;color:#0052cc;font-weight:700">${(p.price||0).toLocaleString('es-CL',{style:'currency',currency:'CLP'})}</div>
+      <button onclick="window.location.href='producto.html?id=${p.id}'" style="margin-top:4px;padding:5px 12px;border-radius:6px;border:none;background:#0052cc;color:#fff;font-size:.8rem;cursor:pointer;font-weight:600">Ver</button>
+    </div>
+  `).join('');
+}
 function renderCheckoutSummary(){
   const cont = document.getElementById('summaryItems');
   const totalLine = document.querySelector('.total-line span:last-child');
@@ -611,26 +670,109 @@ function renderCheckoutSummary(){
     const productId = it.originalId || it.id;
     const p = PRODUCTS.find(pr=>String(pr.id)===String(productId));
     if(!p) return; // ignora items huérfanos
-    
     // Usar precio de la variante si existe, sino el precio del producto
     const itemPrice = it.price || p.price;
     const sub = itemPrice * it.qty;
     subtotal += sub;
-    
     // Nombre con variante si existe
     const displayName = it.variant ? `${p.name} (${it.variant})` : p.name;
-    
+    // Detectar stock bajo
+    let stockLow = false, stockMsg = '';
+    if (typeof p.stock === 'string' && p.stock.toLowerCase().includes('bajo')) {
+      stockLow = true;
+      stockMsg = '<span class="stock-low-msg" style="color:#b91c1c;font-weight:600;font-size:.7rem;margin-left:4px">¡Quedan pocas unidades!</span>';
+    }
     html += `
-      <div class="sum-item">
-        <div class="sum-item-thumb"><img src="${p.img||'img/placeholder.png'}" alt="${p.name}"><span class="qty-badge">${it.qty}</span></div>
+      <div class="sum-item" style="display:flex;align-items:center;gap:8px${stockLow ? ';background:#fff6f6;border-radius:7px;border:1px solid #fbb;' : ''}">
+        <div class="sum-item-thumb"><img src="${p.img||'img/placeholder.png'}" alt="${p.name}"></div>
         <div style="flex:1">
-          <div style="font-weight:600;font-size:.78rem;margin-bottom:4px">${displayName}</div>
-          <div style="font-size:.7rem;color:#555">${it.qty} x ${itemPrice.toLocaleString('es-CL',{style:'currency',currency:'CLP'})}</div>
+          <div style="font-weight:600;font-size:.78rem;margin-bottom:4px">${displayName} ${stockMsg}</div>
+          <div style="font-size:.7rem;color:#555;display:flex;align-items:center;gap:6px">
+            <button class="qty-minus-summary" data-id="${it.id}" style="background:#eee;border:none;border-radius:4px;width:22px;height:22px;font-size:1.1rem;cursor:pointer;">-</button>
+            <span style="min-width:22px;display:inline-block;text-align:center;font-weight:600;">${it.qty}</span>
+            <button class="qty-plus-summary" data-id="${it.id}" style="background:#eee;border:none;border-radius:4px;width:22px;height:22px;font-size:1.1rem;cursor:pointer;">+</button>
+            <span style="margin-left:8px">x ${itemPrice.toLocaleString('es-CL',{style:'currency',currency:'CLP'})}</span>
+          </div>
+          <div style=\"margin-top:4px\">
+            ${(() => {
+              const isPersonalizable = p.name && p.name.trim().toLowerCase() === 'calendario f1 2026 (personalizado con el nombre o apodo)'.toLowerCase();
+              if (isPersonalizable) {
+                return `<div style=\"width:100%;font-size:.9rem;padding:4px 7px;margin-top:2px;border:1px solid #ddd;border-radius:5px;background:#f8f8f8;min-height:28px;display:flex;align-items:center;gap:7px;\">
+                  <svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#888\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"11\" width=\"18\" height=\"10\" rx=\"2\"/><path d=\"M7 11V7a5 5 0 0 1 10 0v4\"/></svg>
+                  <span>${it.customNote ? String(it.customNote).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;') : ''}</span>
+                </div>`;
+              } else {
+                return `<input class=\"note-summary-input\" data-id=\"${it.id}\" type=\"text\" placeholder=\"Personalización (opcional)\" value=\"${it.customNote ? String(it.customNote).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;') : ''}\" style=\"width:100%;font-size:.72rem;padding:4px 7px;margin-top:2px;border:1px solid #ddd;border-radius:5px\">`;
+              }
+            })()}
+          </div>
         </div>
         <div style="font-weight:600;font-size:.75rem">${sub.toLocaleString('es-CL',{style:'currency',currency:'CLP'})}</div>
+        <button class="remove-summary-item" data-id="${it.id}" title="Quitar del carrito" style="background:none;border:none;color:#c00;font-size:1.2rem;cursor:pointer;margin-left:8px">🗑️</button>
       </div>`;
+  // Asignar eventos a los inputs de nota de personalización
+  cont.querySelectorAll('.note-summary-input').forEach(input => {
+    input.addEventListener('change', function() {
+      const id = this.getAttribute('data-id');
+      let cart = JSON.parse(localStorage.getItem('cart')||'[]');
+      const idx = cart.findIndex(x=>String(x.id)===String(id));
+      if(idx>=0){
+        cart[idx].customNote = this.value;
+        localStorage.setItem('cart', JSON.stringify(cart));
+        // No es necesario re-renderizar todo, pero si quieres feedback visual, puedes hacerlo aquí
+      }
+    });
+  });
   });
   cont.innerHTML = html;
+  // Renderizar recomendaciones después de actualizar el carrito
+  renderCheckoutRecommendations();
+  // Forzar readonly por JS solo para el producto personalizado (si por alguna razón aún hay input)
+  document.querySelectorAll('input.note-summary-input').forEach(input => {
+    const prodName = input.closest('.sum-item')?.querySelector('div[style*="font-weight:600"]')?.textContent || '';
+    if(prodName.toLowerCase().includes('calendario f1 2026 (personalizado con el nombre o apodo)')){
+      input.readOnly = true;
+    }
+  });
+  // Asignar eventos a los botones de eliminar
+  cont.querySelectorAll('.remove-summary-item').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const id = this.getAttribute('data-id');
+      let cart = JSON.parse(localStorage.getItem('cart')||'[]');
+      cart = cart.filter(x=>String(x.id)!==String(id));
+      localStorage.setItem('cart', JSON.stringify(cart));
+      renderCheckoutSummary();
+      if(window.badge) window.badge();
+    });
+  });
+  // Asignar eventos a los botones de cantidad -
+  cont.querySelectorAll('.qty-minus-summary').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const id = this.getAttribute('data-id');
+      let cart = JSON.parse(localStorage.getItem('cart')||'[]');
+      const idx = cart.findIndex(x=>String(x.id)===String(id));
+      if(idx>=0 && cart[idx].qty>1){
+        cart[idx].qty -= 1;
+        localStorage.setItem('cart', JSON.stringify(cart));
+        renderCheckoutSummary();
+        if(window.badge) window.badge();
+      }
+    });
+  });
+  // Asignar eventos a los botones de cantidad +
+  cont.querySelectorAll('.qty-plus-summary').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const id = this.getAttribute('data-id');
+      let cart = JSON.parse(localStorage.getItem('cart')||'[]');
+      const idx = cart.findIndex(x=>String(x.id)===String(id));
+      if(idx>=0){
+        cart[idx].qty += 1;
+        localStorage.setItem('cart', JSON.stringify(cart));
+        renderCheckoutSummary();
+        if(window.badge) window.badge();
+      }
+    });
+  });
   
   // Calcular envío basado en los radio buttons
   const regionSel = document.getElementById('inputRegion');
