@@ -92,7 +92,7 @@
       a.localeCompare(b, 'es', { sensitivity: 'base' })
     );
 
-    console.log('📋 Categorías encontradas:', allCategories.length, allCategories);
+    // Categorías extraídas
 
     // Generar HTML
     let optionsHTML = '<div class="select-option" data-category="all">Todas las categorías</div>';
@@ -103,7 +103,7 @@
 
     categoryOptionsContainer.innerHTML = optionsHTML;
     
-    console.log('✅ Opciones de categoría generadas en el DOM');
+    // Opciones generadas en el DOM
 
     // Agregar event listeners a las opciones
     const options = categoryOptionsContainer.querySelectorAll('.select-option');
@@ -127,14 +127,13 @@
     const customSelect = document.getElementById('categorySelect');
     const selectedCategorySpan = document.getElementById('selectedCategory');
 
-    console.log('✅ Categoría seleccionada:', category);
+    // Categoría seleccionada
 
     // Actualizar selección global
     selectedCategoryGlobal = category;
     window.selectedCategory = category; // Exponer globalmente
 
-    console.log('🌍 selectedCategoryGlobal actualizado a:', selectedCategoryGlobal);
-    console.log('🌍 window.selectedCategory actualizado a:', window.selectedCategory);
+    // estado global actualizado
 
     // Actualizar UI
     selectedCategorySpan.textContent = optionElement.textContent;
@@ -152,8 +151,15 @@
     // Marcar opción seleccionada
     updateSelectedOption();
 
-    // Aplicar filtro
+    // Asegurar estado global y disparar render inmediatamente
+    try {
+      selectedCategoryGlobal = category;
+      window.selectedCategory = category;
+      window.currentCategory = category;
+    } catch(e){}
     applyGlobalCategoryFilter(category);
+    // Disparar evento para notificar el cambio de categoría a otros listeners
+    try { window.dispatchEvent(new CustomEvent('categoryChanged', { detail: { category } })); } catch (e) { /* ignore */ }
   }
 
   /**
@@ -191,15 +197,75 @@
    * Aplicar filtro de categoría global
    */
   function applyGlobalCategoryFilter(category) {
-    console.log('🔍 Aplicando filtro de categoría:', category);
+    // Aplicando filtro de categoría (silent)
     
     // Si existe la función renderCatalog en script.js, usarla
-    if (typeof window.renderCatalog === 'function') {
-      const searchQuery = document.getElementById('searchInput')?.value || '';
-      console.log('📋 Renderizando catálogo con categoría:', category, 'búsqueda:', searchQuery);
-      window.renderCatalog(searchQuery);
-    } else {
-      console.warn('renderCatalog no está disponible');
+    // Mantener sincronía con selects y variable global usada por renderCatalog
+    try {
+      // Actualizar variable global usada en script.js
+      if (typeof window.currentCategory !== 'undefined') {
+        window.currentCategory = category || 'all';
+      } else {
+        window.currentCategory = category || 'all';
+      }
+
+      // Sincronizar selects (si existen). Si la opción no existe en el select nativo,
+      // la creamos para que la etiqueta quede visible (útil en mobile cuando el select
+      // se muestra en vez del dropdown personalizado).
+      const syncIds = ['categorySelect', 'headerCategorySelect', 'categorySelectSidebar'];
+      syncIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        // Si la opción buscada no existe, crearla (evita que el select muestre vacío)
+        const hasOpt = Array.from(el.options || []).some(o => String(o.value) === String(category));
+        if (!hasOpt && category && category !== 'all') {
+          try {
+            const opt = document.createElement('option');
+            opt.value = category; opt.textContent = category;
+            el.appendChild(opt);
+          } catch (e) { /* ignore */ }
+        }
+
+        // Asignar valor y disparar change para que listeners respondan
+        try {
+          el.value = category || 'all';
+          const ev = new Event('change', { bubbles: true });
+          el.dispatchEvent(ev);
+        } catch (e) {
+          try { el.value = category || 'all'; } catch(_){}
+        }
+      });
+
+      // Actualizar URL (persistir categoría)
+      try {
+        const u = new URL(location.href);
+        if (category && category !== 'all') u.searchParams.set('category', category);
+        else u.searchParams.delete('category');
+        history.replaceState(null, '', u.toString());
+      } catch (e) { /* no fatal */ }
+
+      // Mostrar chip activo si la función existe
+      if (typeof window.showActiveChip === 'function') {
+        window.showActiveChip(category);
+      } else {
+        // si existe elemento #activeCategoryChip, actualizar directamente
+        const chipWrap = document.getElementById('activeCategoryChip');
+        if (chipWrap) {
+          if (!category || category === 'all') chipWrap.innerHTML = '';
+          else chipWrap.innerHTML = `<span class=\"category-chip\">${category} <button class=\"chip-clear\" aria-label=\"Limpiar categoría\">✕</button></span>`;
+        }
+      }
+
+      // Llamar a renderCatalog con la búsqueda actual
+      if (typeof window.renderCatalog === 'function') {
+        const searchQuery = document.getElementById('searchInput')?.value || '';
+        window.renderCatalog(searchQuery);
+      } else {
+        console.warn('renderCatalog no está disponible');
+      }
+    } catch (err) {
+      console.warn('Error aplicando filtro global de categoría:', err);
     }
   }
 
@@ -207,7 +273,6 @@
    * Obtener categoría seleccionada
    */
   function getSelectedCategory() {
-    console.log('📂 getSelectedCategory llamado, devolviendo:', selectedCategoryGlobal);
     return selectedCategoryGlobal;
   }
 

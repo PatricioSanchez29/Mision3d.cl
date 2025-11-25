@@ -309,7 +309,7 @@ try {
 } catch {}
 
 /* ==================== Catálogo ==================== */
-let currentCategory = 'all';
+let currentCategory = (typeof window.currentCategory !== 'undefined') ? window.currentCategory : 'all';
 let currentSort = 'rating-desc';
 let viewMode = 'grid';
 let priceMin = null, priceMax = null, stockFilter = 'all';
@@ -391,6 +391,11 @@ function applySort(list){
 function renderCatalog(filterText = ""){
   const grid = document.getElementById('catalogGrid') || document.querySelector('.catalog-grid') || document.querySelector('.grid.catalog-grid');
   if (!grid) return;
+
+  // Sincronizar con estado global si fue actualizado por otros scripts
+  if (typeof window.currentCategory !== 'undefined') {
+    currentCategory = window.currentCategory;
+  }
   
   // Verificar que PRODUCTS esté disponible
   if (!window.PRODUCTS || !Array.isArray(window.PRODUCTS) || window.PRODUCTS.length === 0) {
@@ -431,10 +436,11 @@ function renderCatalog(filterText = ""){
   }
   
   if(categoryToFilter && categoryToFilter !== 'all') {
+    const target = String(categoryToFilter).trim().toLowerCase();
     productos = productos.filter(p => {
       if (!p.category) return false;
-      const cats = p.category.split(',').map(c => c.trim());
-      return cats.includes(categoryToFilter);
+      const cats = p.category.split(',').map(c => String(c).trim().toLowerCase());
+      return cats.includes(target);
     });
   }
   
@@ -1303,12 +1309,43 @@ document.addEventListener('DOMContentLoaded', ()=>{
       console.log('🔄 Categoría seleccionada:', selectedCategory);
       
       currentCategory = selectedCategory;
+      // Exponer también como variable global para otros scripts fuera del IIFE
+      try { window.currentCategory = selectedCategory; } catch (e) {}
       
-      // Si estamos en la página de catálogo, filtrar
+      // Sincronizar otros selects si existen
+      try {
+        const otherIds = ['categorySelect', 'categorySelectSidebar'];
+        otherIds.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.value = selectedCategory;
+        });
+
+        // Actualizar chip visual superior
+        const chipWrap = document.getElementById('activeCategoryChip');
+        if (chipWrap) {
+          if (!selectedCategory || selectedCategory === 'all') chipWrap.innerHTML = '';
+          else chipWrap.innerHTML = `<span class="category-chip">${selectedCategory} <button class="chip-clear" aria-label="Limpiar categoría">✕</button></span>`;
+          const clearBtn = chipWrap.querySelector('.chip-clear');
+          if (clearBtn) clearBtn.onclick = () => {
+            currentCategory = 'all';
+            ['categorySelect', 'headerCategorySelect', 'categorySelectSidebar'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value='all'; });
+            if (typeof renderCatalog === 'function') renderCatalog($('#searchInput')?.value || '');
+            try { const u=new URL(location.href); u.searchParams.delete('category'); history.replaceState(null,'',u.toString()); } catch(e){}
+            chipWrap.innerHTML = '';
+          };
+        }
+
+        // Persistir en URL (solo modificar query param, no recargar)
+        try { const u = new URL(location.href); if (selectedCategory && selectedCategory !== 'all') u.searchParams.set('category', selectedCategory); else u.searchParams.delete('category'); history.replaceState(null, '', u.toString()); } catch(e){}
+      } catch (syncErr) {
+        console.warn('Error sincronizando selects de categoría:', syncErr);
+      }
+
+      // Si estamos en la página de catálogo, filtrar en lugar de redirigir
       if (window.location.pathname.includes('catalogo.html') || document.getElementById('catalogGrid')) {
-        renderCatalog($('#searchInput')?.value || '');
+        if (typeof renderCatalog === 'function') renderCatalog($('#searchInput')?.value || '');
       } else {
-        // Si estamos en index, redirigir al catálogo
+        // Si estamos en index, redirigir al catálogo con parámetro
         if (selectedCategory === 'all') {
           window.location.href = 'catalogo.html';
         } else {
@@ -1316,6 +1353,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
         }
       }
     });
+    // Eliminar el selector del header en todas las páginas (lo mantenemos en el DOM
+    // solo si se necesita; el usuario pidió removerlo también del inicio y otras páginas)
+    try {
+      headerCategorySelect.remove();
+    } catch (e) { /* silencioso */ }
   }
 
   // ========== Drawer de filtros (móvil) ==========
@@ -1411,6 +1453,36 @@ document.addEventListener('DOMContentLoaded', ()=>{
   window.render = render;
   // Exponer confirmCheckout para uso desde checkout.html
   window.confirmCheckout = confirmCheckout;
+  // Exponer renderCatalog y estado de categoría para otros scripts
+  try {
+    window.renderCatalog = renderCatalog;
+  } catch (e) { /* silencioso */ }
+  try { window.currentCategory = currentCategory; } catch(e) {}
+
+  // Escuchar evento global para cambios de categoría (disparado por category-dropdown.js)
+  window.addEventListener('categoryChanged', function (ev) {
+    try {
+      const newCat = (ev && ev.detail && ev.detail.category) || window.selectedCategory || 'all';
+      try { window.currentCategory = newCat; } catch(e){}
+      const doRender = () => {
+        try {
+          const searchQuery = document.getElementById('searchInput')?.value || '';
+          if (typeof renderCatalog === 'function') renderCatalog(searchQuery);
+        } catch(e) { console.warn('Error en doRender:', e); }
+      };
+
+      // Si PRODUCTS ya está cargado, renderizar inmediatamente
+      if (window.PRODUCTS && Array.isArray(window.PRODUCTS) && window.PRODUCTS.length > 0) {
+        doRender();
+        return;
+      }
+
+      // Si no hay PRODUCTS aún, esperar al evento productsReady (una sola vez)
+      const onReady = () => { try{ doRender(); } catch(e){} finally { document.removeEventListener('productsReady', onReady); } };
+      document.addEventListener('productsReady', onReady);
+
+    } catch (err) { console.warn('categoryChanged handler error', err); }
+  });
 
 })( // <- FIN del wrapper: inyectamos $, $$ y money sin redeclarar globales
   window.$ || (q => document.querySelector(q)),
