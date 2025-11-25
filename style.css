@@ -975,8 +975,25 @@ body.dark .result-count {background:#1f2937;border-color:#334155;color:#e5e7eb}
  .logo-text{font-size:2.9rem;font-weight:800;background:linear-gradient(90deg,#6366f1,#06b6d4,#f59e0b);-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:1px}
 @media (max-width:600px){.logo-img{height:72px}.logo-text{font-size:2.3rem}}
 body.dark .logo-img{filter:brightness(1.05);background:#fff}
-.nav a{margin:0 8px;text-decoration:none;color:#333;font-weight:700}
-.nav a:hover{color:#4f46e5}
+.nav a{
+  margin:0 12px;
+  text-decoration:none;
+  color:#374151;
+  font-weight:600;
+  font-size:1rem;
+  padding:8px 12px;
+  border-radius:10px;
+  transition:all .18s ease, transform .12s ease;
+  display:inline-block;
+  letter-spacing:0.02em;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+}
+.nav a:hover{
+  background:rgba(79,70,229,0.06);
+  color:#4f46e5;
+  transform:translateY(-2px);
+  box-shadow:0 6px 18px rgba(79,70,229,0.06);
+}
 .cart-btn{
   background:linear-gradient(135deg, #8b5cf6, #6366f1);
   color:#fff;
