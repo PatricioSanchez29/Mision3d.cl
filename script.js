@@ -308,6 +308,33 @@ try {
   }
 } catch {}
 
+// Emitir evento `productsReady` de forma centralizada y idempotente.
+// Algunos scripts externos pueden cargar PRODUCTS de forma asíncrona; para
+// consolidar la sincronización exponemos `window.setProducts` y disparamos
+// `productsReady` cuando haya datos disponibles.
+(function(){
+  function emitIfReady(){
+    try{
+      if (window.__productsReadyFired) return;
+      if (window.PRODUCTS && Array.isArray(window.PRODUCTS) && window.PRODUCTS.length > 0) {
+        document.dispatchEvent(new Event('productsReady'));
+        window.__productsReadyFired = true;
+      }
+    }catch(e){ console.warn('emitIfReady error', e); }
+  }
+
+  // Exponer helper para asignar productos desde cualquier loader (supabase, backend, tests)
+  try{
+    window.setProducts = function(arr){
+      try { window.PRODUCTS = Array.isArray(arr) ? arr : (Array.isArray(window.PRODUCTS)? window.PRODUCTS : []); } catch(e){ window.PRODUCTS = window.PRODUCTS || []; }
+      emitIfReady();
+    };
+  }catch(e){}
+
+  // Emitir ahora si PRODUCTS ya viene pre-cargado (fallback/localStorage)
+  setTimeout(emitIfReady, 0);
+})();
+
 /* ==================== Catálogo ==================== */
 let currentCategory = (typeof window.currentCategory !== 'undefined') ? window.currentCategory : 'all';
 let currentSort = 'rating-desc';
