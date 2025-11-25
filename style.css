@@ -371,6 +371,25 @@ body.dark .trend-chip:hover { background: #1f2937; border-color: #4b5563; }
   .card .desc { font-size: 0.8rem; }
 }
 
+/* Estilos para selector de categoría y chip activo */
+.category-chip{display:inline-flex;align-items:center;gap:8px;background:#e6f1ff;border:1px solid #b6e0ff;padding:6px 10px;border-radius:999px;font-weight:600;color:#034;}
+.category-chip .chip-clear{background:transparent;border:none;cursor:pointer;font-weight:700;color:#034;padding:0 6px}
+
+/* Sidebar select: oculto por defecto en desktop */
+#categorySelectSidebar{display:none}
+
+/* En móvil: mostrar el select superior de categorías para acceso rápido
+   (dejamos el del sidebar oculto porque el panel de filtros suele estar colapsado) */
+@media (max-width: 768px){
+  #categorySelect{display:block !important; min-width: 160px;}
+  #categorySelectSidebar{display:none !important}
+
+  /* Ajustes visuales para que el select encaje en la fila de controles */
+  .catalog-controls-advanced .left { display:flex; flex-wrap:wrap; gap:8px; align-items:center }
+  .catalog-controls-advanced .left #categorySelect { margin-left:0; }
+}
+
+
 @media (max-width: 480px) {
   .catalog-grid, .grid {
     grid-template-columns: 1fr !important;
@@ -383,6 +402,106 @@ body.dark .trend-chip:hover { background: #1f2937; border-color: #4b5563; }
   .card .price { font-size: 0.95rem; }
   .card .desc { font-size: 0.75rem; }
 }
+
+/* ===================== MOBILE: Mejoras específicas para la página de producto ===================== */
+:root{
+  --page-padding: 16px;
+  --modal-gap: 16px;
+  --btn-height: 48px;
+  --touch-size: 44px;
+  --safe-bottom: env(safe-area-inset-bottom);
+}
+
+@media (max-width: 768px) {
+  /* Hacer que la página de producto ocupe la pantalla y apile imagen + contenido */
+  .product-page {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 0;
+    min-height: 100vh;
+    background: transparent;
+  }
+
+  .product-gallery { order: 1; }
+  .product-info { order: 2; }
+
+  /* Imagen principal en la parte superior ocupando una altura razonable */
+  .gallery-wrapper { flex-direction: column; }
+  .product-main {
+    width: 100%;
+    height: 40vh;
+    aspect-ratio: auto;
+    border-radius: 0;
+    overflow: hidden;
+  }
+  .product-main img { width: 100%; height: 100%; object-fit: cover; display:block; }
+
+  /* Thumbs en fila debajo de la imagen */
+  .product-thumbs {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    max-height: none;
+    padding: 8px 12px;
+    overflow-x: auto;
+    order: 2;
+  }
+  .product-thumb { width: 68px; flex: 0 0 auto; }
+
+  /* Contenido: scrollear dentro del área content y respetar safe-area */
+  .product-info {
+    padding: 16px;
+    flex: 1 1 auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    padding-bottom: calc(16px + var(--safe-bottom));
+    background: #fff;
+  }
+
+  .price-final { font-size: 1.6rem; }
+  .product-info h1 { font-size: 1.4rem; margin-bottom:8px }
+
+  /* Cantidad y botones táctiles más grandes */
+  .qty-box button { min-width: var(--touch-size); min-height: var(--touch-size); padding: 0; border-radius: 8px }
+  .qty-box span { min-width: 44px; text-align:center }
+
+  /* Botones de acción: ancho completo y sticky al fondo para fácil acceso */
+  .action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: sticky;
+    bottom: 0;
+    width: 100%;
+    padding: 10px 16px calc(10px + var(--safe-bottom));
+    background: linear-gradient(180deg, rgba(255,255,255,0), #fff);
+    box-shadow: 0 -10px 30px rgba(0,0,0,0.06);
+    z-index: 50;
+  }
+  .action-buttons .btn-primary, .action-buttons .btn-outline {
+    width: 100%;
+    height: var(--btn-height);
+    border-radius: 10px;
+    padding: 0 14px;
+    font-size: 1rem;
+  }
+
+  /* Opciones / variantes a ancho completo */
+  .variants-grid { gap: 10px; }
+  .variant-btn { flex: 1 1 100%; width: 100%; text-align: left; padding: 12px 14px }
+
+  /* Ajustes finos para pantallas muy pequeñas */
+  @media (max-width: 420px) {
+    .product-main { height: 36vh }
+    .product-info { padding: 12px }
+    .action-buttons { padding: 8px 12px calc(8px + var(--safe-bottom)) }
+    .action-buttons .btn-primary { height: 46px; font-size: 15px }
+  }
+}
+
+/* Fin: mejoras móviles para producto */
 
 .search-suggestions {
 	position: absolute;

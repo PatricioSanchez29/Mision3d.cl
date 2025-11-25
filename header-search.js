@@ -6,6 +6,9 @@
 (function() {
   'use strict';
 
+  // REMOVER selector headerCategorySelect si está presente (queremos quitarlo del header)
+  try { document.getElementById('headerCategorySelect')?.remove(); } catch(e) {}
+
   // Poblar dropdown de categorías cuando los productos estén listos
   document.addEventListener('productsReady', () => {
     populateHeaderCategories();

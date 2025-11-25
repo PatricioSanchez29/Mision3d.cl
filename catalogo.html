@@ -124,6 +124,7 @@
   <section class="catalog-wrap" id="productos">
     <nav class="breadcrumbs"><a href="index.html">Inicio</a> <span class="crumb-sep">›</span> <span>Productos</span></nav>
     <h2 class="catalog-title">Productos</h2>
+    <div id="activeCategoryChip" style="margin-bottom:12px"></div>
     <div class="catalog-layout">
       <aside class="catalog-sidebar">
         <div class="filter-block">
@@ -131,6 +132,12 @@
           <div id="priceFilters" class="filter-content">
             <label class="price-field">$<input type="number" id="priceMin" placeholder="Desde" min="0"></label>
             <label class="price-field">$<input type="number" id="priceMax" placeholder="Hasta" min="0"></label>
+          </div>
+        </div>
+        <div class="filter-block">
+          <div class="filter-title">Categoría <button class="collapse" data-target="categoryFilters">−</button></div>
+          <div id="categoryFilters" class="filter-content">
+            <select id="categorySelectSidebar" style="width:100%"><option value="all">Todas las categorías</option></select>
           </div>
         </div>
         <div class="filter-block">
@@ -152,6 +159,10 @@
               <option value="price-desc">Precio mayor a menor</option>
               <option value="rating-desc" selected>Mejor valoración</option>
               <option value="newest">Más nuevo</option>
+            </select>
+            <!-- Selector de categoría: se poblará dinámicamente al cargar PRODUCTS -->
+            <select id="categorySelect" class="sort-select" style="margin-left:8px; min-width:180px">
+              <option value="all">Todas las categorías</option>
             </select>
             <div class="discount-toggle">
               <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.9rem;">
@@ -278,7 +289,64 @@
     </form>
   </div>
 </div>
-<script src="script.js?v=20251106-1"></script>
+  <script src="script.js?v=20251106-2"></script>
+  <script>
+    // Manejo de categorías: poblar selects (top, header y sidebar), mostrar chip activo y persistir en URL
+    function updateURLCategory(cat){
+      try{
+        const u = new URL(location.href);
+        if(cat && cat !== 'all') u.searchParams.set('category', cat);
+        else u.searchParams.delete('category');
+        history.replaceState(null, '', u.toString());
+      }catch(e){/* silencioso */}
+    }
+
+    function showActiveChip(cat){
+      const wrap = document.getElementById('activeCategoryChip');
+      if(!wrap) return;
+      if(!cat || cat === 'all') { wrap.innerHTML = ''; return; }
+      wrap.innerHTML = `<span class="category-chip">${cat} <button class="chip-clear" aria-label="Limpiar categoría">✕</button></span>`;
+      const btn = wrap.querySelector('.chip-clear');
+      if(btn) btn.onclick = ()=>{
+        window.currentCategory = 'all';
+        const allSelects = [document.getElementById('categorySelect'), document.getElementById('headerCategorySelect'), document.getElementById('categorySelectSidebar')].filter(Boolean);
+        allSelects.forEach(s=>s.value = 'all');
+        updateURLCategory('all');
+        showActiveChip('all');
+        if(typeof renderCatalog === 'function') renderCatalog(document.getElementById('searchInput')?.value||'');
+      };
+    }
+
+    function populateCategorySelects(){
+      try{
+        const selects = [document.getElementById('categorySelect'), document.getElementById('headerCategorySelect'), document.getElementById('categorySelectSidebar')].filter(Boolean);
+        if(selects.length === 0) return;
+        if(!window.PRODUCTS || !Array.isArray(window.PRODUCTS)) return;
+        const cats = Array.from(new Set(window.PRODUCTS.map(p=> (p.category||'Otros').trim() ))).filter(Boolean).sort((a,b)=>a.localeCompare(b));
+        selects.forEach(sel=>{
+          const current = sel.value || (new URL(location.href).searchParams.get('category') || 'all');
+          sel.innerHTML = '<option value="all">Todas las categorías</option>' + cats.map(c=>`<option value="${c}">${c}</option>`).join('');
+          sel.value = current;
+          sel.onchange = function(){
+            window.currentCategory = this.value || 'all';
+            // sincronizar otros selects
+            selects.forEach(s=>{ if(s!==this) s.value = this.value; });
+            updateURLCategory(window.currentCategory);
+            showActiveChip(window.currentCategory);
+            if(typeof renderCatalog === 'function') renderCatalog(document.getElementById('searchInput')?.value||'');
+          };
+        });
+
+        // Si hay una categoría en la URL, usarla como estado inicial
+        const urlCat = new URL(location.href).searchParams.get('category');
+        if(urlCat){ window.currentCategory = urlCat; selects.forEach(s=>s.value = urlCat); }
+        showActiveChip(window.currentCategory || 'all');
+      }catch(e){ console.warn('Error populating categories', e); }
+    }
+
+    document.addEventListener('productsReady', () => populateCategorySelects());
+    document.addEventListener('DOMContentLoaded', () => setTimeout(populateCategorySelects, 60));
+  </script>
 <script>
   
     // Inicializar componentes cuando los productos estén cargados
