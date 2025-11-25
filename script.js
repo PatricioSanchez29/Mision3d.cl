@@ -1484,6 +1484,22 @@ document.addEventListener('DOMContentLoaded', ()=>{
     } catch (err) { console.warn('categoryChanged handler error', err); }
   });
 
+  // Listener global por si un <select> de categoría cambia (covers programmatic or late-bound handlers)
+  document.addEventListener('change', function (ev) {
+    try {
+      const tgt = ev && ev.target;
+      if (!tgt || !tgt.id) return;
+      const ids = ['categorySelect', 'categorySelectSidebar', 'headerCategorySelect'];
+      if (!ids.includes(tgt.id)) return;
+      const val = tgt.value || 'all';
+      try { window.currentCategory = val; } catch(e){}
+      // Ensure other selects reflect the change
+      ids.forEach(id => { const el = document.getElementById(id); if (el) el.value = val; });
+      // Trigger render (if products not ready, categoryChanged handler will wait)
+      try { window.dispatchEvent(new CustomEvent('categoryChanged', { detail: { category: val } })); } catch(e){}
+    } catch(err) { console.warn('category select change handler error', err); }
+  }, { capture: true });
+
 })( // <- FIN del wrapper: inyectamos $, $$ y money sin redeclarar globales
   window.$ || (q => document.querySelector(q)),
   window.$$ || (q => document.querySelectorAll(q)),
