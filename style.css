@@ -117,7 +117,7 @@
 .hero-media img{width:100%;height:260px;max-width:320px;object-fit:cover;border-radius:12px;box-shadow:var(--card-shadow)}
 
 /* Tipografía y contraste */
-.hero-title{font-size:2.15rem;margin:0 0 12px;color:#fff;font-weight:800}
+.hero-title{font-size:2.15rem;margin:0 0 12px;color:#ffffff;font-weight:800}
 .hero-subtitle{font-size:1.05rem;margin:0 0 16px;color:#ffffff}
 .hero-badges{display:flex;gap:8px;margin-top:8px}
 .hero-badge{background:#f8fafc;border-radius:999px;padding:5px 8px;font-weight:600;color:#334155;font-size:0.88rem;display:inline-flex;align-items:center;gap:8px}
@@ -1238,8 +1238,7 @@ body.dark .logo-img{filter:brightness(1.05);background:#fff}
   font-weight: 800;
   margin: 0 0 16px;
   line-height: 1.2;
-  color: #fff;
-  text-shadow: 0 2px 20px rgba(0,0,0,0.25);
+  text-shadow: 0 2px 20px rgba(0,0,0,0.2);
 }
 
 .hero-subtitle {
@@ -1506,7 +1505,7 @@ body.dark .login-form input{background:#1e293b;color:#e2e8f0;border-color:#33415
 .beneficios .item:hover p {
   color:#374151;
 }
-.cart{position:fixed;top:0;right:-380px;width:320px;height:100vh!important;background:#fff;box-shadow:-4px 0 12px rgba(0,0,0,.2);display:flex;flex-direction:column;transition:right .3s;z-index:10000;overflow:hidden}
+.cart{position:fixed;top:0;right:-380px;width:320px;height:100vh!important;background:#fff;box-shadow:-4px 0 12px rgba(0,0,0,.2);display:flex;flex-direction:column;transition:right .3s;z-index:13010;overflow:hidden}
 .cart.open{right:0}
 .cart-header{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid #eee;flex-shrink:0}
 .cart-header h3{font-size:1rem;margin:0}
@@ -1531,7 +1530,7 @@ body.dark #miniCart > div{background:#1e293b;border-color:#334155}
 .cart-footer .btn.primary{background:#4f46e5!important;color:#fff!important;border-radius:8px!important}
 .cart-footer .btn.outline{background:#fff!important;border:2px solid #4f46e5!important;color:#4f46e5!important;border-radius:8px!important}
 .totals{display:flex;justify-content:space-between;font-size:1rem;font-weight:700;margin-bottom:6px}
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:.3s;z-index:9998}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:.3s;z-index:13005}
 .overlay.show{opacity:1;pointer-events:auto}
 @media (max-width:480px){
   .cart{width:100vw}
@@ -4039,4 +4038,17 @@ body.dark .qv-customization small {
 @media (max-width: 480px) {
   .features, .beneficios-grid { grid-template-columns: 1fr !important; }
 }
+
+
+/* ===== Debug / Fix botones hero (móvil) =====
+   Estas reglas son defensivas: elevan el hero y los CTAs por encima de
+   overlays comunes y fuerzan pointer-events para garantizar que los taps
+   lleguen a los enlaces. Si esto soluciona el problema, podemos
+   refinar y mover a un bloque más específico. */
+.hero { position: relative; z-index: 1; pointer-events: auto; }
+.hero .hero-actions { position: relative; z-index: 2; }
+.hero .hero-actions .hero-btn,
+.hero .hero-actions a { position: relative; z-index: 3; pointer-events: auto; }
+
+
 
