@@ -506,13 +506,7 @@ function renderCatalog(filterText = ""){
     if(daysDiff <= 7) badges += `<span class="badge new">Nuevo</span>`;
     if(p.discount && p.discount>0) badges += `<span class="badge discount">-${p.discount}%</span>`;
 
-    const fullStars = Math.floor(p.stars);
-    const halfStar = p.stars % 1 >= 0.5;
-    let starsHtml = '<span class="stars">';
-    for(let i=0;i<fullStars;i++) starsHtml += '★';
-    if(halfStar) starsHtml += '☆';
-    starsHtml += '</span>';
-    const reviews = `<span class="reviews">${p.reviews} Reseña${p.reviews>1?'s':''}</span>`;
+    // Ratings/reviews removed per UX: do not render stars or review count here
 
     const priceOriginal = p.discount? `<span style="text-decoration:line-through;color:#888;font-size:.8rem;margin-right:6px">${money(p.price)}</span>`:'';
     const finalPrice = p.discount? Math.round(p.price*(1-p.discount/100)) : p.price;
@@ -551,7 +545,7 @@ function renderCatalog(filterText = ""){
           <div class="price" style="margin:0">${priceOriginal}${money(finalPrice)}</div>
           <div class="desc" style="margin:0">${desc}</div>
           ${energia} ${stockTxt}
-          <div>${starsHtml} <span style="color:#555">(${p.stars})</span> ${reviews}</div>
+          <div></div>
         </div>
         <div class="btns" style="justify-content:flex-end">
           <button class="btn-options add" data-id="${p.id}">${btnLabel}</button>
@@ -566,8 +560,7 @@ function renderCatalog(filterText = ""){
         <div class="desc">${desc}</div>
         ${energia}
         ${stockTxt}
-        ${starsHtml} <span style="color:#555">(${p.stars})</span>
-        ${reviews}
+        
         <div class="btns">
           <button class="btn-quick" data-view>Ver</button>
           <button class="btn-options add" data-id="${p.id}">${btnLabel}</button>

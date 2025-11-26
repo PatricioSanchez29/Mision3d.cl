@@ -366,7 +366,6 @@ function renderProductDetail(){
   
   info.innerHTML=`<h1>${p.name}</h1>
   <div class='badges-line'>${badges}</div>
-  <div class='rating-line'>${starsHTML(p.stars)} <span style='color:#555'>(${p.stars})</span> · <span>${p.reviews} Reseña${p.reviews>1?'s':''}</span></div>
   <div class='price-block'>${priceOriginal}<span class='price-final' id='priceDisplay'>${money(variants.length>0 ? variants[0].price : finalPrice)}</span></div>
   ${variantsHTML}
   <div class='short-desc'>${p.name.includes('Calendario')?'Calendario detallado con todos los circuitos en relieve y acabado premium.':'Producto personalizado impreso en 3D.'}</div>
