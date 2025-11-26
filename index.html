@@ -135,35 +135,43 @@
     </div>
   </section>
 
+
   <!-- Hero -->
   <section class="hero" id="hero">
-    <div class="hero-content">
-      <h2 class="hero-title">Impresión 3D Personalizada</h2>
-      <p class="hero-subtitle">Traemos tus ideas al mundo real y enviamos a todo Chile.</p>
-      <div class="hero-badges">
-        <span class="hero-badge">✨ Calidad Premium</span>
-        <span class="hero-badge">🚀 Envío Rápido</span>
-        <span class="hero-badge">💡 100% Personalizable</span>
+    <div class="hero-wrapper">
+      <div class="hero-card">
+        <div class="hero-inner">
+          <div class="hero-text">
+            <h2 class="hero-title">Impresión 3D Personalizada</h2>
+            <p class="hero-subtitle">Traemos tus ideas al mundo real y enviamos a todo Chile.</p>
+            <div class="hero-badges">
+              <span class="hero-badge">✨ Calidad Premium</span>
+              <span class="hero-badge">🚀 Envío Rápido</span>
+              <span class="hero-badge">💡 100% Personalizable</span>
+            </div>
+            <div class="hero-actions">
+              <a class="hero-btn btn primary" href="catalogo.html">Ver catálogo</a>
+              <a class="hero-btn btn outline" href="#contacto">Cotizar ahora</a>
+            </div>
+          </div>
+          <div class="hero-media" aria-hidden="true">
+            <img src="img/impresion.png" alt="Muestras de impresión 3D" loading="lazy" onerror="this.src='img/Logo_Mision3d.jpg'" />
+          </div>
+        </div>
       </div>
     </div>
-    <div class="hero-decoration"></div>
   </section>
 
-  <!-- Productos (versión simplificada inicio) -->
-  <section id="productos" class="productos">
-    <h3 class="section-title" style="text-align:center">Catálogo Destacado</h3>
-    <p class="section-subtitle" style="text-align:center">Descubre nuestros productos más populares de impresión 3D</p>
-    <div style="display:flex;justify-content:center;width:100%">
-      <div class="grid" id="homeProductsGrid" style="justify-content:center;grid-template-columns:repeat(2, minmax(220px, 1fr));max-width:500px;width:100%"></div>
+  <!-- Productos (Catálogo Destacado) -->
+  <section id="productos" class="productos featured-section">
+    <div class="featured-inner" style="max-width:1200px;margin:0 auto;padding:60px 20px">
+      <h3 class="section-title" style="text-align:center">Catálogo Destacado</h3>
+      <p class="section-subtitle" style="text-align:center">Descubre nuestros productos más populares de impresión 3D</p>
+      <div id="homeProductsGrid" class="featured-grid" style="margin-top:24px;display:grid;gap:20px"></div>
+      <div style="text-align:center;margin-top:28px">
+        <a href="catalogo.html" class="btn primary" style="padding:12px 22px;border-radius:14px">Ver todo el catálogo</a>
+      </div>
     </div>
-    <p style="margin-top:30px;text-align:center">
-      <a href="catalogo.html" class="btn-ver-mas">
-        Ver catálogo completo 
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M5 12h14M12 5l7 7-7 7"/>
-        </svg>
-      </a>
-    </p>
   </section>
 
   <!-- Beneficios -->
@@ -298,6 +306,7 @@
   </footer>
 
   <!-- Carrito -->
+  <button id="scrollTop" class="scroll-top" aria-label="Subir" title="Subir" style="display:none">▲</button>
   <!-- Carrito y modal (mismo markup que en index) -->
 <aside id="cartDrawer" class="cart">
   <div class="cart-header"><h3>Tu carrito</h3><button id="closeCart">✕</button></div>
@@ -499,8 +508,8 @@
       const basePrice = Number(p.price || 0);
       const finalPrice = hasDiscount ? Math.round(basePrice * (1 - d/100)) : basePrice;
       const priceHtml = hasDiscount
-        ? `<span style="text-decoration:line-through;color:#888;font-size:.85rem;margin-right:6px">${(window.money? window.money(basePrice) : `$${basePrice.toLocaleString('es-CL')}`)}</span>${(window.money? window.money(finalPrice) : `$${finalPrice.toLocaleString('es-CL')}`)}`
-        : (window.money? window.money(basePrice) : (basePrice? `$${basePrice.toLocaleString('es-CL')}` : 'Consultar'));
+        ? `<span class="old">${(window.money? window.money(basePrice) : `$${basePrice.toLocaleString('es-CL')}`)}</span><span class="new">${(window.money? window.money(finalPrice) : `$${finalPrice.toLocaleString('es-CL')}`)}</span>`
+        : `<span class="new">${(window.money? window.money(basePrice) : (basePrice? `$${basePrice.toLocaleString('es-CL')}` : 'Consultar'))}</span>`;
       return `
         <div class="card">
           <a href="producto.html?id=${p.id}" class="prod-link">
@@ -510,7 +519,7 @@
             <a href="producto.html?id=${p.id}" class="prod-link">${p.name}</a>
           </h4>
           <p>${desc}</p>
-          ${hasDiscount ? '<span class="badge discount">-' + d + '%</span>' : ''}
+          ${hasDiscount ? '<span class="badge badge--sale">-' + d + '%</span>' : ''}
           <strong class="price">${priceHtml}</strong>
           <button class="add" data-id="${p.id}">Agregar</button>
         </div>
@@ -586,4 +595,19 @@
 <!-- Wishlist (favoritos) también en home -->
 <script src="wishlist.js"></script>
 <!-- Scripts página producto -->
+<script>
+  // Scroll to top button behavior
+  (function(){
+    const btn = document.getElementById('scrollTop');
+    if(!btn) return;
+    function onScroll(){
+      if(window.scrollY > 240) { btn.style.display = 'flex'; }
+      else { btn.style.display = 'none'; }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    btn.addEventListener('click', ()=>{ window.scrollTo({top:0,behavior:'smooth'}); });
+    // initial check
+    onScroll();
+  })();
+</script>
 </body></html>

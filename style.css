@@ -102,14 +102,70 @@
 	transform: translateY(-2px);
 	box-shadow: 0 4px 12px rgba(236, 72, 153, 0.4);
 }
+/* ================= Hero mejorado (wow) ================= */
+:root{ --card-shadow: 0 20px 40px rgba(2,6,23,0.035); }
+
+/* Hero: gradient más suave y overlay sutil */
+.hero{background:linear-gradient(180deg, rgba(124,58,237,0.03) 0%, rgba(99,102,241,0.02) 100%);padding:80px 16px;margin-bottom:32px}
+.hero-wrapper{max-width:1200px;margin:0 auto}
+.hero-card{background:rgba(255,255,255,0.98);backdrop-filter:blur(6px);border-radius:22px;padding:40px;box-shadow:var(--card-shadow);overflow:hidden}
+/* Asegurar que el hero recibe los clics por encima de overlays decorativos */
+.hero-card{position:relative;z-index:1001}
+.hero-inner{display:flex;gap:36px;align-items:center}
+.hero-text{flex:1;max-width:900px}
+.hero-media{flex:0 0 340px;display:flex;align-items:center;justify-content:center}
+.hero-media img{width:100%;height:260px;max-width:320px;object-fit:cover;border-radius:12px;box-shadow:var(--card-shadow)}
+
+/* Tipografía y contraste */
+.hero-title{font-size:2.15rem;margin:0 0 12px;color:#071227;font-weight:800}
+.hero-subtitle{font-size:1.05rem;margin:0 0 16px;color:#2f3a43}
+.hero-badges{display:flex;gap:8px;margin-top:8px}
+.hero-badge{background:#f8fafc;border-radius:999px;padding:5px 8px;font-weight:600;color:#334155;font-size:0.88rem;display:inline-flex;align-items:center;gap:8px}
+
+/* CTAs: jerarquía clara */
+.hero-cta{display:flex;gap:14px;margin-top:20px}
+.hero-actions{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:20px}
+.hero-actions .hero-btn{width:100%;max-width:280px;text-align:center}
+.btn{display:inline-flex;align-items:center;gap:10px;padding:12px 20px;border-radius:14px;text-decoration:none;font-weight:800;font-size:1.03rem}
+.btn.primary{background:linear-gradient(135deg,#7c3aed 0%, #6d28d9 100%);color:#fff;border:1px solid transparent}
+.btn.primary:hover{transform:translateY(-2px);box-shadow:0 14px 36px rgba(99,102,241,0.10)}
+.btn.outline{background:#fff;border:2px solid #8b5cf6;color:#5b21b6}
+.btn.outline:hover{background:#fbfbff}
+
+@media (max-width: 980px){
+  /* En móviles, colocar texto arriba y media abajo (column) */
+  .hero-inner{flex-direction:column;padding:8px}
+  .hero-media{flex:0 0 auto;width:100%}
+  .hero-media img{height:auto;max-width:80%;margin:0 auto 16px;display:block}
+  .hero-card{padding:18px}
+  .hero-title{font-size:1.6rem;text-align:center}
+  .hero-subtitle, .hero-badges{text-align:center}
+  /* CTA full width en mobile */
+  .hero-cta{flex-direction:column;gap:8px}
+  .hero-cta .btn{width:100%;justify-content:center}
+  /* Center hero buttons but keep max-width so they don't stick to edges */
+  .hero-actions{align-items:center}
+  .hero-actions .hero-btn{width:100%;max-width:280px}
+}
+
+@media (max-width:768px){
+  .hero-card{padding:20px 16px}
+}
+
+/* Opción simple: ocultar la imagen del hero en pantallas móviles */
+@media (max-width: 768px) {
+  .hero-media, .hero-image-wrapper { display: none !important; }
+}
+
+
 .search-header {
-	position: relative;
-	display: flex;
-	flex-direction: column;
-	align-items: stretch;
-	margin-right: 16px;
-	max-width: 500px;
-	flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  margin-right: 16px;
+  max-width: 500px;
+  flex: 1;
 }
 
 .advanced-search-bar {
@@ -122,6 +178,14 @@
 	transition: all 0.2s;
 	height: 42px;
 	box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+@media (max-width: 768px) {
+  .advanced-search-bar, .search-header {
+    height: 38px !important;
+    margin: 0 12px !important;
+    max-width: 100% !important;
+  }
 }
 
 .advanced-search-bar:focus-within {
@@ -356,6 +420,26 @@ body.dark .trend-chip:hover { background: #1f2937; border-color: #4b5563; }
   .catalog-sidebar { display: none; }
 }
 
+/* Header: limitar ancho del buscador y posicionarlo a la derecha en desktop */
+.header .search-header{ flex: 0 0 65%; max-width:65%; margin-left:auto; margin-right:12px }
+.header .nav{ flex:0 0 auto }
+
+/* En móvil, dejar comportamiento original (buscador ocupa ancho completo) */
+@media (max-width: 768px){
+  .header .search-header{ flex:1; max-width:100%; margin-left:0; margin-right:0 }
+}
+
+/* Si hay overlays decorativos sobre el hero, evitar que roben clics */
+.hero-overlay{pointer-events:none}
+
+/* Asegurar que los enlaces del hero sean clickeables */
+.hero-actions .hero-btn, .hero-actions a { pointer-events: auto }
+
+/* Estilos para la barra de anuncio simplificada */
+.announcement-bar.simple{ background:transparent; border-top:1px solid rgba(15,23,42,0.04); border-bottom:1px solid rgba(15,23,42,0.04); margin-top:18px }
+.announcement-bar.simple .container{ color:#0f172a; background:transparent }
+
+
 @media (max-width: 768px) {
   .trend-chips { gap: 4px; }
   .trend-chip { padding: 5px 9px; font-size: 0.78rem; }
@@ -502,6 +586,20 @@ body.dark .trend-chip:hover { background: #1f2937; border-color: #4b5563; }
 }
 
 /* Fin: mejoras móviles para producto */
+
+/* Centrar bloque de botones en ficha de producto (mobile) */
+@media (max-width: 768px) {
+  .action-buttons {
+    align-items: center;
+  }
+  .action-buttons .btn-primary,
+  .action-buttons .btn-outline,
+  .action-buttons button {
+    max-width: 320px;
+    width: 100%;
+    margin: 0 auto;
+  }
+}
 
 .search-suggestions {
 	position: absolute;
@@ -909,6 +1007,54 @@ body.dark .announcement-bar{background:linear-gradient(90deg,#0891b2,#0e7490)}
 .filter-content{display:flex;flex-direction:column;gap:10px}
 .price-field{display:flex;align-items:center;gap:4px;font-size:.82rem;color:#374151}
 .price-field input{flex:1;padding:8px 10px;border:1px solid #d1d5db;border-radius:8px;font-size:.8rem}
+
+/* ========== Featured catalog styles ========== */
+.featured-section{background:#f7f7f7}
+.featured-section .featured-inner{padding-top:60px;padding-bottom:60px}
+.featured-section .section-title{color:#6d28d9;font-size:1.9rem;margin:0 0 6px}
+.featured-section .section-subtitle{color:#4b5563;font-size:0.98rem;margin:0 0 18px}
+
+.featured-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;max-width:1200px;margin:0 auto}
+
+/* Product card refinements */
+.featured-grid .card, .productos .card{border-radius:var(--radius-lg);transition:transform .25s ease, box-shadow .25s ease;position:relative}
+.featured-grid .card:hover, .productos .card:hover{transform:scale(1.02);box-shadow:0 18px 40px rgba(2,6,23,0.07)}
+.featured-grid .card img, .productos .card img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:calc(var(--radius-lg) - 4px)}
+
+/* Title clamp to 2 lines */
+.featured-grid .card .name, .productos .card .name{font-weight:600;color:#0f172a;margin-top:8px;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden;-webkit-line-clamp:2}
+.featured-grid .card .desc, .productos .card .desc{font-size:0.92rem;color:#4b5563;margin-top:6px}
+.featured-grid .card .price strong, .productos .card .price strong{font-size:1.18rem;font-weight:800;color:#071227}
+.featured-grid .card .price .old{font-size:0.95rem;color:#9ca3af;text-decoration:line-through;margin-right:8px}
+.featured-grid .card .price .new{font-size:1.18rem;font-weight:800;color:var(--primary-purple)}
+
+/* Full width add button inside cards */
+.featured-grid .card .btns{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.featured-grid .card .btn-options.add, .productos .card .btn-options.add{width:100%;display:inline-flex;justify-content:center;align-items:center;padding:10px 12px;border-radius:14px;font-weight:800}
+.featured-grid .card .btn-options.add::before{content:'🛒';margin-right:8px}
+
+/* Badges / labels top-right */
+.featured-grid .card .badge-wrap{position:absolute;top:12px;right:12px;display:flex;flex-direction:column;gap:8px}
+.featured-grid .card .badge{padding:6px 10px;border-radius:999px;font-size:0.78rem;font-weight:700}
+.featured-grid .card .badge--sale{background:#ef4444;color:#fff}
+.featured-grid .card .badge--new{background:#06b6d4;color:#fff}
+.featured-grid .card .badge--stock{background:#10b981;color:#fff}
+
+/* Ver todo button align */
+.featured-section .btn.primary{background:linear-gradient(135deg,#7c3aed 0%, #6d28d9 100%);color:#fff}
+
+/* Scroll-to-top button */
+.scroll-top{position:fixed;right:18px;bottom:18px;width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;border:none;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 12px 30px rgba(99,102,241,0.12);z-index:999}
+.scroll-top.hidden{display:none}
+
+:root{--primary-purple:#6d28d9;--radius-lg:14px;--card-shadow:0 18px 40px rgba(2,6,23,0.07)}
+.btn{border-radius:var(--radius-lg)}
+.card{border-radius:var(--radius-lg)}
+
+@media (min-width:1300px){
+  .featured-grid{grid-template-columns:repeat(4,1fr);max-width:1400px}
+}
+
 .chk{font-size:.8rem;display:flex;gap:6px;align-items:center;color:#374151}
 .catalog-controls-advanced{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;margin-bottom:18px}
 .catalog-controls-advanced .left{display:flex;flex-direction:row;gap:12px;align-items:center;flex-wrap:wrap;flex:1}
@@ -3846,5 +3992,50 @@ body.dark .qv-customization small {
   to {
     opacity: 1;
   }
+}
+
+/* Custom mobile tweaks requested by user */
+@media (max-width: 768px) {
+  /* Announcement bar: slightly smaller and less vertical padding */
+  .announcement-bar { font-size: 0.75rem !important; padding: 6px 0 !important; }
+
+  /* Search bar compact */
+  .advanced-search-bar { height: 38px !important; }
+
+  /* Featured / catalog cards: reduce lateral margins so cards occupy more width */
+  .featured-grid, .catalog-grid { gap: 16px; padding: 0 8px; }
+  .featured-grid .card, .productos .card, .catalog-grid .card { margin: 0 12px 20px; }
+
+  /* Ver todo: más impacto en mobile */
+  .featured-section .btn.primary { width: 90%; margin: 18px auto 0; display: block; }
+
+  /* Features / beneficios: 1 columna en pantallas pequeñas */
+  .features, .features-grid, .beneficios-grid { grid-template-columns: 1fr !important; }
+
+  /* Sobre Mision3D: mejor lectura y centrado */
+  #nosotros { max-width: 90%; margin: 0 auto; }
+  #nosotros p { line-height: 1.6; }
+
+  /* Botones de contacto apilados y full-width */
+  .contacto .btn, .contact-buttons a { display: block; width: 100%; margin-bottom: 8px; }
+
+  /* Ajuste botón flotante para que no tape elementos en mobile */
+  .scroll-top { bottom: 80px !important; right: 16px !important; width: 44px !important; height: 44px !important; }
+}
+
+/* Ajustes específicos para el hero y scroll button en pantallas <=768px */
+@media (max-width: 768px) {
+  /* Imagen del hero un poco más pequeña para evitar empujar el catálogo */
+  .hero-media img, .hero-image { max-width: 70% !important; margin: 16px auto 0 !important; height: auto !important; display:block }
+
+  /* Asegurar que las imágenes de las cards mantengan un aspect-ratio uniforme (4:3) */
+  .card img, .featured-grid .card img, .productos .card img { aspect-ratio: 4 / 3; object-fit: cover; height: auto; }
+
+  /* Ajustar el botón creado por JS (#scrollToTop) si existe */
+  #scrollToTop { bottom: 80px !important; right: 16px !important; width: 44px !important; height: 44px !important; }
+}
+
+@media (max-width: 480px) {
+  .features, .beneficios-grid { grid-template-columns: 1fr !important; }
 }
 

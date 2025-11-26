@@ -5,6 +5,10 @@
 
 // ===== SCROLL TO TOP BUTTON =====
 (function() {
+  // Crear botón si no existe (si ya hay un botón con id `scrollTop`, no creamos otro)
+  if (document.getElementById('scrollTop') || document.getElementById('scrollToTop')) {
+    return;
+  }
   // Crear botón si no existe
   if (!document.getElementById('scrollToTop')) {
     const btn = document.createElement('button');
