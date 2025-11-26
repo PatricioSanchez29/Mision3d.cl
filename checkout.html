@@ -413,17 +413,8 @@
   <script src="script.js?v=20251106-2"></script>
 </main>
 <script>
-// Fallback: si por algún motivo script.js no definió PRODUCTS (error de carga / ruta), definimos un mínimo
-if (typeof window.PRODUCTS === 'undefined') {
-  console.warn('[checkout] PRODUCTS indefinido, usando fallback mínimo');
-  window.PRODUCTS = [
-    {id:'f1', name:'Calendario Formula 1', price:12990, img:'img/calendario-f1.png'},
-    {id:'bey', name:'Caja Beyblade', price:12990, img:'img/caja-beyblade.png'},
-    {id:'pet', name:'Figura Mascota', price:24990, img:'img/mascota.png'},
-    {id:'poke', name:'Pokebola', price:6990, img:'img/pokebola.png'},
-    {id:'key', name:'Llavero', price:4990, img:'img/llavero.png'}
-  ];
-}
+// Si por algún motivo script.js no definió PRODUCTS, inicializar vacío.
+window.PRODUCTS = window.PRODUCTS || [];
 // === Códigos de descuento ===
 const DISCOUNT_CODES = {
   "BIENVENIDO10": { type:'percent', value:10, desc:'10% de descuento' },

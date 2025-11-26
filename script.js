@@ -267,44 +267,42 @@ function showSearchSuggestions(text) {
   });
 }
 
-/* ==================== Fallback de productos ==================== */
-// Campos extra: category, dateAdded (YYYY-MM-DD), discount (% entero)
-// Productos por defecto (se pueden sobreescribir por localStorage o Firebase)
-// Productos por defecto (se pueden sobreescribir por localStorage)
-// IMPORTANTE: Si existe una versión en localStorage, usarla temporalmente
-window.PRODUCTS = window.PRODUCTS || [
-  {id:'f1',  name:'Calendario Formula 1', price:12990, img:'img/calendario-f1.png', stars:5, reviews:3, stock:'disponible', category:'Calendarios',    dateAdded:'2025-08-25', discount:0},
-  {id:'bey', name:'Caja Beyblade',        price:12990, img:'img/caja-beyblade.png',stars:5, reviews:5, stock:'disponible', category:'Cajas',          dateAdded:'2025-09-05', discount:0},
-  {id:'pet', name:'Figura Mascota',       price:24990, img:'img/mascota.png',      stars:5, reviews:2, stock:'disponible', category:'Figuras',        dateAdded:'2025-09-10', discount:0},
-  {id:'poke',name:'Pokebola',             price: 6990, img:'img/pokebola.png',     stars:5, reviews:2, stock:'bajo',        category:'Coleccionables', dateAdded:'2025-07-30', discount:0},
-  {id:'key', name:'Llavero',              price: 4990, img:'img/llavero.png',      stars:5, reviews:1, stock:'disponible',  category:'Accesorios',     dateAdded:'2025-09-12', discount:15},
-];
+/* ==================== Productos: inicialización ==================== */
+// No incluir productos de ejemplo en producción. Inicializamos PRODUCTS vacío
+// y dejamos que el loader (Supabase/API) lo rellene.
+window.PRODUCTS = window.PRODUCTS || [];
 
 // IMPORTANTE: Si existe una versión en localStorage Y NO se ha cargado desde Firebase,
 // usarla temporalmente (Firebase la sobrescribirá cuando cargue)
 try {
-  const ls = localStorage.getItem('PRODUCTS');
-  if (ls) {
-    const parsed = JSON.parse(ls);
-    if (Array.isArray(parsed) && parsed.length) {
-      // Normalizar campos mínimos para el catálogo
-      window.PRODUCTS = parsed.map(p => ({
-        id: p.id || ('p' + Date.now()),
-        name: p.name || 'Producto',
-        price: Number(p.price) || 0,
-        img: p.img || 'img/placeholder.png',
-        stars: Number(p.stars ?? 5),
-        reviews: Number(p.reviews ?? 0),
-        stock: p.stock || 'disponible',
-        category: p.category || 'Otros',
-        dateAdded: p.dateAdded || new Date().toISOString().slice(0,10),
+  // Solo usar localStorage como fallback en entornos de desarrollo
+  const _isDevLocal = (location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.protocol === 'file:');
+  if (_isDevLocal) {
+    const ls = localStorage.getItem('PRODUCTS');
+    if (ls) {
+      const parsed = JSON.parse(ls);
+      if (Array.isArray(parsed) && parsed.length) {
+        // Normalizar campos mínimos para el catálogo
+        window.PRODUCTS = parsed.map(p => ({
+          id: p.id || ('p' + Date.now()),
+          name: p.name || 'Producto',
+          price: Number(p.price) || 0,
+          img: p.img || 'img/placeholder.png',
+          stars: Number(p.stars ?? 5),
+          reviews: Number(p.reviews ?? 0),
+          stock: p.stock || 'disponible',
+          category: p.category || 'Otros',
+          dateAdded: p.dateAdded || new Date().toISOString().slice(0,10),
           discount: Number(p.discount ?? 0),
           // Mantener galería si existe (array o string JSON)
           gallery: (typeof p.gallery !== 'undefined') ? p.gallery : undefined,
           // Mantener variantes si existen (array o string JSON)
           variants: (typeof p.variants !== 'undefined') ? p.variants : undefined
-      }));
+        }));
+      }
     }
+  } else {
+    // En producción ignoramos cualquier PRODUCTS guardado en localStorage para evitar mostrar demos antiguos
   }
 } catch {}
 
