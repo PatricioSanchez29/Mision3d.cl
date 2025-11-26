@@ -117,8 +117,8 @@
 .hero-media img{width:100%;height:260px;max-width:320px;object-fit:cover;border-radius:12px;box-shadow:var(--card-shadow)}
 
 /* Tipografía y contraste */
-.hero-title{font-size:2.15rem;margin:0 0 12px;color:#071227;font-weight:800}
-.hero-subtitle{font-size:1.05rem;margin:0 0 16px;color:#2f3a43}
+.hero-title{font-size:2.15rem;margin:0 0 12px;color:#fff;font-weight:800}
+.hero-subtitle{font-size:1.05rem;margin:0 0 16px;color:#ffffff}
 .hero-badges{display:flex;gap:8px;margin-top:8px}
 .hero-badge{background:#f8fafc;border-radius:999px;padding:5px 8px;font-weight:600;color:#334155;font-size:0.88rem;display:inline-flex;align-items:center;gap:8px}
 
@@ -1238,7 +1238,8 @@ body.dark .logo-img{filter:brightness(1.05);background:#fff}
   font-weight: 800;
   margin: 0 0 16px;
   line-height: 1.2;
-  text-shadow: 0 2px 20px rgba(0,0,0,0.2);
+  color: #fff;
+  text-shadow: 0 2px 20px rgba(0,0,0,0.25);
 }
 
 .hero-subtitle {
