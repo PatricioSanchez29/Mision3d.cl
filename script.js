@@ -522,108 +522,92 @@ function renderCatalog(filterText = ""){
     if(p.gallery) {
       if(Array.isArray(p.gallery)) {
         galleryCount = p.gallery.filter(url => url && url.trim() !== '').length;
-      } else if(typeof p.gallery === 'string') {
-        try {
-          const parsed = JSON.parse(p.gallery);
-          galleryCount = Array.isArray(parsed) ? parsed.filter(url => url && url.trim() !== '').length : 0;
-        } catch(e) {
-          galleryCount = 0;
+      // Agrupar productos por 'problema / uso' para mostrar bloques temáticos
+      const GROUP_DEFS = [
+        { key: 'regalos_navidad', title: 'Regalos de Navidad', keywords: ['navidad', 'regalo', 'christmas', 'calendario'] },
+        { key: 'para_mascotas', title: 'Para mascotas', keywords: ['mascota', 'pet', 'perro', 'gato'] },
+        { key: 'gamers_geeks', title: 'Gamers & geeks', keywords: ['pokemon', 'pokebola', 'mario', 'beyblade', 'nerd', 'gamer'] },
+        { key: 'decoracion_hogar', title: 'Decoración hogar', keywords: ['decor', 'decoración', 'adorno', 'decoracion', 'hogar'] },
+        { key: 'organizacion', title: 'Organización / funcional', keywords: ['organiza', 'organizador', 'soporte', 'funcional', 'util'] }
+      ];
+
+      function detectGroupForProduct(p){
+        const name = (p.name||'').toLowerCase();
+        const cat = (p.category||'').toLowerCase();
+        const tags = ((p.tags && Array.isArray(p.tags)) ? p.tags.join(' ') : (p.tags||'')).toLowerCase();
+        for(const g of GROUP_DEFS){
+          for(const kw of g.keywords){
+            if(name.includes(kw) || cat.includes(kw) || tags.includes(kw)) return g.key;
+          }
         }
+        return 'otros';
       }
-    }
-    const galleryIndicator = galleryCount > 0 ? `<div class="gallery-indicator" title="${galleryCount + 1} fotos">📸 ${galleryCount + 1}</div>` : '';
 
-    // Determinar texto del botón según cantidad de variantes
-    let vCount = 0;
-    if (p.variants && Array.isArray(p.variants)) {
-      vCount = p.variants.length;
-    } else if (p.variants && typeof p.variants === 'string') {
-      try { const parsed = JSON.parse(p.variants); if (Array.isArray(parsed)) vCount = parsed.length; } catch {}
-    }
-    const btnLabel = vCount >= 2 ? 'Elegir opciones' : 'Agregar';
-
-    if(viewMode==='list'){
-      card.innerHTML = `
-        <img src="${p.img}" loading="lazy" data-link>
-        <div class="badge-wrap">${badges}${galleryIndicator}</div>
-        <div class="name" style="font-size:1.15rem;font-weight:600">${p.name}</div>
-        <div style="display:flex;flex-direction:column;gap:4px">
-          <div class="price" style="margin:0">${priceOriginal}${money(finalPrice)}</div>
-          <div class="desc" style="margin:0">${desc}</div>
-          ${energia} ${stockTxt}
-          <div>${starsHtml} <span style="color:#555">(${p.stars})</span> ${reviews}</div>
-        </div>
-        <div class="btns" style="justify-content:flex-end">
-          <button class="btn-options add" data-id="${p.id}">${btnLabel}</button>
-          <button class="btn-options" data-view id="view-${p.id}">Ver</button>
-        </div>`;
-    } else {
-      card.innerHTML = `
-        <img src="${p.img}" loading="lazy" data-link>
-        <div class="badge-wrap">${badges}${galleryIndicator}</div>
-        <div class="price">${priceOriginal}${money(finalPrice)}</div>
-        <div class="name" data-link>${p.name}</div>
-        <div class="desc">${desc}</div>
-        ${energia}
-        ${stockTxt}
-        ${starsHtml} <span style="color:#555">(${p.stars})</span>
-        ${reviews}
-        <div class="btns">
-          <button class="btn-quick" data-view>Ver</button>
-          <button class="btn-options add" data-id="${p.id}">${btnLabel}</button>
-        </div>`;
-    }
-
-    grid.appendChild(card);
-    card.querySelectorAll('[data-link],[data-view]').forEach(el=>{
-      el.style.cursor='pointer';
-      el.addEventListener('click', ()=>{
-        if(el.classList.contains('add')) return;
-        window.location.href = `producto.html?id=${p.id}`;
+      // Construir mapa de grupos en el orden definido
+      const groupsMap = {};
+      for(const g of GROUP_DEFS) groupsMap[g.key] = { title: g.title, items: [] };
+      groupsMap['otros'] = { title: 'Otros', items: [] };
+      productos.forEach(p => {
+        const gk = detectGroupForProduct(p);
+        groupsMap[gk] = groupsMap[gk] || { title: gk, items: [] };
+        groupsMap[gk].items.push(p);
       });
-    });
-    // Adjuntar carrusel en hover a la imagen principal de la card
-    const imgEl = card.querySelector('img');
-    attachHoverCarousel(imgEl, p);
-  });
 
-  $$('.add').forEach(b=>b.onclick=()=>add(b.dataset.id));
-  renderCatalog._loading = false;
-}
+      // Renderizar cada grupo como un bloque con título y una grilla interna
+      Object.keys(groupsMap).forEach(key => {
+        const grp = groupsMap[key];
+        if(!grp.items || grp.items.length===0) return;
 
-/* ==================== Regiones y comunas ==================== */
-const REGIONES_COMUNAS = {
-  "Arica y Parinacota": ["Arica","Camarones","Putre","General Lagos"],
-  "Tarapacá": ["Iquique","Alto Hospicio","Pozo Almonte","Camiña","Colchane","Huara","Pica"],
-  "Antofagasta": ["Antofagasta","Mejillones","Sierra Gorda","Taltal","Calama","Ollagüe","San Pedro de Atacama","Tocopilla","María Elena"],
-  "Atacama": ["Copiapó","Caldera","Tierra Amarilla","Chañaral","Diego de Almagro","Vallenar","Alto del Carmen","Freirina","Huasco"],
-  "Coquimbo": ["La Serena","Coquimbo","Andacollo","La Higuera","Paiguano","Vicuña","Illapel","Canela","Los Vilos","Salamanca","Ovalle","Combarbalá","Monte Patria","Punitaqui","Río Hurtado"],
-  "Valparaíso": ["Valparaíso","Casablanca","Concón","Juan Fernández","Puchuncaví","Quintero","Viña del Mar","Isla de Pascua","Los Andes","Calle Larga","Rinconada","San Esteban","La Ligua","Cabildo","Papudo","Petorca","Zapallar","Quillota","La Calera","La Cruz","Nogales","San Antonio","Algarrobo","Cartagena","El Quisco","El Tabo","Santo Domingo","San Felipe","Catemu","Llaillay","Panquehue","Putaendo","Santa María"],
-  "Metropolitana de Santiago": ["Cerrillos","Cerro Navia","Conchalí","El Bosque","Estación Central","Huechuraba","Independencia","La Cisterna","La Florida","La Granja","La Pintana","La Reina","Las Condes","Lo Barnechea","Lo Espejo","Lo Prado","Macul","Maipú","Ñuñoa","Pedro Aguirre Cerda","Peñalolén","Providencia","Pudahuel","Quilicura","Quinta Normal","Recoleta","Renca","San Joaquín","San Miguel","San Ramón","Vitacura","Puente Alto","Pirque","San José de Maipo","Colina","Lampa","Tiltil","San Bernardo","Buin","Calera de Tango","Paine","Melipilla","Alhué","Curacaví","María Pinto","San Pedro","Talagante","El Monte","Isla de Maipo","Padre Hurtado","Peñaflor"],
-  "O'Higgins": ["Rancagua","Codegua","Coinco","Coltauco","Doñihue","Graneros","Las Cabras","Machalí","Malloa","Mostazal","Olivar","Peumo","Pichidegua","Quinta de Tilcoco","Rengo","Requínoa","San Vicente","Pichilemu","La Estrella","Litueche","Marchihue","Navidad","Paredones","San Fernando","Chépica","Chimbarongo","Lolol","Nancagua","Palmilla","Peralillo","Placilla","Pumanque","Santa Cruz"],
-  "Maule": ["Talca","Constitución","Curepto","Empedrado","Maule","Pelarco","Pencahue","Río Claro","San Clemente","San Rafael","Cauquenes","Chanco","Pelluhue","Curicó","Hualañé","Licantén","Molina","Rauco","Romeral","Sagrada Familia","Teno","Vichuquén","Linares","Colbún","Longaví","Parral","Retiro","San Javier","Villa Alegre","Yerbas Buenas"],
-  "Ñuble": ["Chillán","Bulnes","Cobquecura","Coelemu","Coihueco","El Carmen","Ninhue","Ñiquén","Pemuco","Pinto","Quillón","Quirihue","Ránquil","San Carlos","San Fabián","San Ignacio","San Nicolás","Treguaco","Yungay"],
-  "Biobío": ["Concepción","Coronel","Chiguayante","Florida","Hualqui","Lota","Penco","San Pedro de la Paz","Santa Juana","Talcahuano","Tomé","Hualpén","Lebu","Arauco","Cañete","Contulmo","Curanilahue","Los Álamos","Tirúa","Los Ángeles","Antuco","Cabrero","Laja","Mulchén","Nacimiento","Negrete","Quilaco","Quilleco","San Rosendo","Santa Bárbara","Tucapel","Yumbel","Alto Biobío"],
-  "La Araucanía": ["Temuco","Carahue","Cunco","Curarrehue","Freire","Galvarino","Gorbea","Lautaro","Loncoche","Melipeuco","Nueva Imperial","Padre Las Casas","Perquenco","Pitrufquén","Pucón","Saavedra","Teodoro Schmidt","Toltén","Vilcún","Villarrica","Cholchol","Angol","Collipulli","Ercilla","Lonquimay","Los Sauces","Purén","Renaico","Traiguén","Victoria"],
-  "Los Ríos": ["Valdivia","Corral","Lanco","Los Lagos","Máfil","Mariquina","Paillaco","Panguipulli","La Unión","Futrono","Lago Ranco","Río Bueno"],
-  "Los Lagos": ["Puerto Montt","Calbuco","Cochamó","Fresia","Frutillar","Los Muermos","Llanquihue","Maullín","Puerto Varas","Castro","Ancud","Chonchi","Curaco de Vélez","Dalcahue","Puqueldón","Queilén","Quellón","Quemchi","Quinchao","Osorno","Puerto Octay","Purranque","Puyehue","Río Negro","San Juan de la Costa","San Pablo"],
-  "Aysén": ["Coyhaique","Lago Verde","Aysén","Cisnes","Guaitecas","Río Ibáñez","Chile Chico","Cochrane","O'Higgins","Tortel"],
-  "Magallanes": ["Punta Arenas","Laguna Blanca","Río Verde","San Gregorio","Cabo de Hornos","Antártica","Porvenir","Primavera","Timaukel","Natales","Torres del Paine"],
-};
-function fillRegionesComunas(){
-  const regionSel = $('#inputRegion');
-  const comunaSel = $('#inputComuna');
-  if(!regionSel || !comunaSel) return;
-  regionSel.innerHTML = '<option value="">Selecciona región</option>';
-  comunaSel.innerHTML = '<option value="">Selecciona comuna</option>';
-  Object.keys(REGIONES_COMUNAS).forEach(region=>{
-    const opt = document.createElement('option');
-    opt.value = region; opt.textContent = region;
-    regionSel.appendChild(opt);
-  });
-  regionSel.onchange = function(){
-    const comunas = REGIONES_COMUNAS[this.value] || [];
-    comunaSel.innerHTML = '<option value="">Selecciona comuna</option>';
+        const section = document.createElement('section');
+        section.className = 'catalog-group';
+        const header = document.createElement('div');
+        header.style.display = 'flex';
+        header.style.justifyContent = 'space-between';
+        header.style.alignItems = 'center';
+        header.style.margin = '18px 0 8px';
+        header.innerHTML = `<h3 style="margin:0;font-size:1.3rem;color:#111">${grp.title}</h3><a href="#" style="font-size:.9rem;color:#4f46e5;text-decoration:none">Ver todo</a>`;
+        section.appendChild(header);
+
+        const inner = document.createElement('div');
+        inner.className = 'featured-grid';
+        inner.style.display = 'grid';
+        inner.style.gridTemplateColumns = 'repeat(auto-fit,minmax(220px,1fr))';
+        inner.style.gap = '18px';
+
+        grp.items.forEach(p => {
+          const card = document.createElement('div');
+          card.className = 'card';
+          const desc =
+            p.name.includes('Calendario') ? 'Calendario 3D con circuitos' :
+            p.name.includes('Beyblade')   ? 'Personalizable con tu nombre' :
+            p.name.includes('Mascota')    ? 'Tu mascota en 3D' :
+            p.name.includes('Pokebola')   ? 'Pokebola coleccionable' : 'Personalizado con tu logo';
+          const d = Number(p.discount || 0);
+          const hasDiscount = Number.isFinite(d) && d > 0;
+          const basePrice = Number(p.price || 0);
+          const finalPrice = hasDiscount ? Math.round(basePrice * (1 - d/100)) : basePrice;
+          const priceHtml = hasDiscount
+            ? `<span class="old">${(window.money? window.money(basePrice) : `$${basePrice.toLocaleString('es-CL')}`)}</span><span class="new">${(window.money? window.money(finalPrice) : `$${finalPrice.toLocaleString('es-CL')}`)}</span>`
+            : `<span class="new">${(window.money? window.money(basePrice) : (basePrice? `$${basePrice.toLocaleString('es-CL')}` : 'Consultar'))}</span>`;
+          card.innerHTML = `
+            <a href="producto.html?id=${p.id}" class="prod-link"><img src="${p.img||'img/placeholder.png'}" alt="${p.name}" loading="lazy"></a>
+            <h4><a href="producto.html?id=${p.id}" class="prod-link">${p.name}</a></h4>
+            <p>${desc}</p>
+            ${hasDiscount ? '<span class="badge badge--sale">-' + d + '%</span>' : ''}
+            <strong class="price">${priceHtml}</strong>
+            <button class="add" data-id="${p.id}">Agregar</button>
+          `;
+          inner.appendChild(card);
+        });
+
+        section.appendChild(inner);
+        grid.appendChild(section);
+      });
+
+      // Atachar eventos 'add' en todos los botones creados
+      grid.querySelectorAll('.add').forEach(b=>b.addEventListener('click', ()=>add(b.dataset.id)));
+      renderCatalog._loading = false;
+      return;
     comunas.forEach(comuna=>{
       const opt = document.createElement('option');
       opt.value = comuna; opt.textContent = comuna;
