@@ -349,6 +349,14 @@ function renderProductDetail(){
       variants = [];
     }
   }
+  // Normalizar precios de variantes y calcular precio mostrado aplicando descuento del producto si existe
+  if (variants && variants.length > 0) {
+    variants = variants.map(v => {
+      const basePrice = (typeof v.price !== 'undefined' && v.price !== null) ? Number(v.price) : Number(p.price || 0);
+      const displayPrice = p.discount ? Math.round(basePrice * (1 - Number(p.discount) / 100)) : basePrice;
+      return Object.assign({}, v, { _basePrice: basePrice, _displayPrice: displayPrice });
+    });
+  }
   
   // Galería: combina imagen principal + imágenes de variantes + galería adicional
   let galleryImages = [p.img]; // Siempre incluir imagen principal
@@ -397,7 +405,7 @@ function renderProductDetail(){
     variantsHTML = `
       <div class='variants-section'>
         <label class='variants-label'>Modelos:</label>
-        <div class='variants-grid' id='variantsGrid'>${variants.map((v,i)=>`<button class='variant-btn ${i===0?'active':''}' data-index='${i}' data-price='${v.price}'>${v.name}</button>`).join('')}</div>
+        <div class='variants-grid' id='variantsGrid'>${variants.map((v,i)=>`<button class='variant-btn ${i===0?'active':''}' data-index='${i}' data-price='${v._displayPrice}'>${v.name}</button>`).join('')}</div>
         <div id="customNoteWrap" style="display:none;margin-top:10px">
           <label class='variants-label' style="margin-bottom:6px">Personaliza tu calendario</label>
           <input id="customNoteInput" type="text" placeholder="Escribe nombre/texto para personalizar (máx 15 letras)" maxlength="15" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:.95rem">
@@ -409,7 +417,7 @@ function renderProductDetail(){
   
   info.innerHTML=`<h1 class='product-title'>${p.name}</h1>
   <div class='badges-line'>${badges}</div>
-  <div class='price-block'>${priceOriginal}<span class='price-final' id='priceDisplay'>${money(variants.length>0 ? variants[0].price : finalPrice)}</span></div>
+  <div class='price-block'>${priceOriginal}<span class='price-final' id='priceDisplay'>${money(variants.length>0 ? (variants[0]._displayPrice || variants[0].price) : finalPrice)}</span></div>
   ${variantsHTML}
   <div class='short-desc'>${p.name.includes('Calendario')?'Calendario detallado con todos los circuitos en relieve y acabado premium.':'Producto personalizado impreso en 3D.'}</div>
   <div class='stock-msg ${isLow?'stock-low':''}'>${isLow?'¡Quedan pocas unidades!':'Stock disponible'}</div>
@@ -423,7 +431,7 @@ function renderProductDetail(){
   <div class='long-desc'>${p.name.includes('Calendario')?`El Calendario F1 2026 ofrece una visión detallada de todas las fechas y ubicaciones de los Grandes Premios. Diseñado para aficionados avanzados, facilita la planificación estratégica y seguimiento de cada evento.\n\nImpreso en alta calidad con precisión y acabados mejorados.`:'Fabricado bajo pedido con materiales de alta calidad.'}</div>`;
   // Manejar selección de variantes
   let selectedVariant = variants.length > 0 ? variants[0] : null;
-  let currentPrice = variants.length > 0 ? variants[0].price : finalPrice;
+  let currentPrice = variants.length > 0 ? (variants[0]._displayPrice || variants[0].price) : finalPrice;
   
   if(variants.length > 0){
     const variantButtons = document.querySelectorAll('.variant-btn');
@@ -433,7 +441,8 @@ function renderProductDetail(){
         this.classList.add('active');
         const index = parseInt(this.dataset.index);
         selectedVariant = variants[index];
-        currentPrice = selectedVariant.price;
+        // Usar precio mostrado (aplica descuento del producto si corresponde)
+        currentPrice = (typeof selectedVariant._displayPrice !== 'undefined') ? selectedVariant._displayPrice : (selectedVariant.price || finalPrice);
         document.getElementById('priceDisplay').textContent = money(currentPrice);
 
         // Cambiar imagen principal si la variante tiene imagen
