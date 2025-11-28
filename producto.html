@@ -274,19 +274,62 @@ if(typeof window.money !== 'function') {
 <script>
 // Esperar a que PRODUCTS esté disponible
 document.addEventListener('DOMContentLoaded', function() {
-  // Dar tiempo a que script.js cargue PRODUCTS
-  setTimeout(renderProductDetail, 100);
-  // Si luego llegan productos frescos desde Supabase, re-renderizar
-  document.addEventListener('productsReady', renderProductDetail, { once: false });
+  // Intentar renderizar cuando PRODUCTS esté disponible.
+  // Primero intentar cargar desde memoria/localStorage con reintentos limitados
+  let attempts = 0;
+  const maxAttempts = 50; // ~5s a 100ms
+  const intervalMs = 100;
+
+  function tryRender() {
+    // si ya hay PRODUCTS con datos, renderizamos y terminamos
+    if (window.PRODUCTS && Array.isArray(window.PRODUCTS) && window.PRODUCTS.length) {
+      renderProductDetail();
+      return;
+    }
+
+    // Intentar recuperar desde localStorage como fallback
+    try {
+      const s = localStorage.getItem('PRODUCTS');
+      if (s) {
+        const parsed = JSON.parse(s);
+        if (Array.isArray(parsed) && parsed.length) {
+          window.PRODUCTS = parsed;
+          renderProductDetail();
+          return;
+        }
+      }
+    } catch (e) {
+      // ignore parse errors
+    }
+
+    // Si no disponible, reintentar un número limitado de veces
+    attempts++;
+    if (attempts <= maxAttempts) {
+      setTimeout(tryRender, intervalMs);
+      return;
+    }
+
+    // Si agotamos reintentos, esperamos al evento productsReady (no spam de consola)
+    console.warn('PRODUCTS no disponible tras varios intentos. Esperando productsReady...');
+  }
+
+  tryRender();
+
+  // Cuando el loader asíncrono cargue los productos, re-renderizar
+  document.addEventListener('productsReady', function() {
+    if (window.PRODUCTS && Array.isArray(window.PRODUCTS) && window.PRODUCTS.length) {
+      renderProductDetail();
+    }
+  }, { once: false });
 });
 
 function getParam(name){return new URLSearchParams(location.search).get(name);} 
 function starsHTML(v){const full=Math.floor(v);const half=v%1>=0.5;let s='';for(let i=0;i<full;i++)s+='★';if(half)s+='☆';return `<span class="stars">${s}</span>`}
 function renderProductDetail(){
   const id=getParam('id');
-  if(!window.PRODUCTS || !PRODUCTS.length){
-    console.warn('PRODUCTS no disponible aún, reintentando...');
-    setTimeout(renderProductDetail, 100);
+  if(!window.PRODUCTS || !Array.isArray(window.PRODUCTS) || !window.PRODUCTS.length){
+    // PRODUCTS no está disponible aún — simplemente abortamos la renderización.
+    // El listener 'productsReady' o el intento inicial se encargará de reintentar.
     return;
   }
   const p=PRODUCTS.find(x=>String(x.id)===String(id));
