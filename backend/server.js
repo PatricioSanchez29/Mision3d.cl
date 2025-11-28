@@ -89,6 +89,10 @@ app.use(cors({
     // Permitir peticiones sin origin (como Postman, curl, etc.)
     if (!origin) return callback(null, true);
 
+    // Algunos agentes (o integraciones de pago) pueden enviar 'file://' como origin
+    // (por ejemplo redirecciones desde apps o callbacks locales). Permitirlo explícitamente.
+    if (typeof origin === 'string' && origin.startsWith('file:')) return callback(null, true);
+
     // En desarrollo, permitir localhost y 127.0.0.1
     if (isDevelopment && (origin.includes('localhost') || origin.includes('127.0.0.1'))) {
       return callback(null, true);
