@@ -621,8 +621,11 @@ app.post("/api/payments/flow", paymentLimiter, async (req, res) => {
             flowOrder: data.flowOrder || null,
             commerceOrder: params.commerceOrder,
             payer: {
+              id: payer?.id || null,
               email: payer?.email || null,
               name: payer?.name || null,
+              surname: payer?.surname || payer?.lastName || payer?.apellido || null,
+              rut: payer?.rut || payer?.identification || null,
             },
             items: Array.isArray(items) ? items : [],
             meta: meta || {},
@@ -732,6 +735,10 @@ app.post("/flow/confirm", webhookLimiter, async (req, res) => {
           const pedido = {
             user_id: tmp?.payer?.id || null,
             email: tmp?.payer?.email || paymentData?.email || null,
+            nombre: tmp?.payer?.name || null,
+            apellidos: tmp?.payer?.surname || tmp?.payer?.lastName || null,
+            rut: tmp?.payer?.rut || null,
+            full_name: tmp?.payer?.name && tmp?.payer?.surname ? `${tmp.payer.name} ${tmp.payer.surname}` : (tmp?.payer?.name || null),
             items: tmp?.items || [],
             subtotal: tmp?.subtotal ?? null,
             discount: tmp?.discount ?? null,
@@ -927,6 +934,10 @@ app.post("/api/orders/transfer", async (req, res) => {
         const pedido = {
           user_id: payer?.id || null,
           email: payer?.email || null,
+          nombre: payer?.name || null,
+          apellidos: payer?.surname || payer?.lastName || null,
+          rut: payer?.rut || null,
+          full_name: payer?.name && (payer?.surname || '') ? `${payer.name} ${payer.surname || ''}`.trim() : (payer?.name || null),
           items: Array.isArray(items) ? items : [],
           subtotal,
           discount: disc,
@@ -1508,6 +1519,53 @@ app.post('/api/admin/pedidos/:id/marcar-pagado', async (req, res) => {
     return res.json({ ok: true });
   } catch (err) {
     console.error('[Admin marcar-pagado] Error:', err?.message || err);
+    return res.status(500).json({ error: 'server', detail: err?.message || String(err) });
+  }
+});
+
+// ===== Admin: actualizar datos del comprador (full_name, rut) =====
+app.post('/api/admin/pedidos/:id/update-buyer', async (req, res) => {
+  try {
+    const provided = String(req.headers['x-admin-key'] || '').trim();
+    const expected = String(process.env.ADMIN_KEY || '').trim();
+    if (!expected) return res.status(401).json({ error: 'unauthorized', reason: 'ADMIN_KEY not configured' });
+    if (!provided || provided !== expected) return res.status(401).json({ error: 'unauthorized' });
+
+    const id = req.params.id;
+    const { full_name, rut } = req.body || {};
+    if (!full_name && !rut) return res.status(400).json({ error: 'no_data', message: 'full_name or rut required' });
+
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!supabaseUrl || !supabaseKey) return res.status(500).json({ error: 'server', detail: 'Supabase credentials missing' });
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Derivar nombre / apellidos desde full_name si es provisto
+    let nombre = null;
+    let apellidos = null;
+    if (full_name) {
+      const parts = String(full_name).trim().split(/\s+/);
+      if (parts.length === 1) nombre = parts[0];
+      else if (parts.length >= 2) {
+        nombre = parts.slice(0, -1).join(' ');
+        apellidos = parts.slice(-1).join(' ');
+      }
+    }
+
+    const updates = {};
+    if (full_name) updates.full_name = full_name;
+    if (rut) updates.rut = rut;
+    if (nombre) updates.nombre = nombre;
+    if (apellidos) updates.apellidos = apellidos;
+
+    const { error: updErr } = await supabase.from('pedidos').update(updates).eq('id', id);
+    if (updErr) return res.status(500).json({ error: 'update_failed', detail: updErr.message });
+
+    return res.json({ ok: true, updated: updates });
+  } catch (err) {
+    console.error('[Admin update-buyer] Error:', err?.message || err);
     return res.status(500).json({ error: 'server', detail: err?.message || String(err) });
   }
 });
