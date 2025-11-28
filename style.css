@@ -1964,6 +1964,48 @@ body.dark .faq-bg {opacity:.35}
   100% { transform: rotate(360deg); }
 }
 
+/* ==================================================
+   Header fijo y ajuste de espacio para Checkout/Login
+   - .site-header / .header quedan fijos en toda la web
+   - Se reserva espacio extra en páginas con formularios largos
+   Ajusta los valores de `padding-top` si el header/banners cambian
+   ================================================== */
+
+.site-header, .header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10000;
+  background: #ffffff;
+  padding: 0 16px; /* márgenes laterales consistentes */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+
+/* Espacio por defecto para evitar que el header tape contenido */
+body {
+  padding-top: 90px;
+}
+
+/* Más espacio en páginas de checkout y login (formularios largos) */
+body.checkout, body.login {
+  padding-top: 160px;
+}
+
+/* Ajustes para móvil */
+@media (max-width: 768px) {
+  body {
+    padding-top: 130px;
+  }
+
+  body.checkout, body.login {
+    padding-top: 170px;
+  }
+}
+
+/* Fin: Header fijo / padding específico */
+
+
 .loading-message {
   margin: 0;
   color: #333;
@@ -4366,6 +4408,37 @@ body.dark .qv-customization small {
     text-overflow: ellipsis;
   }
 }
+
+
+/* ==================== OVERRIDE: HEADER FIJO (PC + MÓVIL) ==================== */
+/* Usa la clase real de tu header: `.header` o `.site-header`. Aquí cubrimos ambas. */
+.site-header, .header {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 14000 !important;
+  background: #ffffff;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+}
+
+/* Reservar espacio para que el contenido no quede tapado por el header */
+:root{
+  --site-header-height-desktop: 96px; /* ajustar a la altura real */
+  --site-header-height-mobile: 76px;  /* ajustar si tu header es más alto en móvil */
+}
+
+@media (min-width: 769px) {
+  body { padding-top: var(--site-header-height-desktop); }
+}
+
+@media (max-width: 768px) {
+  body { padding-top: var(--site-header-height-mobile); }
+  /* Si tienes banners encima, asegúrate de ajustar las variables o mover el banner fuera del flujo */
+}
+
+/* Nota: si tienes .announcement-bar o .bf-banner con position: sticky, revisa su z-index/position
+   para que no queden ocultos. Ajusta --site-header-height-desktop/mobile según el header final. */
 
 
 
