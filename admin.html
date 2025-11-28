@@ -311,6 +311,19 @@
             const unit = Number((it?.price ?? it?.unit_price) || 0);
             return `${name} (x${qty} a ${money(unit)})`;
           }).join(', ') || 'Sin items';
+          // Normalizar pedido: merge de meta + checkout + pedido y fallbacks para mostrar siempre valores
+          const normalized = Object.assign({}, meta || {}, checkout || {}, pedido || {});
+          normalized.items = items;
+          normalized.nombre = firstName || normalized.nombre || normalized.name || (items[0]?.customName || items[0]?.custom_name) || '—';
+          normalized.apellidos = lastName || normalized.apellidos || '—';
+          normalized.rut = rut || normalized.rut || '—';
+          normalized.telefono = phone || normalized.telefono || normalized.phone || '—';
+          normalized.direccion = shippingAddress || normalized.direccion || normalized.address || '—';
+          normalized.region = region || normalized.region || '—';
+          normalized.comuna = comuna || normalized.comuna || '—';
+          normalized.note = note || normalized.note || '—';
+          const payload = encodeURIComponent(JSON.stringify(normalized));
+
           tr.innerHTML = `
             <td>${pedido.id}</td>
             <td>${pedido.email || pedido.user_id || ''}</td>
@@ -342,7 +355,7 @@
                   <button data-id="${pedido.id}" class="mark-paid-btn" style="color:#fff;background:#16a34a;border:none;padding:4px 8px;border-radius:4px;margin-right:8px;">Marcar pagado + email</button>
                   <button data-id="${pedido.id}" class="eliminar-btn" style="color:#fff;background:#e11d48;border:none;padding:4px 8px;border-radius:4px;">Eliminar</button>
                 </div>
-                <button data-payload="${encodeURIComponent(JSON.stringify(pedido))}" class="view-json-btn" style="background:#f3f4f6;border:1px solid #ccc;padding:6px 8px;border-radius:4px;color:#111">Ver JSON</button>
+                <button data-payload="${payload}" class="view-json-btn" style="background:#f3f4f6;border:1px solid #ccc;padding:6px 8px;border-radius:4px;color:#111">Ver JSON</button>
               </div>
             </td>
           `;
