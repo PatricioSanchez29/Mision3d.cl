@@ -294,6 +294,14 @@
               lastName = lastName || parts.slice(-1).join(' ');
             }
           }
+          // Si aún no hay nombre, usar customName de items (ej. personalización) como fallback
+          if ((!firstName || !lastName) && Array.isArray(items) && items.length > 0) {
+            const cn = items[0]?.customName || items[0]?.custom_name || items[0]?.customNote || '';
+            if (cn) {
+              // Poner todo en firstName (no podemos separar apellido de personalización)
+              firstName = firstName || cn;
+            }
+          }
           const rut = pedido.rut || pedido.rut_cliente || meta.rut || meta.rut_cliente || checkout.rut || checkout.identification || '';
           const itemsText = items.map(it => {
             const name = it?.name || it?.title || 'Producto';
