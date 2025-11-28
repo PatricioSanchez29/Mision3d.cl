@@ -449,6 +449,17 @@ function renderCatalog(filterText = ""){
 
   let productos = window.PRODUCTS.slice();
 
+  // Si la URL contiene ?bf=1 mostrar solo productos Black Friday (0 < discount <= 25)
+  try {
+    const params = new URLSearchParams(location.search);
+    if (params.get('bf') === '1') {
+      productos = productos.filter(p => {
+        const d = Number(p.discount || 0);
+        return Number.isFinite(d) && d > 0 && d <= 25;
+      });
+    }
+  } catch (e) { /* silencioso */ }
+
   if (filterText) {
     const txt = filterText.trim().toLowerCase();
     productos = productos.filter(p => p.name.toLowerCase().includes(txt));
