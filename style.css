@@ -702,6 +702,31 @@ body.dark .trend-chip:hover { background: #1f2937; border-color: #4b5563; }
     border-radius: 8px;
     object-fit: cover;
   }
+  /* Evitar overflow horizontal en móviles por elementos con padding/width */
+  html, body, .product-page, .product-info, .product-gallery, .gallery-wrapper {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Asegurar que el sticky action-buttons no provoque overflow */
+  .action-buttons {
+    left: 0;
+    right: 0;
+    width: 100%;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Botones no deben superar el ancho disponible (respetar padding) */
+  .action-buttons .btn-primary,
+  .action-buttons .btn-outline,
+  .product-actions button,
+  .product-actions .btn {
+    max-width: calc(100% - 24px) !important;
+    box-sizing: border-box !important;
+  }
 }
 /* ===== Fin bloque usuario ===== */
 
