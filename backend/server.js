@@ -782,8 +782,10 @@ app.post("/flow/confirm", webhookLimiter, async (req, res) => {
             meta: tmp?.meta || {},
           };
           // Filtrar campos a un conjunto seguro para evitar errores si la tabla no tiene columnas inesperadas
+          // Evitar insertar columnas que podrían no existir en la tabla (p. ej. `name` o `buyer_name`)
+          // Preferimos las columnas en español: `nombre`, `apellidos`, `rut` y `custom_name`.
           const allowed = [
-            'user_id','name','email','items','subtotal','discount','shipping','total','total_clp','status','estado','commerce_order','flow_order','payment_method','created_at','meta','address','phone','nombre','apellidos','rut','custom_name'
+            'user_id','email','items','subtotal','discount','shipping','total','total_clp','status','estado','commerce_order','flow_order','payment_method','created_at','meta','address','phone','nombre','apellidos','rut','custom_name'
           ];
           const safePedido = {};
           for (const k of allowed) if (typeof pedido[k] !== 'undefined') safePedido[k] = pedido[k];
@@ -1009,7 +1011,8 @@ app.post("/api/orders/transfer", async (req, res) => {
           payment_method: 'transferencia'
         };
         // Filtrar campos a un conjunto seguro antes de insertar para evitar errores de esquema
-        const allowedT = ['user_id','name','email','items','subtotal','discount','shipping','total','total_clp','status','estado','commerce_order','flow_order','payment_method','created_at','meta','address','phone','nombre','apellidos','rut','custom_name'];
+        // Para transferencia: no incluir `name`/`buyer_name` que pueden no existir en algunos esquemas
+        const allowedT = ['user_id','email','items','subtotal','discount','shipping','total','total_clp','status','estado','commerce_order','flow_order','payment_method','created_at','meta','address','phone','nombre','apellidos','rut','custom_name'];
         const safePedidoT = {};
         for (const k of allowedT) if (typeof pedido[k] !== 'undefined') safePedidoT[k] = pedido[k];
         const { data: inserted, error: supaErr } = await supabase
@@ -1597,9 +1600,10 @@ app.get('/api/admin/pedidos', async (req, res) => {
     if (!supabaseUrl || !supabaseKey) return res.status(500).json({ error: 'server', detail: 'Supabase credentials missing' });
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // Seleccionar todas las columnas disponibles y dejar que el frontend filtre lo que necesita.
     const { data, error } = await supabase
       .from('pedidos')
-      .select('id, user_id, name, buyer_name, email, custom_name, address, phone, items, subtotal, discount, shipping, total, total_clp, estado, status, commerce_order, flow_order, payment_method, created_at, meta')
+      .select('*')
       .order('created_at', { ascending: false });
     if (error) {
       console.error('[Admin GET pedidos] Error:', error);
