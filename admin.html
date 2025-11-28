@@ -12,7 +12,7 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     body { background: #f7f7f7; }
-    .admin-panel { max-width: 900px; margin: 40px auto; background: #fff; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,.07); padding: 32px 28px; }
+    .admin-panel { max-width: 1200px; width: calc(100% - 80px); margin: 40px auto; background: #fff; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,.07); padding: 28px 28px; }
     h1 { font-size: 2rem; margin-bottom: 18px; }
     .tabs { display: flex; gap: 18px; margin-bottom: 24px; }
     .tab { padding: 10px 22px; border-radius: 8px; background: #eee; cursor: pointer; font-weight: 600; }
@@ -20,6 +20,47 @@
     .admin-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
     .admin-table th, .admin-table td { padding: 10px 8px; border-bottom: 1px solid #eee; text-align: left; }
     .admin-table th { background: #fafafa; font-size: .98rem; }
+    /* Mejoras de layout para la tabla de pedidos */
+    #pedidosTable { table-layout: fixed; width: 100%; max-width: 100%; font-size: .95rem; }
+    /* Contenedor responsive que mantiene la tabla dentro del panel blanco */
+    .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .table-responsive::-webkit-scrollbar { height: 8px; }
+    .table-responsive::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.08); border-radius: 4px; }
+    #pedidosTable th, #pedidosTable td { padding: 10px 8px; vertical-align: top; font-size: .95rem; }
+    /* Por defecto permitir quiebre de palabra en celdas largas */
+    #pedidosTable td { white-space: normal; word-break: break-word; }
+    /* Encabezados en una línea cuando sea posible */
+    #pedidosTable th { white-space: nowrap; }
+    /* Anchos sugeridos por columna para ajustar contenido */
+    #pedidosTable th:nth-child(1), #pedidosTable td:nth-child(1) { width: 60px; }
+    #pedidosTable th:nth-child(2), #pedidosTable td:nth-child(2) { width: 160px; }
+    #pedidosTable th:nth-child(3), #pedidosTable td:nth-child(3) { width: 110px; }
+    #pedidosTable th:nth-child(4), #pedidosTable td:nth-child(4) { width: 110px; }
+    #pedidosTable th:nth-child(5), #pedidosTable td:nth-child(5) { width: 90px; }
+    #pedidosTable th:nth-child(6), #pedidosTable td:nth-child(6) { width: 90px; }
+    #pedidosTable th:nth-child(7), #pedidosTable td:nth-child(7) { width: 200px; }
+    #pedidosTable th:nth-child(8), #pedidosTable td:nth-child(8) { width: 120px; }
+    #pedidosTable th:nth-child(9), #pedidosTable td:nth-child(9) { width: 90px; }
+    #pedidosTable th:nth-child(10), #pedidosTable td:nth-child(10) { width: 200px; }
+    #pedidosTable th:nth-child(11), #pedidosTable td:nth-child(11) { width: 90px; }
+    #pedidosTable th:nth-child(12), #pedidosTable td:nth-child(12) { width: 90px; }
+    #pedidosTable th:nth-child(13), #pedidosTable td:nth-child(13) { width: 90px; }
+    #pedidosTable th:nth-child(14), #pedidosTable td:nth-child(14) { width: 110px; }
+    #pedidosTable th:nth-child(15), #pedidosTable td:nth-child(15) { width: 120px; }
+    #pedidosTable th:nth-child(16), #pedidosTable td:nth-child(16) { width: 90px; }
+    #pedidosTable th:nth-child(17), #pedidosTable td:nth-child(17) { width: 120px; }
+
+    /* Preferir wrapping en columnas de Items, Dirección y Nota para que no empujen el layout */
+    #pedidosTable td:nth-child(7), #pedidosTable td:nth-child(10), #pedidosTable td:nth-child(15) { white-space: normal; }
+
+    /* Ocultar columnas "extra" por defecto (se muestran al activar 'show-extra') */
+    #pedidosTable:not(.show-extra) th:nth-child(3), #pedidosTable:not(.show-extra) td:nth-child(3),
+    #pedidosTable:not(.show-extra) th:nth-child(4), #pedidosTable:not(.show-extra) td:nth-child(4),
+    #pedidosTable:not(.show-extra) th:nth-child(11), #pedidosTable:not(.show-extra) td:nth-child(11),
+    #pedidosTable:not(.show-extra) th:nth-child(12), #pedidosTable:not(.show-extra) td:nth-child(12),
+    #pedidosTable:not(.show-extra) th:nth-child(14), #pedidosTable:not(.show-extra) td:nth-child(14) {
+      display: none;
+    }
     .admin-table td img { width: 48px; height: 48px; object-fit: cover; border-radius: 8px; }
     .btn { padding: 7px 16px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; }
     .btn.edit { background: #f7b731; color: #fff; }
@@ -115,13 +156,35 @@
         <button id="pedidoRefresh" class="btn" style="background:#0ea5e9;color:#fff">Actualizar</button>
         <button id="pedidoExport" class="btn" style="background:#22c55e;color:#fff">Exportar CSV</button>
         <button id="pedidoExportXlsx" class="btn" style="background:#10b981;color:#fff">Exportar XLSX</button>
+        <button id="toggleExtraCols" class="btn" style="background:#6b7280;color:#fff">Mostrar columnas extra</button>
       </div>
+      <div class="table-responsive">
       <table class="admin-table" id="pedidosTable">
         <thead>
-          <tr><th>ID</th><th>Usuario</th><th>Estado</th><th>Total</th><th>Items</th><th>Fecha</th><th>Acciones</th></tr>
+          <tr>
+            <th>ID</th>
+            <th>Usuario</th>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Personalización</th>
+            <th>Estado</th>
+            <th>Total</th>
+            <th>Items</th>
+            <th>Fecha</th>
+            <th>Pago</th>
+            <th>Dirección</th>
+            <th>Región</th>
+            <th>Comuna</th>
+            <th>Tel</th>
+            <th>RUT</th>
+            <th>Nota</th>
+            <th>Cupón</th>
+            <th>Acciones</th>
+          </tr>
         </thead>
         <tbody></tbody>
       </table>
+      </div>
     </div>
   </div>
   <script type="module">
@@ -152,14 +215,14 @@
       // --- Pedidos: renderizado y gestión ---
       async function renderPedidos() {
         const tbody = document.querySelector('#pedidosTable tbody');
-        tbody.innerHTML = '<tr><td colspan="6">Cargando pedidos...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="18">Cargando pedidos...</td></tr>';
         let { data, error } = await supabase.from('pedidos').select('*').order('created_at', { ascending: false });
         if(error) {
           tbody.innerHTML = `<tr><td colspan="6" style="color:#c00">Error cargando pedidos: ${error.message}</td></tr>`;
           return;
         }
         if(!data || data.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="6" style="color:#888">No hay pedidos registrados.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="18" style="color:#888">No hay pedidos registrados.</td></tr>';
           return;
         }
         // Aplicar filtros
@@ -204,6 +267,34 @@
             }
           }
           const items = Array.isArray(pedido.items) ? pedido.items : [];
+          // Extraer posibles datos de checkout/pago/meta
+          const meta = pedido.meta || {};
+          const checkout = pedido.checkout || pedido.checkout_data || pedido.payment || pedido.payment_intent || pedido.paymentIntent || {};
+          const paymentMethod = checkout.payment_method || checkout.method || pedido.payment_method || meta.payment_method || '';
+          const paymentStatus = checkout.status || pedido.payment_status || pedido.status_pago || meta.payment_status || '';
+          const billing = checkout.billing || checkout.billing_address || meta.billing || {};
+          const billingAddress = billing.address || billing.line1 || billing.addressLine || meta.billing_address || '';
+          const shippingAddress = checkout.shipping_address || meta.address || meta.direccion || pedido.shipping || '';
+          const region = meta.region || meta.comuna || checkout.region || checkout.state || meta.state || '';
+          const comuna = meta.comuna || meta.city || meta.ciudad || checkout.city || checkout.town || '';
+          const phone = pedido.phone || pedido.telefono || meta.phone || meta.telefono || '';
+          const note = pedido.note || pedido.notes || meta.note || meta.nota || checkout.note || '';
+          const coupon = pedido.coupon || pedido.discount || meta.coupon || checkout.coupon || '';
+          // Nombre/Apellido/RUT (varios fallbacks)
+          let firstName = pedido.first_name || pedido.firstname || pedido.nombre || meta.nombre || checkout.first_name || checkout.nombre || '';
+          let lastName = pedido.last_name || pedido.lastname || pedido.apellido || meta.apellido || checkout.last_name || checkout.apellido || '';
+          // Si no hay split, intentar partir el campo "name" o "buyer_name"
+          if ((!firstName || !lastName) && (pedido.name || pedido.buyer_name || meta.nombre_completo)) {
+            const fullname = pedido.name || pedido.buyer_name || meta.nombre_completo || '';
+            const parts = String(fullname).trim().split(/\s+/);
+            if (parts.length === 1) {
+              firstName = firstName || parts[0];
+            } else if (parts.length >= 2) {
+              firstName = firstName || parts.slice(0, -1).join(' ');
+              lastName = lastName || parts.slice(-1).join(' ');
+            }
+          }
+          const rut = pedido.rut || pedido.rut_cliente || meta.rut || meta.rut_cliente || checkout.rut || checkout.identification || '';
           const itemsText = items.map(it => {
             const name = it?.name || it?.title || 'Producto';
             const qty = Number(it?.qty || 1);
@@ -213,6 +304,9 @@
           tr.innerHTML = `
             <td>${pedido.id}</td>
             <td>${pedido.email || pedido.user_id || ''}</td>
+            <td>${firstName || '—'}</td>
+            <td>${lastName || '—'}</td>
+            <td>${(pedido.custom_name || meta.custom_name || meta.customName || (items.length === 1 ? (items[0]?.customName || items[0]?.customNote) : null) ) || '—'}</td>
             <td>
               <select data-id="${pedido.id}" class="estado-select">
                 <option value="pendiente"${pedido.estado==='pendiente'?' selected':''}>pendiente</option>
@@ -224,9 +318,22 @@
             <td>${money(pedido.total_clp || pedido.total || 0)}</td>
             <td>${itemsText}</td>
             <td>${fechaChile}</td>
+            <td>${paymentMethod || '—'}${paymentStatus ? ` | ${paymentStatus}` : ''}${billingAddress ? `<div style="color:#666;font-size:0.95em">${billingAddress}</div>` : ''}</td>
+            <td>${shippingAddress || '—'}</td>
+            <td>${region || '—'}</td>
+            <td>${comuna || '—'}</td>
+            <td>${phone || '—'}</td>
+            <td>${rut || '—'}</td>
+            <td>${note || '—'}</td>
+            <td>${coupon || '—'}</td>
             <td>
-              <button data-id="${pedido.id}" class="mark-paid-btn" style="color:#fff;background:#16a34a;border:none;padding:4px 8px;border-radius:4px;margin-right:8px;">Marcar pagado + email</button>
-              <button data-id="${pedido.id}" class="eliminar-btn" style="color:#fff;background:#e11d48;border:none;padding:4px 8px;border-radius:4px;">Eliminar</button>
+              <div style="display:flex;gap:8px;flex-direction:column">
+                <div>
+                  <button data-id="${pedido.id}" class="mark-paid-btn" style="color:#fff;background:#16a34a;border:none;padding:4px 8px;border-radius:4px;margin-right:8px;">Marcar pagado + email</button>
+                  <button data-id="${pedido.id}" class="eliminar-btn" style="color:#fff;background:#e11d48;border:none;padding:4px 8px;border-radius:4px;">Eliminar</button>
+                </div>
+                <button data-payload="${encodeURIComponent(JSON.stringify(pedido))}" class="view-json-btn" style="background:#f3f4f6;border:1px solid #ccc;padding:6px 8px;border-radius:4px;color:#111">Ver JSON</button>
+              </div>
             </td>
           `;
           tbody.appendChild(tr);
@@ -285,6 +392,15 @@
             } catch(e){
               showAdminToast('Error realizando la acción: ' + (e?.message||e), 'error');
             }
+          });
+        });
+        // Botón Ver JSON por fila (modal)
+        tbody.querySelectorAll('.view-json-btn').forEach(btn => {
+          btn.addEventListener('click', function () {
+            const payload = this.getAttribute('data-payload') || '';
+            let obj = null;
+            try { obj = JSON.parse(decodeURIComponent(payload)); } catch (e) { obj = { error: 'invalid JSON', raw: payload }; }
+            showJsonModal(obj);
           });
         });
         // Filtros: listeners
@@ -423,6 +539,45 @@
             }
           });
         }
+      }
+
+      // Modal helper para mostrar JSON de un pedido
+      function showJsonModal(obj) {
+        const existing = document.getElementById('pedido-json-modal');
+        const pretty = JSON.stringify(obj, null, 2);
+        if (existing) {
+          existing.querySelector('pre').textContent = pretty;
+          existing.style.display = 'flex';
+          return;
+        }
+        const overlay = document.createElement('div');
+        overlay.id = 'pedido-json-modal';
+        overlay.style.position = 'fixed';
+        overlay.style.inset = '0';
+        overlay.style.background = 'rgba(0,0,0,0.5)';
+        overlay.style.display = 'flex';
+        overlay.style.alignItems = 'center';
+        overlay.style.justifyContent = 'center';
+        overlay.style.zIndex = '99999';
+        overlay.innerHTML = `
+          <div style="background:#fff;max-width:900px;width:92%;max-height:90%;overflow:auto;border-radius:8px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,0.2);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <strong>Detalle del pedido (JSON)</strong>
+              <div>
+                <button id="pedido-json-copy" style="background:#10b981;color:#fff;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;margin-right:8px">Copiar</button>
+                <button id="pedido-json-close" style="background:#ef4444;color:#fff;border:none;padding:6px 10px;border-radius:6px;cursor:pointer">Cerrar</button>
+              </div>
+            </div>
+            <pre style="white-space:pre-wrap;word-break:break-word;max-height:calc(90vh - 120px);overflow:auto;background:#111;color:#e6e6e6;padding:12px;border-radius:6px">${pretty}</pre>
+          </div>
+        `;
+        document.body.appendChild(overlay);
+        // eventos
+        overlay.addEventListener('click', (ev) => { if (ev.target === overlay) overlay.style.display = 'none'; });
+        document.getElementById('pedido-json-close').addEventListener('click', () => overlay.style.display = 'none');
+        document.getElementById('pedido-json-copy').addEventListener('click', () => {
+          try { navigator.clipboard.writeText(pretty); alert('JSON copiado al portapapeles'); } catch (e) { alert('No se pudo copiar'); }
+        });
       }
       const PASSWORD = "Casa452229.";
       const SUPABASE_URL = 'https://ytuwkynphdttotifgyaf.supabase.co';
@@ -942,6 +1097,35 @@
         const tbody = document.querySelector('#pedidosTable tbody');
         if(tbody) tbody.innerHTML = '<tr><td colspan="6" style="color:#888">Selecciona la pestaña Pedidos para ver órdenes.</td></tr>';
       }
+      // Toggle mostrar columnas extra (nombre, apellido, región, comuna, rut)
+      (function setupExtraColsToggle(){
+        const btn = document.getElementById('toggleExtraCols');
+        const table = document.getElementById('pedidosTable');
+        const KEY = 'admin_show_extra_cols';
+        function updateUI(show){
+          if(!table) return;
+          if(show) {
+            table.classList.add('show-extra');
+            btn.textContent = 'Ocultar columnas extra';
+            btn.style.background = '#374151';
+          } else {
+            table.classList.remove('show-extra');
+            btn.textContent = 'Mostrar columnas extra';
+            btn.style.background = '#6b7280';
+          }
+        }
+        try {
+          const saved = sessionStorage.getItem(KEY);
+          // Por defecto mostrar columnas extra si el usuario no tiene preferencia guardada
+          const show = (saved === null) ? true : (saved === '1');
+          updateUI(show);
+        } catch(e){}
+        if(btn) btn.addEventListener('click', ()=>{
+          const is = table && table.classList.contains('show-extra');
+          updateUI(!is);
+          try { sessionStorage.setItem(KEY, !is ? '1' : '0'); } catch(e){}
+        });
+      })();
       const loginPanel = document.getElementById('loginPanel');
       const adminPanel = document.querySelector('.admin-panel');
       if(adminPanel) adminPanel.style.display = 'none';

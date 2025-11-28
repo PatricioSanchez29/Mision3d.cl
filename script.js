@@ -982,7 +982,7 @@ async function confirmCheckout(){
     }
     
     const displayName = it.variant ? `${p.name || productId} (${it.variant})` : (p.name || String(productId));
-    return { id: p.id || productId, name: displayName, price: itemPrice, qty: it.qty };
+    return { id: p.id || productId, name: displayName, price: itemPrice, qty: it.qty, customName: it.customNote || it.customName || null };
   });
 
   const payload = {
@@ -992,6 +992,13 @@ async function confirmCheckout(){
     discount: 0,
     meta: { region, comuna, telefono, direccion, notes, postal, envio, totalCLP: totalFinal }
   };
+
+  // Si solo hay un ítem y ese ítem tiene personalización, incluir top-level `custom_name`
+  try {
+    if (Array.isArray(cartItems) && cartItems.length === 1 && cartItems[0].customName) {
+      payload.custom_name = cartItems[0].customName;
+    }
+  } catch (e) { /* silencioso */ }
 
   try {
     // GA4: begin_checkout
