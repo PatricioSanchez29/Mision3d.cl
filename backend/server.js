@@ -93,6 +93,9 @@ app.use(cors({
     // (por ejemplo redirecciones desde apps o callbacks locales). Permitirlo explícitamente.
     if (typeof origin === 'string' && origin.startsWith('file:')) return callback(null, true);
 
+    // Permitir orígenes de Flow (flow.cl / sandbox.flow.cl) para callbacks/redirecciones
+    if (typeof origin === 'string' && origin.includes('flow.cl')) return callback(null, true);
+
     // En desarrollo, permitir localhost y 127.0.0.1
     if (isDevelopment && (origin.includes('localhost') || origin.includes('127.0.0.1'))) {
       return callback(null, true);
