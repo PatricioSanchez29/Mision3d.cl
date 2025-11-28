@@ -732,13 +732,32 @@ app.post("/flow/confirm", webhookLimiter, async (req, res) => {
           console.warn('[Flow Confirm] Faltan credenciales de Supabase');
         } else {
           const supabase = createClient(supabaseUrl, supabaseKey);
+          // Construir nombre/apellidos/rut con múltiples fallbacks (payer, meta, custom_name, items)
+          const fallbackFullName = (tmp?.custom_name || tmp?.meta?.full_name || tmp?.meta?.name || (Array.isArray(tmp?.items) && tmp.items[0]?.customName) || null);
+          let nombreVal = tmp?.payer?.name || tmp?.meta?.nombre || null;
+          let apellidosVal = tmp?.payer?.surname || tmp?.payer?.lastName || tmp?.meta?.apellidos || tmp?.meta?.apellido || null;
+          let rutVal = tmp?.payer?.rut || tmp?.meta?.rut || tmp?.meta?.rut_cliente || null;
+          // Si hay full_name en meta o custom, intentar partirlo
+          if ((!nombreVal || !apellidosVal) && fallbackFullName) {
+            const parts = String(fallbackFullName).trim().split(/\s+/);
+            if (parts.length === 1) {
+              nombreVal = nombreVal || parts[0];
+            } else if (parts.length >= 2) {
+              nombreVal = nombreVal || parts.slice(0, -1).join(' ');
+              apellidosVal = apellidosVal || parts.slice(-1).join(' ');
+            }
+          }
+          const fullNameVal = tmp?.payer?.name && (tmp?.payer?.surname || tmp?.payer?.lastName)
+            ? `${tmp.payer.name} ${tmp.payer.surname || tmp.payer.lastName}`
+            : (tmp?.full_name || tmp?.custom_name || tmp?.meta?.full_name || (nombreVal ? `${nombreVal} ${apellidosVal || ''}`.trim() : null));
+
           const pedido = {
             user_id: tmp?.payer?.id || null,
             email: tmp?.payer?.email || paymentData?.email || null,
-            nombre: tmp?.payer?.name || null,
-            apellidos: tmp?.payer?.surname || tmp?.payer?.lastName || null,
-            rut: tmp?.payer?.rut || null,
-            full_name: tmp?.payer?.name && tmp?.payer?.surname ? `${tmp.payer.name} ${tmp.payer.surname}` : (tmp?.payer?.name || null),
+            nombre: nombreVal,
+            apellidos: apellidosVal,
+            rut: rutVal,
+            full_name: fullNameVal,
             items: tmp?.items || [],
             subtotal: tmp?.subtotal ?? null,
             discount: tmp?.discount ?? null,

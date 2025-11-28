@@ -572,6 +572,7 @@
         email:       document.getElementById("inputEmail")?.value?.trim() || "",
         nombre:      document.getElementById("inputName")?.value?.trim() || "",
         apellidos:   document.getElementById("inputApellido")?.value?.trim() || "",
+        full_name:   `${document.getElementById("inputName")?.value?.trim() || ''}${document.getElementById("inputApellido")?.value ? (' ' + document.getElementById("inputApellido").value.trim()) : ''}`,
         rut:         document.getElementById("inputRut")?.value?.trim() || "",
         direccion:   document.getElementById("inputDireccion")?.value?.trim() || "",
         region:      document.getElementById("inputRegion")?.value || "",
