@@ -94,8 +94,7 @@ const allowedOrigins = [
 // En desarrollo, permitir localhost y 127.0.0.1 con cualquier puerto
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
-// CORS: permitir preflight y cabeceras admin personalizadas
-const corsOptions = {
+app.use(cors({
   origin: (origin, callback) => {
     // Permitir peticiones sin origin (como Postman, curl, etc.)
     if (!origin) return callback(null, true);
@@ -133,18 +132,8 @@ const corsOptions = {
     console.warn(`[CORS] Origin bloqueado: ${origin}`);
     callback(new Error('Not allowed by CORS'));
   },
-  // Permitir métodos comunes y cabeceras personalizadas que usamos (ej: x-admin-key)
-  methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
-  allowedHeaders: ['Content-Type', 'x-admin-key', 'x-webhook-key', 'authorization'],
-  preflightContinue: false,
-  optionsSuccessStatus: 204,
   credentials: true
-};
-
-app.use(cors(corsOptions));
-
-// Asegurar que las peticiones OPTIONS (preflight) se atiendan con CORS
-app.options('*', cors(corsOptions));
+}));
 
 // ===== Health Check Endpoints (Render) =====
 app.get("/health", (req, res) => {
@@ -631,8 +620,10 @@ app.post("/api/payments/flow", paymentLimiter, async (req, res) => {
             token: data.token,
             flowOrder: data.flowOrder || null,
             commerceOrder: params.commerceOrder,
-            // Guardar todo el objeto payer tal cual viene del cliente
-            payer: payer || {},
+            payer: {
+              email: payer?.email || null,
+              name: payer?.name || null,
+            },
             items: Array.isArray(items) ? items : [],
             meta: meta || {},
             shippingCost: ship,
@@ -738,37 +729,13 @@ app.post("/flow/confirm", webhookLimiter, async (req, res) => {
           console.warn('[Flow Confirm] Faltan credenciales de Supabase');
         } else {
           const supabase = createClient(supabaseUrl, supabaseKey);
-          const payerObj = tmp?.payer || {};
-          const buyerName = payerObj?.name || payerObj?.fullName || payerObj?.full_name || payerObj?.nombre || paymentData?.buyerName || null;
-
-          // Normalizar nombre / apellidos / rut
-          let nombre = null;
-          let apellidos = null;
-          if (payerObj?.surname || payerObj?.lastname || payerObj?.apellido) {
-            nombre = payerObj?.name || null;
-            apellidos = payerObj?.surname || payerObj?.lastname || payerObj?.apellido || null;
-          } else if (buyerName) {
-            const parts = String(buyerName).trim().split(/\s+/);
-            nombre = parts.shift() || null;
-            apellidos = parts.length ? parts.join(' ') : null;
-          }
-          const rut = payerObj?.rut || payerObj?.rut_cliente || tmp?.meta?.rut || tmp?.meta?.rut_cliente || paymentData?.buyerRut || null;
-
           const pedido = {
             user_id: tmp?.payer?.id || null,
-            name: buyerName,
-            buyer_name: buyerName,
-            nombre: nombre,
-            apellidos: apellidos,
-            rut: rut,
             email: tmp?.payer?.email || paymentData?.email || null,
             items: tmp?.items || [],
             subtotal: tmp?.subtotal ?? null,
             discount: tmp?.discount ?? null,
             shipping: tmp?.shippingCost ?? null,
-            // Campos adicionales para facilitar consulta en panel admin
-            address: (tmp?.meta && (tmp.meta.address || tmp.meta.direccion || tmp.meta.direccion_completa || tmp.meta.addressLine)) || null,
-            phone: (tmp?.meta && (tmp.meta.phone || tmp.meta.telefono || tmp.meta.contact_phone || tmp.meta.phoneContact)) || null,
             total: tmp?.total || paymentData?.amount || 0,
             total_clp: tmp?.total || paymentData?.amount || 0,
             status: 'pagado',
@@ -777,19 +744,9 @@ app.post("/flow/confirm", webhookLimiter, async (req, res) => {
             flow_order: paymentData?.flowOrder || null,
             payment_method: 'flow',
             created_at: new Date().toISOString(),
-            // Determinar custom_name: preferir meta.custom_name, sino primer item.customName/customNote si único ítem
-            custom_name: (tmp?.meta && (tmp.meta.custom_name || tmp.meta.customName)) || ((Array.isArray(tmp?.items) && tmp.items.length === 1) ? (tmp.items[0]?.customName || tmp.items[0]?.customNote || null) : null),
             meta: tmp?.meta || {},
           };
-          // Filtrar campos a un conjunto seguro para evitar errores si la tabla no tiene columnas inesperadas
-          // Evitar insertar columnas que podrían no existir en la tabla (p. ej. `name` o `buyer_name`)
-          // Preferimos las columnas en español: `nombre`, `apellidos`, `rut` y `custom_name`.
-          const allowed = [
-            'user_id','email','items','subtotal','discount','shipping','total','total_clp','status','estado','commerce_order','flow_order','payment_method','created_at','meta','address','phone','nombre','apellidos','rut','custom_name'
-          ];
-          const safePedido = {};
-          for (const k of allowed) if (typeof pedido[k] !== 'undefined') safePedido[k] = pedido[k];
-          const { error: supaErr } = await supabase.from('pedidos').insert([safePedido]);
+          const { error: supaErr } = await supabase.from('pedidos').insert([pedido]);
           if (supaErr) {
             console.warn('[Flow Confirm] Error insertando pedido en Supabase:', supaErr.message);
           } else {
@@ -967,39 +924,13 @@ app.post("/api/orders/transfer", async (req, res) => {
         console.warn('[Transfer Create] Faltan credenciales de Supabase');
       } else {
         const supabase = createClient(supabaseUrl, supabaseKey);
-        const payerObj = payer || {};
-        const buyerName = payerObj?.name || payerObj?.fullName || payerObj?.full_name || payerObj?.nombre || null;
-
-        // Normalizar nombre / apellidos / rut desde payer o meta
-        let nombre = null;
-        let apellidos = null;
-        if (payerObj?.surname || payerObj?.lastname || payerObj?.apellido) {
-          nombre = payerObj?.name || null;
-          apellidos = payerObj?.surname || payerObj?.lastname || payerObj?.apellido || null;
-        } else if (buyerName) {
-          const parts = String(buyerName).trim().split(/\s+/);
-          nombre = parts.shift() || null;
-          apellidos = parts.length ? parts.join(' ') : null;
-        }
-        const rut = payerObj?.rut || payerObj?.rut_cliente || meta?.rut || meta?.rut_cliente || null;
-
         const pedido = {
-          user_id: payerObj?.id || null,
-          name: buyerName,
-          buyer_name: buyerName,
-          nombre: nombre,
-          apellidos: apellidos,
-          rut: rut,
-          // custom_name desde meta o primer item personalizado
-          custom_name: (meta && (meta.custom_name || meta.customName)) || ((Array.isArray(items) && items.length === 1) ? (items[0]?.customName || items[0]?.customNote || null) : null),
-          email: payerObj?.email || null,
+          user_id: payer?.id || null,
+          email: payer?.email || null,
           items: Array.isArray(items) ? items : [],
           subtotal,
           discount: disc,
           shipping: ship,
-          // Añadir address / phone desde meta si vienen del frontend
-          address: (meta && (meta.address || meta.direccion || meta.direccion_completa || meta.addressLine)) || null,
-          phone: (meta && (meta.phone || meta.telefono || meta.contact_phone || meta.phoneContact)) || null,
           total,
           total_clp: total,
           status: 'pendiente',
@@ -1010,14 +941,9 @@ app.post("/api/orders/transfer", async (req, res) => {
           meta: meta || {},
           payment_method: 'transferencia'
         };
-        // Filtrar campos a un conjunto seguro antes de insertar para evitar errores de esquema
-        // Para transferencia: no incluir `name`/`buyer_name` que pueden no existir en algunos esquemas
-        const allowedT = ['user_id','email','items','subtotal','discount','shipping','total','total_clp','status','estado','commerce_order','flow_order','payment_method','created_at','meta','address','phone','nombre','apellidos','rut','custom_name'];
-        const safePedidoT = {};
-        for (const k of allowedT) if (typeof pedido[k] !== 'undefined') safePedidoT[k] = pedido[k];
         const { data: inserted, error: supaErr } = await supabase
           .from('pedidos')
-          .insert([safePedidoT])
+          .insert([pedido])
           .select('id')
           .single();
         if (supaErr) {
@@ -1582,138 +1508,6 @@ app.post('/api/admin/pedidos/:id/marcar-pagado', async (req, res) => {
     return res.json({ ok: true });
   } catch (err) {
     console.error('[Admin marcar-pagado] Error:', err?.message || err);
-    return res.status(500).json({ error: 'server', detail: err?.message || String(err) });
-  }
-});
-
-// ===== Admin: obtener / actualizar / eliminar pedidos (protegido por ADMIN_KEY) =====
-app.get('/api/admin/pedidos', async (req, res) => {
-  try {
-    const provided = String(req.headers['x-admin-key'] || '').trim();
-    const expected = String(process.env.ADMIN_KEY || '').trim();
-    if (!expected) return res.status(401).json({ error: 'unauthorized', reason: 'ADMIN_KEY not configured' });
-    if (!provided || provided !== expected) return res.status(401).json({ error: 'unauthorized' });
-
-    const { createClient } = await import('@supabase/supabase-js');
-    const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!supabaseUrl || !supabaseKey) return res.status(500).json({ error: 'server', detail: 'Supabase credentials missing' });
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    // Seleccionar todas las columnas disponibles y dejar que el frontend filtre lo que necesita.
-    const { data, error } = await supabase
-      .from('pedidos')
-      .select('*')
-      .order('created_at', { ascending: false });
-    if (error) {
-      console.error('[Admin GET pedidos] Error:', error);
-      return res.status(500).json({ error: 'query_failed', detail: error.message });
-    }
-    return res.json({ ok: true, data });
-  } catch (err) {
-    console.error('[Admin GET pedidos] Error:', err?.message || err);
-    return res.status(500).json({ error: 'server', detail: err?.message || String(err) });
-  }
-});
-
-// ===== Admin-only backfill: rellenar custom_name en pedidos antiguos =====
-app.post('/api/admin/pedidos/backfill-custom-name', async (req, res) => {
-  try {
-    const provided = String(req.headers['x-admin-key'] || '').trim();
-    const expected = String(process.env.ADMIN_KEY || '').trim();
-    if (!expected) return res.status(401).json({ error: 'unauthorized', reason: 'ADMIN_KEY not configured' });
-    if (!provided || provided !== expected) return res.status(401).json({ error: 'unauthorized' });
-
-    const { createClient } = await import('@supabase/supabase-js');
-    const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!supabaseUrl || !supabaseKey) return res.status(500).json({ error: 'server', detail: 'Supabase credentials missing' });
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    // Traer pedidos donde custom_name IS NULL o vacío
-    const { data: rows, error: qErr } = await supabase
-      .from('pedidos')
-      .select('id, items, meta')
-      .or('custom_name.is.null,custom_name.eq."")
-      .limit(1000);
-    if (qErr) return res.status(500).json({ error: 'query_failed', detail: qErr.message });
-
-    let updates = 0;
-    for (const r of rows || []) {
-      let candidate = null;
-      try {
-        // Priorizar meta.custom_name / meta.customName
-        if (r.meta && (r.meta.custom_name || r.meta.customName)) candidate = r.meta.custom_name || r.meta.customName;
-        // Si no, si solo hay un item, usar item.customName o customNote
-        if (!candidate && Array.isArray(r.items) && r.items.length === 1) {
-          candidate = r.items[0]?.customName || r.items[0]?.customNote || null;
-        }
-        if (candidate && String(candidate).trim()) {
-          const { error: upErr } = await supabase.from('pedidos').update({ custom_name: String(candidate).trim() }).eq('id', r.id);
-          if (!upErr) updates++;
-        }
-      } catch (e) {
-        console.warn('[backfill] error procesando id', r.id, e?.message || e);
-      }
-    }
-
-    return res.json({ ok: true, attempted: rows?.length || 0, updated: updates });
-  } catch (err) {
-    console.error('[backfill] Error:', err?.message || err);
-    return res.status(500).json({ error: 'server', detail: err?.message || String(err) });
-  }
-});
-
-// PATCH: actualizar campos específicos (ej: estado)
-app.patch('/api/admin/pedidos/:id', async (req, res) => {
-  try {
-    const provided = String(req.headers['x-admin-key'] || '').trim();
-    const expected = String(process.env.ADMIN_KEY || '').trim();
-    if (!expected) return res.status(401).json({ error: 'unauthorized', reason: 'ADMIN_KEY not configured' });
-    if (!provided || provided !== expected) return res.status(401).json({ error: 'unauthorized' });
-
-    const id = req.params.id;
-    const updates = req.body || {};
-    // Sólo permitir campos seguros
-    const allowed = ['estado', 'status', 'address', 'phone'];
-    const payload = {};
-    for (const k of allowed) if (k in updates) payload[k] = updates[k];
-
-    const { createClient } = await import('@supabase/supabase-js');
-    const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!supabaseUrl || !supabaseKey) return res.status(500).json({ error: 'server', detail: 'Supabase credentials missing' });
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    const { error } = await supabase.from('pedidos').update(payload).eq('id', id);
-    if (error) return res.status(500).json({ error: 'update_failed', detail: error.message });
-    return res.json({ ok: true });
-  } catch (err) {
-    console.error('[Admin PATCH pedido] Error:', err?.message || err);
-    return res.status(500).json({ error: 'server', detail: err?.message || String(err) });
-  }
-});
-
-// DELETE: eliminar pedido
-app.delete('/api/admin/pedidos/:id', async (req, res) => {
-  try {
-    const provided = String(req.headers['x-admin-key'] || '').trim();
-    const expected = String(process.env.ADMIN_KEY || '').trim();
-    if (!expected) return res.status(401).json({ error: 'unauthorized', reason: 'ADMIN_KEY not configured' });
-    if (!provided || provided !== expected) return res.status(401).json({ error: 'unauthorized' });
-
-    const id = req.params.id;
-    const { createClient } = await import('@supabase/supabase-js');
-    const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!supabaseUrl || !supabaseKey) return res.status(500).json({ error: 'server', detail: 'Supabase credentials missing' });
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    const { error } = await supabase.from('pedidos').delete().eq('id', id);
-    if (error) return res.status(500).json({ error: 'delete_failed', detail: error.message });
-    return res.json({ ok: true });
-  } catch (err) {
-    console.error('[Admin DELETE pedido] Error:', err?.message || err);
     return res.status(500).json({ error: 'server', detail: err?.message || String(err) });
   }
 });
