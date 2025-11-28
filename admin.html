@@ -39,6 +39,39 @@
     .gallery-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
     .gallery-header h4 { margin: 0; font-size: 1rem; }
   </style>
+  <style>
+    /* Mobile improvements for admin panel */
+    @media (max-width: 720px) {
+      .admin-panel { margin: 12px; padding: 16px; max-width: 100%; border-radius: 12px; }
+      h1 { font-size: 1.4rem; }
+      .tabs { gap: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .tab { padding: 8px 12px; white-space: nowrap; font-size: .95rem; }
+
+      /* Convert tables into stacked cards for better mobile readability */
+      .admin-table { border: 0; }
+      .admin-table thead { display: none; }
+      .admin-table tbody tr { display: block; margin-bottom: 12px; background: #fff; border-radius: 10px; padding: 10px; box-shadow: 0 1px 4px rgba(0,0,0,.04); border: 1px solid #f0f0f0; }
+      .admin-table td { display: flex; justify-content: space-between; padding: 6px 0; border: none; align-items: center; }
+      .admin-table td:first-child { flex: 0 0 auto; margin-right: 8px; }
+      .admin-table td:nth-child(2) { flex: 1 1 auto; text-align: left; }
+      .admin-table td img { width: 56px; height: 56px; border-radius: 8px; }
+      .admin-table td:last-child { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+
+      /* Make form rows vertical and full-width */
+      .form-row { flex-direction: column; }
+      .form-row label { width: 100%; }
+      .form-row input, .form-row textarea, .form-row select { width: 100%; }
+
+      /* Gallery & variants stack */
+      .gallery-item { flex-direction: row; gap: 10px; align-items: center; }
+      .gallery-item input { flex: 1 1 auto; min-width: 0; }
+
+      /* Buttons full width where appropriate */
+      .btn.add { width: 100%; display: block; box-sizing: border-box; }
+      .form-actions { flex-direction: column; }
+      .form-actions .btn { width: 100%; }
+    }
+  </style>
 </head>
 <body>
   <!-- Login -->
