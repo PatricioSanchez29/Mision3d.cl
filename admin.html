@@ -161,6 +161,19 @@
         <button id="toggleExtraCols" class="btn" style="background:#6b7280;color:#fff">Mostrar columnas extra</button>
       </div>
       <div class="table-responsive">
+      <style>
+        /* Reducir espacios en la tabla de administración */
+        .admin-table th, .admin-table td {
+          padding: 6px 8px !important;
+          font-size: 0.9rem;
+          line-height: 1.2;
+          vertical-align: middle;
+        }
+        .admin-table tbody tr { 
+          height: auto;
+        }
+        .admin-table thead th { padding: 8px 10px; }
+      </style>
       <table class="admin-table" id="pedidosTable">
         <thead>
           <tr>
@@ -282,9 +295,18 @@
           const phone = pedido.phone || pedido.telefono || meta.phone || meta.telefono || '';
           const note = pedido.note || pedido.notes || meta.note || meta.nota || checkout.note || '';
           const coupon = pedido.coupon || pedido.discount || meta.coupon || checkout.coupon || '';
-          // Nombre/Apellido/RUT (varios fallbacks)
+          // Nombre completo (usar full_name si existe, sino reconstruir)
           let firstName = pedido.first_name || pedido.firstname || pedido.nombre || meta.nombre || checkout.first_name || checkout.nombre || '';
           let lastName = pedido.last_name || pedido.lastname || pedido.apellido || meta.apellido || checkout.last_name || checkout.apellido || '';
+          // Preferir campo `full_name` en la tabla si está presente
+          const fullNameRaw = pedido.full_name || meta.full_name || pedido.name || pedido.buyer_name || `${firstName} ${lastName}`.trim();
+          const fullName = String(fullNameRaw || '').trim();
+          // Si tenemos fullName, intentar derivar first/last para columnas separadas
+          if (fullName && (!firstName && !lastName)) {
+            const parts = fullName.split(/\s+/);
+            if (parts.length === 1) { firstName = parts[0]; }
+            else if (parts.length >= 2) { firstName = parts.slice(0, -1).join(' '); lastName = parts.slice(-1).join(' '); }
+          }
           // Si no hay split, intentar partir el campo "name" o "buyer_name"
           if ((!firstName || !lastName) && (pedido.name || pedido.buyer_name || meta.nombre_completo)) {
             const fullname = pedido.name || pedido.buyer_name || meta.nombre_completo || '';
@@ -296,14 +318,7 @@
               lastName = lastName || parts.slice(-1).join(' ');
             }
           }
-          // Si aún no hay nombre, usar customName de items (ej. personalización) como fallback
-          if ((!firstName || !lastName) && Array.isArray(items) && items.length > 0) {
-            const cn = items[0]?.customName || items[0]?.custom_name || items[0]?.customNote || '';
-            if (cn) {
-              // Poner todo en firstName (no podemos separar apellido de personalización)
-              firstName = firstName || cn;
-            }
-          }
+          // No usar customName (personalización) como nombre del comprador; personalización se muestra en su columna
           const rut = pedido.rut || pedido.rut_cliente || meta.rut || meta.rut_cliente || checkout.rut || checkout.identification || '';
           const itemsText = items.map(it => {
             const name = it?.name || it?.title || 'Producto';
@@ -327,7 +342,7 @@
           tr.innerHTML = `
             <td>${pedido.id}</td>
             <td>${pedido.email || pedido.user_id || ''}</td>
-            <td>${firstName || '—'}</td>
+            <td>${fullName || '—'}</td>
             <td>${lastName || '—'}</td>
             <td>${(pedido.custom_name || meta.custom_name || meta.customName || (items.length === 1 ? (items[0]?.customName || items[0]?.customNote) : null) ) || '—'}</td>
             <td>
@@ -353,7 +368,8 @@
               <div style="display:flex;gap:8px;flex-direction:column">
                 <div>
                   <button data-id="${pedido.id}" class="mark-paid-btn" style="color:#fff;background:#16a34a;border:none;padding:4px 8px;border-radius:4px;margin-right:8px;">Marcar pagado + email</button>
-                  <button data-id="${pedido.id}" class="eliminar-btn" style="color:#fff;background:#e11d48;border:none;padding:4px 8px;border-radius:4px;">Eliminar</button>
+                    <button data-id="${pedido.id}" class="eliminar-btn" style="color:#fff;background:#e11d48;border:none;padding:4px 8px;border-radius:4px;">Eliminar</button>
+                    <button data-id="${pedido.id}" data-fullname="${encodeURIComponent(fullName)}" class="edit-fullname-btn" style="margin-top:6px;background:#f59e0b;color:#fff;border:none;padding:6px 8px;border-radius:4px;">Editar comprador</button>
                 </div>
                 <button data-payload="${payload}" class="view-json-btn" style="background:#f3f4f6;border:1px solid #ccc;padding:6px 8px;border-radius:4px;color:#111">Ver JSON</button>
               </div>
@@ -424,6 +440,26 @@
             let obj = null;
             try { obj = JSON.parse(decodeURIComponent(payload)); } catch (e) { obj = { error: 'invalid JSON', raw: payload }; }
             showJsonModal(obj);
+          });
+        });
+        // Botón editar full_name por fila
+        tbody.querySelectorAll('.edit-fullname-btn').forEach(btn => {
+          btn.addEventListener('click', async function () {
+            const id = this.getAttribute('data-id');
+            const current = decodeURIComponent(this.getAttribute('data-fullname') || '') || '';
+            const nuevo = prompt('Editar nombre completo del comprador (full_name):', current);
+            if (nuevo === null) return; // cancel
+            const trimmed = String(nuevo).trim();
+            if (!trimmed) { alert('El nombre no puede quedar vacío'); return; }
+            try {
+              const { error } = await supabase.from('pedidos').update({ full_name: trimmed }).eq('id', id);
+              if (error) { showAdminToast('Error actualizando full_name: ' + error.message, 'error'); return; }
+              showAdminToast('full_name actualizado', 'success');
+              renderPedidos();
+            } catch (e) {
+              console.error('update full_name error', e);
+              showAdminToast('Error actualizando full_name', 'error');
+            }
           });
         });
         // Filtros: listeners
