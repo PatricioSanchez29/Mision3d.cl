@@ -38,6 +38,16 @@ const app = express();
 // Sitemap y estáticos
 app.use(sitemapRouter);
 
+// Evitar 404s por favicon solicitados al API (p. ej. desde páginas de retorno de pago)
+// Redirigimos al favicon público del sitio para eliminar el error en consola.
+app.get('/favicon.ico', (req, res) => {
+  try {
+    return res.redirect(301, 'https://mision3d.cl/favicon.ico');
+  } catch (e) {
+    return res.status(204).end();
+  }
+});
+
 // Configurar trust proxy para Render (soluciona warning de express-rate-limit)
 app.set("trust proxy", 1);
 
@@ -719,8 +729,11 @@ app.post("/flow/confirm", webhookLimiter, async (req, res) => {
           console.warn('[Flow Confirm] Faltan credenciales de Supabase');
         } else {
           const supabase = createClient(supabaseUrl, supabaseKey);
+          const buyerName = tmp?.payer?.name || tmp?.payer?.fullName || tmp?.payer?.full_name || tmp?.payer?.nombre || paymentData?.buyerName || null;
           const pedido = {
             user_id: tmp?.payer?.id || null,
+            name: buyerName,
+            buyer_name: buyerName,
             email: tmp?.payer?.email || paymentData?.email || null,
             items: tmp?.items || [],
             subtotal: tmp?.subtotal ?? null,
@@ -914,8 +927,11 @@ app.post("/api/orders/transfer", async (req, res) => {
         console.warn('[Transfer Create] Faltan credenciales de Supabase');
       } else {
         const supabase = createClient(supabaseUrl, supabaseKey);
+        const buyerName = payer?.name || payer?.fullName || payer?.full_name || payer?.nombre || null;
         const pedido = {
           user_id: payer?.id || null,
+          name: buyerName,
+          buyer_name: buyerName,
           email: payer?.email || null,
           items: Array.isArray(items) ? items : [],
           subtotal,

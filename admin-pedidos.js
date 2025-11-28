@@ -29,13 +29,14 @@ async function mostrarPedidosAdmin() {
   let html = '<ul>';
   for (const pedido of data) {
     const total = pedido.total_clp || pedido.total || 0;
+    const name = pedido.name || pedido.buyer_name || pedido.customer_name || 'N/A';
     const email = pedido.email || pedido.user_id || 'N/A';
     const fecha = pedido.created_at || pedido.createdat || pedido.createdAt || 'N/A';
     const items = pedido.items || [];
     const itemsText = items.map(it => `${it.name || it.title || 'Producto'} (x${it.qty || 1})`).join(', ') || 'Sin items';
     
     html += `<li>
-      <b>ID:</b> ${pedido.id} | <b>Email:</b> ${email} | <b>Estado:</b> 
+      <b>ID:</b> ${pedido.id} | <b>Cliente:</b> ${name} | <b>Email:</b> ${email} | <b>Estado:</b> 
       <select data-id="${pedido.id}" class="estado-select">
         <option value="pendiente"${pedido.estado === 'pendiente' ? ' selected' : ''}>pendiente</option>
         <option value="pagado"${pedido.estado === 'pagado' ? ' selected' : ''}>pagado</option>
