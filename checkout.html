@@ -693,7 +693,7 @@ function renderCheckoutSummary(){
                   <span>${it.customNote ? String(it.customNote).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;') : ''}</span>
                 </div>`;
               } else {
-                return `<input class=\"note-summary-input\" data-id=\"${it.id}\" type=\"text\" placeholder=\"Personalización (opcional)\" value=\"${it.customNote ? String(it.customNote).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;') : ''}\" style=\"width:100%;font-size:.72rem;padding:4px 7px;margin-top:2px;border:1px solid #ddd;border-radius:5px\">`;
+                return `<input class=\"note-summary-input\" data-id=\"${it.id}\" type=\"text\" placeholder=\"Personalización (opcional)\" value=\"${it.customNote ? String(it.customNote).replace(/&/g,'&amp;').replace(/\"/g,'&quot;').replace(/</g,'&lt;') : ''}\" readonly aria-readonly=\"true\" tabindex=\"-1\" style=\"width:100%;font-size:.72rem;padding:4px 7px;margin-top:2px;border:1px solid #ddd;border-radius:5px;background:#f8f8f8;cursor:not-allowed\">`;
               }
             })()}
           </div>
