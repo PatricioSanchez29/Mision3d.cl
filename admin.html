@@ -180,7 +180,6 @@
             <th>ID</th>
             <th>Usuario</th>
             <th>Nombre</th>
-            <th>Apellido</th>
             <th>Personalización</th>
             <th>Estado</th>
             <th>Total</th>
@@ -193,7 +192,7 @@
             <th>Tel</th>
             <th>RUT</th>
             <th>Nota</th>
-            <th>Cupón</th>
+            <th>Envío</th>
             <th>Acciones</th>
           </tr>
         </thead>
@@ -230,14 +229,14 @@
       // --- Pedidos: renderizado y gestión ---
       async function renderPedidos() {
         const tbody = document.querySelector('#pedidosTable tbody');
-        tbody.innerHTML = '<tr><td colspan="18">Cargando pedidos...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="17">Cargando pedidos...</td></tr>';
         let { data, error } = await supabase.from('pedidos').select('*').order('created_at', { ascending: false });
         if(error) {
           tbody.innerHTML = `<tr><td colspan="6" style="color:#c00">Error cargando pedidos: ${error.message}</td></tr>`;
           return;
         }
         if(!data || data.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="18" style="color:#888">No hay pedidos registrados.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="17" style="color:#888">No hay pedidos registrados.</td></tr>';
           return;
         }
         // Aplicar filtros
@@ -343,7 +342,6 @@
             <td>${pedido.id}</td>
             <td>${pedido.email || pedido.user_id || ''}</td>
             <td>${fullName || '—'}</td>
-            <td>${lastName || '—'}</td>
             <td>${(pedido.custom_name || meta.custom_name || meta.customName || (items.length === 1 ? (items[0]?.customName || items[0]?.customNote) : null) ) || '—'}</td>
             <td>
               <select data-id="${pedido.id}" class="estado-select">
@@ -363,7 +361,7 @@
             <td>${phone || '—'}</td>
             <td>${rut || '—'}</td>
             <td>${note || '—'}</td>
-            <td>${coupon || '—'}</td>
+            <td title="${(normalized.envio || meta.envio || checkout.envio || pedido.envio || '—')}">${normalized.envio || meta.envio || checkout.envio || pedido.envio || '—'}</td>
             <td>
               <div style="display:flex;gap:8px;flex-direction:column">
                 <div>
@@ -442,7 +440,7 @@
             showJsonModal(obj);
           });
         });
-        // Botón editar full_name por fila
+        // Botón editar full_name por fila -> usa endpoint admin protegido por x-admin-key
         tbody.querySelectorAll('.edit-fullname-btn').forEach(btn => {
           btn.addEventListener('click', async function () {
             const id = this.getAttribute('data-id');
@@ -451,14 +449,35 @@
             if (nuevo === null) return; // cancel
             const trimmed = String(nuevo).trim();
             if (!trimmed) { alert('El nombre no puede quedar vacío'); return; }
+
+            // Preguntar también por RUT opcional
+            const currentRut = this.getAttribute('data-rut') ? decodeURIComponent(this.getAttribute('data-rut')) : (btn.closest('tr')?.querySelector('td:nth-child(14)')?.textContent || '');
+            const nuevoRut = prompt('RUT del comprador (opcional):', currentRut || '');
+
+            let adminKey = sessionStorage.getItem('ADMIN_KEY');
+            if (!adminKey) {
+              adminKey = prompt('Ingresa la ADMIN_KEY (solo administradores)');
+              if (!adminKey) return;
+              sessionStorage.setItem('ADMIN_KEY', adminKey);
+            }
+
             try {
-              const { error } = await supabase.from('pedidos').update({ full_name: trimmed }).eq('id', id);
-              if (error) { showAdminToast('Error actualizando full_name: ' + error.message, 'error'); return; }
-              showAdminToast('full_name actualizado', 'success');
+              const base = window.location.origin;
+              const resp = await fetch(base + '/api/admin/pedidos/' + encodeURIComponent(id) + '/update-buyer', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json', 'x-admin-key': adminKey },
+                body: JSON.stringify({ full_name: trimmed, rut: nuevoRut })
+              });
+              const data = await resp.json().catch(()=>({}));
+              if (!resp.ok) {
+                showAdminToast('Error: ' + (data?.detail || data?.error || resp.status), 'error');
+                return;
+              }
+              showAdminToast('Datos del comprador actualizados', 'success');
               renderPedidos();
             } catch (e) {
-              console.error('update full_name error', e);
-              showAdminToast('Error actualizando full_name', 'error');
+              console.error('update-buyer error', e);
+              showAdminToast('Error actualizando datos', 'error');
             }
           });
         });
@@ -503,21 +522,58 @@
         if (exportBtn && !exportBtn._binded) {
           exportBtn._binded = true;
           exportBtn.addEventListener('click', () => {
-            const rows = (window._pedidosFiltered || []).map(p => ({
-              id: p.id,
-              email: p.email || p.user_id || '',
-              estado: p.estado || p.status || '',
-              total: Number(p.total_clp || p.total || 0),
-              created_at: p.created_at || p.createdAt || p.createdat || '',
-              commerce_order: p.commerce_order || p.commerceOrder || '',
-              items_count: Array.isArray(p.items) ? p.items.length : 0,
-              items: (Array.isArray(p.items) ? p.items : []).map(it => {
-                const name = it?.name || it?.title || 'Producto';
-                const qty = Number(it?.qty || 1);
+            const rows = (window._pedidosFiltered || []).map(p => {
+              // Items robust parsing
+              let itemsArr = [];
+              try { itemsArr = Array.isArray(p.items) ? p.items : (p.items ? JSON.parse(p.items) : []); } catch(e){ itemsArr = Array.isArray(p.items) ? p.items : []; }
+              const itemsText = (Array.isArray(itemsArr) ? itemsArr : []).map(it => {
+                const name = it?.name || it?.title || it?.productName || 'Producto';
+                const qty = Number(it?.qty || it?.quantity || 1);
                 const unit = Number((it?.price ?? it?.unit_price) || 0);
                 return `${name} (x${qty} a ${money(unit)})`;
-              }).join(' | ')
-            }));
+              }).join(' | ');
+
+              const meta = p.meta || {};
+              const checkout = p.checkout || p.checkout_data || p.payment || p.payment_intent || {};
+              const paymentMethod = checkout.payment_method || checkout.method || p.payment_method || meta.payment_method || '';
+              const paymentStatus = checkout.status || p.payment_status || meta.payment_status || '';
+              const shippingCost = Number(p.shipping || p.shipping_cost || p.shippingCost || meta.shippingCost || 0);
+              const nombre = p.nombre || p.first_name || p.firstname || meta.nombre || '';
+              const apellidos = p.apellidos || meta.apellidos || '';
+              const rut = p.rut || meta.rut || meta.rut_cliente || '';
+              const telefono = p.telefono || p.phone || meta.telefono || '';
+              const direccion = p.direccion || p.address || meta.direccion || '';
+              const region = p.region || meta.region || '';
+              const comuna = p.comuna || meta.comuna || '';
+              const envio = p.envio || meta.envio || checkout.envio || '';
+              const coupon = p.coupon || p.discount || meta.coupon || '';
+              const note = p.note || p.notes || meta.note || '';
+
+              return {
+                id: p.id,
+                email: p.email || p.user_id || '',
+                estado: p.estado || p.status || '',
+                total: Number(p.total_clp || p.total || 0),
+                created_at: p.created_at || p.createdAt || p.createdat || '',
+                commerce_order: p.commerce_order || p.commerceOrder || '',
+                items_count: Array.isArray(itemsArr) ? itemsArr.length : 0,
+                items: itemsText,
+                nombre,
+                apellidos,
+                rut,
+                telefono,
+                direccion,
+                region,
+                comuna,
+                envio,
+                payment_method: paymentMethod,
+                payment_status: paymentStatus,
+                shipping_cost: shippingCost,
+                coupon,
+                note,
+                raw: JSON.stringify(p)
+              };
+            });
             if (!rows.length) { showAdminToast('No hay datos para exportar', 'error'); return; }
             const header = Object.keys(rows[0]);
             const csv = [header.join(',')].concat(rows.map(r => header.map(k => {
@@ -539,58 +595,64 @@
         if (exportXlsxBtn && !exportXlsxBtn._binded) {
           exportXlsxBtn._binded = true;
           exportXlsxBtn.addEventListener('click', () => {
-            const rows = (window._pedidosFiltered || []).map(p => ({
-              id: p.id,
-              email: p.email || p.user_id || '',
-              estado: p.estado || p.status || '',
-              total: Number(p.total_clp || p.total || 0),
-              created_at: p.created_at || p.createdAt || p.createdat || '',
-              commerce_order: p.commerce_order || p.commerceOrder || '',
-              items_count: Array.isArray(p.items) ? p.items.length : 0,
-              items: (Array.isArray(p.items) ? p.items : []).map(it => {
-                const name = it?.name || it?.title || 'Producto';
-                const qty = Number(it?.qty || 1);
+            const rows = (window._pedidosFiltered || []).map(p => {
+              let itemsArr = [];
+              try { itemsArr = Array.isArray(p.items) ? p.items : (p.items ? JSON.parse(p.items) : []); } catch(e){ itemsArr = Array.isArray(p.items) ? p.items : []; }
+              const itemsText = (Array.isArray(itemsArr) ? itemsArr : []).map(it => {
+                const name = it?.name || it?.title || it?.productName || 'Producto';
+                const qty = Number(it?.qty || it?.quantity || 1);
                 const unit = Number((it?.price ?? it?.unit_price) || 0);
                 return `${name} (x${qty} a ${money(unit)})`;
-              }).join(' | ')
-            }));
+              }).join(' | ');
+              const meta = p.meta || {};
+              const checkout = p.checkout || p.checkout_data || p.payment || p.payment_intent || {};
+              const paymentMethod = checkout.payment_method || checkout.method || p.payment_method || meta.payment_method || '';
+              const paymentStatus = checkout.status || p.payment_status || meta.payment_status || '';
+              const shippingCost = Number(p.shipping || p.shipping_cost || p.shippingCost || meta.shippingCost || 0);
+              const nombre = p.nombre || p.first_name || p.firstname || meta.nombre || '';
+              const apellidos = p.apellidos || meta.apellidos || '';
+              const rut = p.rut || meta.rut || meta.rut_cliente || '';
+              const telefono = p.telefono || p.phone || meta.telefono || '';
+              const direccion = p.direccion || p.address || meta.direccion || '';
+              const region = p.region || meta.region || '';
+              const comuna = p.comuna || meta.comuna || '';
+              const envio = p.envio || meta.envio || checkout.envio || '';
+              const coupon = p.coupon || p.discount || meta.coupon || '';
+              const note = p.note || p.notes || meta.note || '';
+              return {
+                id: p.id,
+                email: p.email || p.user_id || '',
+                estado: p.estado || p.status || '',
+                total: Number(p.total_clp || p.total || 0),
+                created_at: p.created_at || p.createdAt || p.createdat || '',
+                commerce_order: p.commerce_order || p.commerceOrder || '',
+                items_count: Array.isArray(itemsArr) ? itemsArr.length : 0,
+                items: itemsText,
+                nombre,
+                apellidos,
+                rut,
+                telefono,
+                direccion,
+                region,
+                comuna,
+                envio,
+                payment_method: paymentMethod,
+                payment_status: paymentStatus,
+                shipping_cost: shippingCost,
+                coupon,
+                note,
+                raw: JSON.stringify(p)
+              };
+            });
             if (!rows.length) { showAdminToast('No hay datos para exportar', 'error'); return; }
             try {
               const wb = XLSX.utils.book_new();
-              // Hoja 1: Pedidos (resumen con Items en una sola celda)
               const wsResumen = XLSX.utils.json_to_sheet(rows);
               XLSX.utils.book_append_sheet(wb, wsResumen, 'Pedidos');
-
-              // Mejora opcional: Hoja 2 con detalle por ítem
-              const detalle = [];
-              (window._pedidosFiltered || []).forEach(p => {
-                const items = Array.isArray(p.items) ? p.items : [];
-                const base = {
-                  pedido_id: p.id,
-                  email: p.email || p.user_id || '',
-                  estado: p.estado || p.status || '',
-                  created_at: p.created_at || p.createdAt || p.createdat || '',
-                };
-                if (items.length === 0) {
-                  detalle.push({ ...base, item: '', qty: 0, unit_price: 0, total_item: 0 });
-                } else {
-                  items.forEach(it => {
-                    const qty = Number(it?.qty || 1);
-                    const price = Number(it?.price || 0);
-                    detalle.push({
-                      ...base,
-                      item: it?.name || it?.title || 'Producto',
-                      qty,
-                      unit_price: price,
-                      total_item: qty * price
-                    });
-                  });
-                }
-              });
-              if (detalle.length) {
-                const wsDetalle = XLSX.utils.json_to_sheet(detalle);
-                XLSX.utils.book_append_sheet(wb, wsDetalle, 'DetalleItems');
-              }
+              // Hoja con JSON crudo por pedido (útil para re-importar o análisis)
+              const rawSheet = (window._pedidosFiltered || []).map(p => ({ id: p.id, raw: JSON.stringify(p) }));
+              const wsRaw = XLSX.utils.json_to_sheet(rawSheet);
+              XLSX.utils.book_append_sheet(wb, wsRaw, 'RawJSON');
               XLSX.writeFile(wb, 'pedidos.xlsx');
             } catch(e){
               console.error('XLSX export error:', e);
@@ -1156,7 +1218,7 @@
         const tbody = document.querySelector('#pedidosTable tbody');
         if(tbody) tbody.innerHTML = '<tr><td colspan="6" style="color:#888">Selecciona la pestaña Pedidos para ver órdenes.</td></tr>';
       }
-      // Toggle mostrar columnas extra (nombre, apellido, región, comuna, rut)
+      // Toggle mostrar columnas extra (nombre, región, comuna, rut)
       (function setupExtraColsToggle(){
         const btn = document.getElementById('toggleExtraCols');
         const table = document.getElementById('pedidosTable');

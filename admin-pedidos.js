@@ -51,14 +51,15 @@ async function mostrarPedidosAdmin() {
     const itemsText = Array.isArray(items) ? items.map(it => `${it.name || it.title || it.productName || 'Producto'} (x${it.qty || it.quantity || 1})`).join(', ') : (items || 'Sin items');
 
     // Fallbacks for buyer info
-    const nombre = pedido.nombre || pedido.buyer_name || meta.nombre || meta.name || (Array.isArray(items) && items[0] && (items[0].customName || items[0].name)) || '';
+    const nombre = pedido.nombre || pedido.buyer_name || meta.nombre || meta.name || '';
     const apellidos = pedido.apellidos || meta.apellidos || '';
     const rut = pedido.rut || meta.rut || meta.rut_cliente || '';
+    const nombreCompleto = `${String(nombre).trim()} ${String(apellidos).trim()}`.trim();
     const telefono = pedido.telefono || meta.telefono || meta.phone || '';
     const direccion = meta.direccion || meta.address || '';
 
     html += `<li>
-      <b>ID:</b> ${pedido.id} | <b>Email:</b> ${email} | <b>Nombre:</b> ${nombre || 'N/A'} ${apellidos || ''} | <b>RUT:</b> ${rut || 'N/A'} | <b>Estado:</b>
+      <b>ID:</b> ${pedido.id} | <b>Email:</b> ${email} | <b>Nombre:</b> ${nombreCompleto || 'N/A'} | <b>RUT:</b> ${rut || 'N/A'} | <b>Estado:</b>
       <select data-id="${pedido.id}" class="estado-select">
         <option value="pendiente"${pedido.estado === 'pendiente' ? ' selected' : ''}>pendiente</option>
         <option value="pagado"${pedido.estado === 'pagado' ? ' selected' : ''}>pagado</option>
