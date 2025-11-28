@@ -781,7 +781,13 @@ app.post("/flow/confirm", webhookLimiter, async (req, res) => {
             custom_name: (tmp?.meta && (tmp.meta.custom_name || tmp.meta.customName)) || ((Array.isArray(tmp?.items) && tmp.items.length === 1) ? (tmp.items[0]?.customName || tmp.items[0]?.customNote || null) : null),
             meta: tmp?.meta || {},
           };
-          const { error: supaErr } = await supabase.from('pedidos').insert([pedido]);
+          // Filtrar campos a un conjunto seguro para evitar errores si la tabla no tiene columnas inesperadas
+          const allowed = [
+            'user_id','name','email','items','subtotal','discount','shipping','total','total_clp','status','estado','commerce_order','flow_order','payment_method','created_at','meta','address','phone','nombre','apellidos','rut','custom_name'
+          ];
+          const safePedido = {};
+          for (const k of allowed) if (typeof pedido[k] !== 'undefined') safePedido[k] = pedido[k];
+          const { error: supaErr } = await supabase.from('pedidos').insert([safePedido]);
           if (supaErr) {
             console.warn('[Flow Confirm] Error insertando pedido en Supabase:', supaErr.message);
           } else {
@@ -1002,9 +1008,13 @@ app.post("/api/orders/transfer", async (req, res) => {
           meta: meta || {},
           payment_method: 'transferencia'
         };
+        // Filtrar campos a un conjunto seguro antes de insertar para evitar errores de esquema
+        const allowedT = ['user_id','name','email','items','subtotal','discount','shipping','total','total_clp','status','estado','commerce_order','flow_order','payment_method','created_at','meta','address','phone','nombre','apellidos','rut','custom_name'];
+        const safePedidoT = {};
+        for (const k of allowedT) if (typeof pedido[k] !== 'undefined') safePedidoT[k] = pedido[k];
         const { data: inserted, error: supaErr } = await supabase
           .from('pedidos')
-          .insert([pedido])
+          .insert([safePedidoT])
           .select('id')
           .single();
         if (supaErr) {
