@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Producto | Tienda 3D</title><meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="icon" type="image/jpeg" href="img/Logo_Mision3d.jpg">
 <link rel="apple-touch-icon" href="img/Logo_Mision3d.jpg">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=20251128-1">
 <script type="module" src="auth-header.js"></script>
 <script>window.GA_MEASUREMENT_ID = window.GA_MEASUREMENT_ID || 'G-XXXXXXXXXX';</script>
 <script src="consent.js"></script>
@@ -17,7 +17,7 @@
 .product-thumb.active{border:none}
 .breadcrumb{font-size:.85rem;color:#666;margin-bottom:20px}
 .breadcrumb a{color:#e6462f;text-decoration:none}
-.product-info h1{margin:0 0 8px;font-size:2rem;line-height:1.2}
+  .product-info h1:not(.product-title){margin:0 0 8px;font-size:2rem;line-height:1.2}
 .price-block{display:flex;align-items:center;gap:10px;margin:12px 0 18px}
 .price-final{font-size:2rem;font-weight:700;color:#e6462f}
 .price-old{color:#999;text-decoration:line-through;font-size:1rem}
@@ -364,7 +364,7 @@ function renderProductDetail(){
     `;
   }
   
-  info.innerHTML=`<h1>${p.name}</h1>
+  info.innerHTML=`<h1 class='product-title'>${p.name}</h1>
   <div class='badges-line'>${badges}</div>
   <div class='price-block'>${priceOriginal}<span class='price-final' id='priceDisplay'>${money(variants.length>0 ? variants[0].price : finalPrice)}</span></div>
   ${variantsHTML}

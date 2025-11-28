@@ -599,6 +599,31 @@ body.dark .trend-chip:hover { background: #1f2937; border-color: #4b5563; }
     width: 100%;
     margin: 0 auto;
   }
+
+  /* Refuerzo: asegurar botón visible y centrado con mismo ancho */
+  .action-buttons .btn-primary,
+  .action-buttons .btn-outline {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 340px; /* ajuste más compacto */
+    margin-left: auto !important;
+    margin-right: auto !important;
+    box-sizing: border-box;
+    text-align: center;
+    height: var(--btn-height);
+    padding-left: 18px !important;
+    padding-right: 18px !important;
+  }
+
+  /* Asegurar que el botón outline tenga la misma altura visual */
+  .action-buttons .btn-outline {
+    background: #fff;
+    border-width: 2px;
+    border-style: solid;
+    box-sizing: border-box;
+  }
 }
 
 .search-suggestions {
@@ -620,6 +645,65 @@ body.dark .trend-chip:hover { background: #1f2937; border-color: #4b5563; }
 	padding: 8px 0;
     animation: dropdownIn 160ms ease-out;
 }
+
+/* ===== Bloque recomendado por usuario: Estilos para producto móvil ===== */
+@media (max-width: 768px) {
+  .product-page {
+    padding: 0 12px 24px;
+    box-sizing: border-box;
+  }
+
+  .product-title {
+    font-size: 1.2rem;
+    line-height: 1.25;
+    margin-bottom: 6px;
+    word-break: break-word;
+    hyphens: auto;
+  }
+
+  /* Mapear el selector de precio existente */
+  .product-price,
+  .price-final,
+  #priceDisplay {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  /* Botones centrados: mapear .product-actions y .action-buttons existentes */
+  .product-actions,
+  .action-buttons {
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .product-actions button,
+  .product-actions .btn,
+  .action-buttons button,
+  .action-buttons .btn-primary,
+  .action-buttons .btn-outline {
+    width: 100%;
+    max-width: 320px;
+    display: block;
+    box-sizing: border-box;
+  }
+
+  /* Imagen del producto */
+  .product-image img,
+  .product-main img,
+  #mainImage {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+    object-fit: cover;
+  }
+}
+/* ===== Fin bloque usuario ===== */
 
 @keyframes dropdownIn {
   from { opacity: 0; transform: translateY(-6px); }
@@ -944,6 +1028,18 @@ body{
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+/* Evitar scroll horizontal inesperado */
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Asegurar que la franja Black Friday permite salto de línea y no desborda */
+.bf-banner {
+  box-sizing: border-box;
+  white-space: normal;
+}
 .dark-toggle {background:#fff;border:1px solid #d1d5db;border-radius:8px;padding:6px 10px;cursor:pointer;margin-right:12px;font-size:1rem}
 .floating-whatsapp {position:fixed;bottom:24px;left:24px;background:#25d366;color:#fff;font-size:24px;width:54px;height:54px;display:flex;align-items:center;justify-content:center;border-radius:50%;text-decoration:none;box-shadow:0 4px 10px rgba(0,0,0,.25);z-index:1000}
 .floating-whatsapp:hover {filter:brightness(1.1)}
@@ -992,6 +1088,104 @@ body.dark .footer-logo{filter:drop-shadow(0 2px 4px rgba(0,0,0,.55)) brightness(
 .ann-track{display:inline-block;padding:6px 0;animation:marquee 28s linear infinite}
 @keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 body.dark .announcement-bar{background:linear-gradient(90deg,#0891b2,#0e7490)}
+
+/* Black Friday banner */
+.bf-banner {
+  width: 100%;
+  background: #000000;
+  color: #ffffff;
+  text-align: center;
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+}
+.bf-banner strong { font-weight:700 }
+@media (max-width: 600px) {
+  .bf-banner { font-size: 0.75rem; padding: 5px 6px }
+}
+
+/* Top fixed container: keep banner + header together when scrolling */
+.top-fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10000;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+
+/* Ensure background is solid to avoid transparency issues */
+.top-fixed, .main-header {
+  background-color: #ffffff;
+}
+
+/* Responsive header + BF banner (mobile) */
+.bf-banner { background: #000; color: #fff; text-align: center; padding: 4px 8px; font-size: 0.8rem; }
+
+@media (max-width: 768px) {
+  /* Mobile header layout: position items in a top row (hamburger,left - logo center - icons right)
+     and place the search below full-width. Uses absolute positioning for the top-row items
+     so we don't need to change HTML structure across pages. */
+
+  /* container */
+  .main-header {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px 10px 10px;
+    position: relative;
+    align-items: stretch;
+  }
+
+  /* hide desktop nav on mobile (use hamburger instead) */
+  .main-header .nav { display: none; }
+
+  /* top row items: we'll position hamburger and actions absolutely, center logo normally */
+  .main-header .hamburger-btn,
+  .main-header .hamburger-btn .hamburger-icon,
+  .main-header #hamburgerBtn,
+  .main-header .menu-toggle { position: absolute; left: 10px; top: 8px; z-index: 10002; }
+
+  .main-header .right-actions,
+  .main-header .header-icons { position: absolute; right: 10px; top: 8px; z-index: 10002; display:flex; align-items:center; gap:8px; }
+
+  /* center logo */
+  .main-header .logo,
+  .main-header .header-logo { margin: 6px auto 0; display:flex; align-items:center; justify-content:center; text-align:center; }
+  .main-header .logo img, .main-header .header-logo img { height: 42px; width: auto; display: block; }
+
+  /* search goes below the top row and occupies full width */
+  .search-header, .header-search { width: 100%; margin-top: 54px; }
+  .advanced-search-bar, .search-header form, .header-search form, .header-search input { width: 100%; box-sizing: border-box; }
+
+  /* ensure images and main content respect viewport */
+  img { max-width:100%; height:auto; display:block; }
+  main, .page-content, .container { padding-left:10px; padding-right:10px; box-sizing:border-box; }
+
+  /* slightly reduce banner font on narrow screens */
+  .bf-banner { font-size: 0.75rem; }
+}
+
+/* Hero Black Friday badge + CTA */
+.hero-bf-badge {
+  display: inline-block;
+  margin-bottom: 0.75rem;
+  padding: 0.25rem 0.9rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.35);
+  color: #ffffff;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+/* .btn-bf removed: CTA deleted from hero */
 
 /* Nuevo catálogo avanzado */
 .catalog-wrap{padding:50px 24px 70px;max-width:1400px;margin:0 auto}
@@ -4049,6 +4243,52 @@ body.dark .qv-customization small {
 .hero .hero-actions { position: relative; z-index: 2; }
 .hero .hero-actions .hero-btn,
 .hero .hero-actions a { position: relative; z-index: 3; pointer-events: auto; }
+
+
+
+
+/* Ajuste de título SOLO en móviles */
+
+@media (max-width: 768px) {
+  /* Escalado flexible: usa clamp para adaptarse a pantallas pequeñas */
+  .product-title {
+    /* escala entre 1rem y 1.15rem para móviles */
+    font-size: clamp(1rem, 4.2vw, 1.15rem);
+    line-height: 1.22;
+    margin-bottom: 6px;
+    font-weight: 600;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+
+    /* Limitar a 2 líneas visuales para compactar el título en móvil */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Evitar que el título quede pegado a los bordes del contenido */
+  .product-page .product-title {
+    padding: 0 12px;
+    box-sizing: border-box;
+  }
+
+  /* Si tu diseño tiene un h1 sin clase, aplica el mismo tratamiento */
+  .product-info h1:not(.product-title) {
+    font-size: clamp(1rem, 4.2vw, 1.15rem);
+    line-height: 1.22;
+    margin-bottom: 6px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
 
 
 
