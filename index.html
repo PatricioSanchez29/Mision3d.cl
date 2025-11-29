@@ -522,6 +522,8 @@
       const d = Number(p.discount || 0);
       const hasDiscount = Number.isFinite(d) && d > 0;
       const badgeHtml = hasDiscount ? (d > 0 && d <= 25 ? `<span class="badge badge--bf">BF -${d}%</span>` : `<span class="badge badge--sale">-${d}%</span>`) : '';
+      const isOut = String(p.stock || '').toLowerCase() === 'agotado';
+      const stockBadge = isOut ? `<span class="badge badge--out">Agotado</span>` : '';
       const basePrice = Number(p.price || 0);
       const finalPrice = hasDiscount ? Math.round(basePrice * (1 - d/100)) : basePrice;
       const priceHtml = hasDiscount
@@ -537,8 +539,9 @@
           </h4>
           <p>${desc}</p>
           ${badgeHtml}
+          ${stockBadge}
           <strong class="price">${priceHtml}</strong>
-          <button class="add" data-id="${p.id}">Agregar</button>
+          ${isOut ? `<button class="add disabled" disabled>Agotado</button>` : `<button class="add" data-id="${p.id}">Agregar</button>`}
         </div>
       `;
     }).join('');
