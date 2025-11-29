@@ -48,7 +48,8 @@
   ]
 }
 </script>
-  </script>
+  
+  <meta name="theme-color" content="#ffffff">
 </head>
 <body>
   <header class="header">
@@ -380,7 +381,7 @@
 
   <!-- Toast de notificación -->
   <div id="toast" class="toast">¡Producto agregado al carrito!</div>
-  <script src="script.js?v=20251106-2"></script>
+  <script src="script.js?v=20251106-2" defer></script>
   <script>
     // FAQ toggle
     document.addEventListener('DOMContentLoaded',()=>{
@@ -604,12 +605,12 @@
   });
 </script>
 
-<script src="ux-enhancements.js"></script>
-<script src="mobile-menu.js"></script>
-<!-- Quick View (modal de variantes) -->
-<script src="quick-view.js"></script>
-<!-- Wishlist (favoritos) también en home -->
-<script src="wishlist.js"></script>
+  <script src="ux-enhancements.js" defer></script>
+  <script src="mobile-menu.js" defer></script>
+  <!-- Quick View (modal de variantes) -->
+  <script src="quick-view.js" defer></script>
+  <!-- Wishlist (favoritos) también en home -->
+  <script src="wishlist.js" defer></script>
 <!-- Scripts página producto -->
 <script>
   // Scroll to top button behavior
@@ -626,5 +627,5 @@
     onScroll();
   })();
 </script>
-  <script src="debug-hero-touch.js"></script>
+  <script src="debug-hero-touch.js" defer></script>
 </body></html>

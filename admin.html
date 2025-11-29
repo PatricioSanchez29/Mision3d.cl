@@ -365,6 +365,7 @@
             <td>
               <div style="display:flex;gap:8px;flex-direction:column">
                 <div>
+                  <button data-id="${pedido.id}" class="view-detail-btn" data-payload="${payload}" style="color:#fff;background:#0ea5e9;border:none;padding:4px 8px;border-radius:4px;margin-right:8px;">Detalle</button>
                   <button data-id="${pedido.id}" class="mark-paid-btn" style="color:#fff;background:#16a34a;border:none;padding:4px 8px;border-radius:4px;margin-right:8px;">Marcar pagado + email</button>
                     <button data-id="${pedido.id}" class="eliminar-btn" style="color:#fff;background:#e11d48;border:none;padding:4px 8px;border-radius:4px;">Eliminar</button>
                     <button data-id="${pedido.id}" data-fullname="${encodeURIComponent(fullName)}" class="edit-fullname-btn" style="margin-top:6px;background:#f59e0b;color:#fff;border:none;padding:6px 8px;border-radius:4px;">Editar comprador</button>
@@ -438,6 +439,15 @@
             let obj = null;
             try { obj = JSON.parse(decodeURIComponent(payload)); } catch (e) { obj = { error: 'invalid JSON', raw: payload }; }
             showJsonModal(obj);
+          });
+        });
+        // Botón Detalle por fila (modal interactivo con acciones)
+        tbody.querySelectorAll('.view-detail-btn').forEach(btn => {
+          btn.addEventListener('click', function () {
+            const payload = this.getAttribute('data-payload') || '';
+            let obj = null;
+            try { obj = JSON.parse(decodeURIComponent(payload)); } catch (e) { obj = { error: 'invalid JSON', raw: payload }; }
+            showPedidoModal(obj);
           });
         });
         // Botón editar full_name por fila -> usa endpoint admin protegido por x-admin-key
@@ -698,6 +708,156 @@
         document.getElementById('pedido-json-close').addEventListener('click', () => overlay.style.display = 'none');
         document.getElementById('pedido-json-copy').addEventListener('click', () => {
           try { navigator.clipboard.writeText(pretty); alert('JSON copiado al portapapeles'); } catch (e) { alert('No se pudo copiar'); }
+        });
+      }
+      // Modal interactivo para ver/operar sobre un pedido
+      function showPedidoModal(p) {
+        const existing = document.getElementById('pedido-detail-modal');
+        const pretty = JSON.stringify(p, null, 2);
+        const items = Array.isArray(p.items) ? p.items : (p.items ? JSON.parse(p.items||'[]') : []);
+        const itemsHtml = (items.length ? items.map(it => {
+          const name = it.name || it.title || it.productName || 'Producto';
+          const qty = it.qty || it.quantity || 1;
+          const price = money(it.price || it.unit_price || 0);
+          const personal = it.customName || it.custom_name || it.customNote || it.personalization || it.personalizacion || '';
+          return `<li>${name} — qty: ${qty} — ${price}` + (personal ? `<div style="font-size:.95em;color:#555;margin-top:6px">Personalización: ${personal}</div>` : '') + `</li>`;
+        }).join('') : '<li>Sin items</li>');
+        const envioLabel = p.envio || p.meta?.envio || '';
+          if (existing) {
+          existing.querySelector('.modal-body').innerHTML = `
+            <div style="display:flex;gap:18px;flex-wrap:wrap">
+              <div style="flex:1 1 320px">
+                <h3>Pedido #${p.id}</h3>
+                <p><strong>Usuario:</strong> ${p.email||p.user_id||''}</p>
+                <p><strong>Nombre:</strong> ${(p.full_name||p.nombre|| (p.first_name||'') + ' ' + (p.lastName||p.apellidos||''))}</p>
+                <p><strong>Personalización:</strong> ${p.custom_name || p.meta?.custom_name || (items.length===1 ? (items[0]?.customName || items[0]?.custom_name || items[0]?.customNote || '') : '') || '—'}</p>
+                <p><strong>RUT:</strong> ${p.rut||'—'}</p>
+                <p><strong>Tel:</strong> ${p.telefono||p.phone||'—'}</p>
+                <p><strong>Dirección:</strong> ${p.direccion||p.address||p.meta?.direccion||'—'}</p>
+                <p><strong>Comuna:</strong> ${p.comuna || p.meta?.comuna || '—'}</p>
+                <p><strong>Envío:</strong> ${envioLabel || '—'}</p>
+                <p><strong>Shipping:</strong> ${money(Number(p.shipping||p.shipping_cost||p.shippingCost||0))}</p>
+                <p><strong>Total:</strong> ${money(p.total_clp||p.total||0)}</p>
+                <p><strong>Estado:</strong> ${p.estado||p.status||'—'}</p>
+                <p><strong>Creado:</strong> ${p.created_at||p.createdAt||p.createdat||''}</p>
+              </div>
+              <div style="flex:1 1 300px">
+                <h4>Items</h4>
+                <ul style="margin:0 0 12px 16px;padding:0">${itemsHtml}</ul>
+                <h4>Notas / Cupón</h4>
+                <p>${p.note||p.notes||p.meta?.note||'—'}</p>
+                <p><strong>Cupón:</strong> ${p.coupon||p.discount||p.meta?.coupon||'—'}</p>
+              </div>
+            </div>
+            <hr>
+            <details style="margin-top:8px"><summary>JSON completo</summary><pre style="white-space:pre-wrap;word-break:break-word;margin-top:8px">${pretty}</pre></details>
+          `;
+          existing.style.display = 'flex';
+          return;
+        }
+        const overlay = document.createElement('div');
+        overlay.id = 'pedido-detail-modal';
+        overlay.style.position = 'fixed';
+        overlay.style.inset = '0';
+        overlay.style.background = 'rgba(0,0,0,0.5)';
+        overlay.style.display = 'flex';
+        overlay.style.alignItems = 'center';
+        overlay.style.justifyContent = 'center';
+        overlay.style.zIndex = '99999';
+        overlay.innerHTML = `
+          <div style="background:#fff;max-width:1000px;width:92%;max-height:92%;overflow:auto;border-radius:8px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,0.2);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <strong>Detalle pedido #${p.id}</strong>
+              <div>
+                <button id="pedido-track-btn" style="background:#06b6d4;color:#fff;border:none;padding:6px 10px;border-radius:6px;margin-right:8px">Agregar tracking</button>
+                <button id="pedido-edit-buyer" style="background:#f59e0b;color:#fff;border:none;padding:6px 10px;border-radius:6px;margin-right:8px">Editar comprador</button>
+                <button id="pedido-mark-paid" style="background:#16a34a;color:#fff;border:none;padding:6px 10px;border-radius:6px;margin-right:8px">Marcar pagado + email</button>
+                <button id="pedido-close" style="background:#ef4444;color:#fff;border:none;padding:6px 10px;border-radius:6px">Cerrar</button>
+              </div>
+            </div>
+            <div class="modal-body">
+              <!-- contenido dinámico -->
+            </div>
+          </div>
+        `;
+        document.body.appendChild(overlay);
+        // render body (re-use the same content code)
+        overlay.querySelector('.modal-body').innerHTML = `
+            <div style="display:flex;gap:18px;flex-wrap:wrap">
+              <div style="flex:1 1 320px">
+                <h3>Pedido #${p.id}</h3>
+                <p><strong>Usuario:</strong> ${p.email||p.user_id||''}</p>
+                <p><strong>Nombre:</strong> ${(p.full_name||p.nombre|| (p.first_name||'') + ' ' + (p.lastName||p.apellidos||''))}</p>
+                <p><strong>Personalización:</strong> ${p.custom_name || p.meta?.custom_name || (items.length===1 ? (items[0]?.customName || items[0]?.custom_name || items[0]?.customNote || '') : '') || '—'}</p>
+                <p><strong>RUT:</strong> ${p.rut||'—'}</p>
+                <p><strong>Tel:</strong> ${p.telefono||p.phone||'—'}</p>
+                <p><strong>Dirección:</strong> ${p.direccion||p.address||p.meta?.direccion||'—'}</p>
+                <p><strong>Comuna:</strong> ${p.comuna || p.meta?.comuna || '—'}</p>
+                <p><strong>Envío:</strong> ${envioLabel || '—'}</p>
+                <p><strong>Shipping:</strong> ${money(Number(p.shipping||p.shipping_cost||p.shippingCost||0))}</p>
+                <p><strong>Total:</strong> ${money(p.total_clp||p.total||0)}</p>
+                <p><strong>Estado:</strong> ${p.estado||p.status||'—'}</p>
+                <p><strong>Creado:</strong> ${p.created_at||p.createdAt||p.createdat||''}</p>
+              </div>
+              <div style="flex:1 1 300px">
+                <h4>Items</h4>
+                <ul style="margin:0 0 12px 16px;padding:0">${itemsHtml}</ul>
+                <h4>Notas / Cupón</h4>
+                <p>${p.note||p.notes||p.meta?.note||'—'}</p>
+                <p><strong>Cupón:</strong> ${p.coupon||p.discount||p.meta?.coupon||'—'}</p>
+              </div>
+            </div>
+            <hr>
+            <details style="margin-top:8px"><summary>JSON completo</summary><pre style="white-space:pre-wrap;word-break:break-word;margin-top:8px">${pretty}</pre></details>
+        `;
+
+        // eventos botones
+        overlay.querySelector('#pedido-close').addEventListener('click', () => overlay.style.display = 'none');
+        overlay.addEventListener('click', (ev) => { if (ev.target === overlay) overlay.style.display = 'none'; });
+
+        overlay.querySelector('#pedido-edit-buyer').addEventListener('click', async () => {
+          const current = p.full_name || (p.nombre || '') + ' ' + (p.apellidos || '');
+          const nuevo = prompt('Editar nombre completo del comprador (full_name):', current || '');
+          if (nuevo === null) return;
+          const trimmed = String(nuevo).trim();
+          if (!trimmed) { alert('El nombre no puede quedar vacío'); return; }
+          const nuevoRut = prompt('RUT del comprador (opcional):', p.rut || '');
+          let adminKey = sessionStorage.getItem('ADMIN_KEY');
+          if (!adminKey) { adminKey = prompt('Ingresa la ADMIN_KEY (solo administradores)'); if (!adminKey) return; sessionStorage.setItem('ADMIN_KEY', adminKey); }
+          try {
+            const base = window.location.origin;
+            const resp = await fetch(base + '/api/admin/pedidos/' + encodeURIComponent(p.id) + '/update-buyer', {
+              method: 'POST', headers: { 'content-type': 'application/json', 'x-admin-key': adminKey },
+              body: JSON.stringify({ full_name: trimmed, rut: nuevoRut })
+            });
+            const data = await resp.json().catch(()=>({}));
+            if (!resp.ok) { alert('Error: ' + (data?.detail || data?.error || resp.status)); return; }
+            showAdminToast('Datos del comprador actualizados', 'success');
+            overlay.style.display = 'none'; renderPedidos();
+          } catch (e) { console.error(e); showAdminToast('Error actualizando datos', 'error'); }
+        });
+
+        overlay.querySelector('#pedido-mark-paid').addEventListener('click', async () => {
+          if (!confirm('¿Marcar como PAGADO y enviar correo de confirmación al cliente?')) return;
+          let adminKey = sessionStorage.getItem('ADMIN_KEY');
+          if (!adminKey) { adminKey = prompt('Ingresa la ADMIN_KEY'); if (!adminKey) return; sessionStorage.setItem('ADMIN_KEY', adminKey); }
+          try {
+            const base = window.location.origin;
+            const resp = await fetch(base + '/api/admin/pedidos/' + encodeURIComponent(p.id) + '/marcar-pagado', { method: 'POST', headers: { 'x-admin-key': adminKey } });
+            const data = await resp.json().catch(()=>({}));
+            if (!resp.ok) { showAdminToast('Error: ' + (data?.detail || data?.error || resp.status), 'error'); return; }
+            showAdminToast('Pedido marcado como pagado y correo enviado', 'success'); overlay.style.display = 'none'; renderPedidos();
+          } catch (e) { showAdminToast('Error realizando la acción: ' + (e?.message||e), 'error'); }
+        });
+
+        overlay.querySelector('#pedido-track-btn').addEventListener('click', async () => {
+          const tracking = prompt('Número de tracking (o texto de envío):', p.tracking||p.tracking_number||'');
+          if (tracking === null) return;
+          try {
+            const { error } = await supabase.from('pedidos').update({ tracking, estado: 'enviado' }).eq('id', p.id);
+            if (error) { showAdminToast('Error guardando tracking: '+error.message, 'error'); return; }
+            showAdminToast('Tracking guardado', 'success'); overlay.style.display = 'none'; renderPedidos();
+          } catch (err) { console.error(err); showAdminToast('Error guardando tracking', 'error'); }
         });
       }
       const PASSWORD = "Casa452229.";
