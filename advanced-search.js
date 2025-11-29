@@ -253,7 +253,7 @@
           </div>
           ${productMatches.map(p => `
             <div class="suggestion-item product-item" onclick="window.goToProduct('${p.id}')">
-              <img src="${p.img}" alt="${escapeHtml(p.name)}" class="suggestion-img" onerror="this.src='img/placeholder.png'">
+              <img src="${p.img}" alt="${escapeHtml(p.name)}" class="suggestion-img" loading="lazy" onerror="this.src='img/placeholder.png'">
               <div class="suggestion-content">
                 <div class="suggestion-name">${highlightMatch(p.name, query)}</div>
                 <div class="suggestion-meta">

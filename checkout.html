@@ -632,7 +632,7 @@ function renderCheckoutRecommendations() {
   const shuffled = pool.sort(()=>0.5-Math.random()).slice(0,4);
   grid.innerHTML = shuffled.map(p => `
     <div class="rec-card" tabindex="0" aria-label="${p.name}" style="background:#fff;border-radius:8px;box-shadow:0 1px 4px #0001;padding:10px 8px;display:flex;flex-direction:column;align-items:center;gap:7px;transition:box-shadow .18s">
-      <img src="${p.img||'img/placeholder.png'}" alt="${p.name}" style="width:70px;height:70px;object-fit:cover;border-radius:7px;box-shadow:0 1px 4px #0001">
+      <img src="${p.img||'img/placeholder.png'}" alt="${p.name}" loading="lazy" style="width:70px;height:70px;object-fit:cover;border-radius:7px;box-shadow:0 1px 4px #0001">
       <div style="font-size:.85rem;font-weight:600;text-align:center;line-height:1.2">${p.name}</div>
       <div style="font-size:.8rem;color:#0052cc;font-weight:700">${(p.price||0).toLocaleString('es-CL',{style:'currency',currency:'CLP'})}</div>
       <button onclick="window.location.href='producto.html?id=${p.id}'" style="margin-top:4px;padding:5px 12px;border-radius:6px;border:none;background:#0052cc;color:#fff;font-size:.8rem;cursor:pointer;font-weight:600">Ver</button>
@@ -675,7 +675,7 @@ function renderCheckoutSummary(){
     }
     html += `
       <div class="sum-item" style="display:flex;align-items:center;gap:8px${stockLow ? ';background:#fff6f6;border-radius:7px;border:1px solid #fbb;' : ''}">
-        <div class="sum-item-thumb"><img src="${p.img||'img/placeholder.png'}" alt="${p.name}"></div>
+        <div class="sum-item-thumb"><img src="${p.img||'img/placeholder.png'}" alt="${p.name}" loading="lazy"></div>
         <div style="flex:1">
           <div style="font-weight:600;font-size:.78rem;margin-bottom:4px">${displayName} ${stockMsg}</div>
           <div style="font-size:.7rem;color:#555;display:flex;align-items:center;gap:6px">

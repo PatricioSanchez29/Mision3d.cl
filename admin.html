@@ -951,7 +951,7 @@
             <div style="width:100%;margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
               <input type="text" value="${variant.image || ''}" data-index="${index}" data-field="imageUrl" placeholder="URL de imagen: img/foto.png o https://..." style="flex:2;min-width:200px">
               <input type="file" accept="image/*" data-index="${index}" data-field="imageFile" style="flex:1;font-size:.9rem;min-width:150px">
-              ${variant.image ? `<img src="${variant.image}" style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #ddd" onerror="this.style.display='none'">` : ''}
+              ${variant.image ? `<img src="${variant.image}" style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #ddd" loading="lazy" onerror="this.style.display='none'">` : ''}
               ${variant.image ? `<span style="font-size:.85rem;color:#059669">✓</span>` : ''}
             </div>
           `;
@@ -1066,7 +1066,7 @@
           div.className = 'gallery-item';
           div.innerHTML = `
             <input type="text" value="${imgUrl}" data-index="${index}" placeholder="img/foto.png o https://...">
-            ${imgUrl ? `<img src="${imgUrl}" onerror="this.style.display='none'">` : ''}
+            ${imgUrl ? `<img src="${imgUrl}" loading="lazy" onerror="this.style.display='none'">` : ''}
             <button type="button" class="btn-gallery remove" data-index="${index}">🗑️ Eliminar</button>
           `;
           container.appendChild(div);
@@ -1159,7 +1159,7 @@
           PRODUCTS.forEach((p) => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
-              <td><img src="${p.img}" alt="img"></td>
+              <td><img src="${p.img}" alt="img" loading="lazy"></td>
               <td>${p.name||''}</td>
               <td>${money(p.price)}</td>
               <td>${p.stock||''}</td>

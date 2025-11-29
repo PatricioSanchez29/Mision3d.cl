@@ -139,7 +139,8 @@
 
   <!-- Hero -->
   <section class="hero" id="hero">
-    <div class="hero-wrapper">     
+    <div class="hero-wrapper">    
+      <img src="img/impresion.png" alt="" aria-hidden="true" class="hero-decor" loading="lazy">
         <div class="hero-inner">
           <div class="hero-text">
             <div class="hero-bf" aria-hidden="false" style="margin-bottom:10px;display:flex;justify-content:center;position:relative">
@@ -529,7 +530,7 @@
       return `
         <div class="card">
           <a href="producto.html?id=${p.id}" class="prod-link">
-            <img src="${p.img || 'img/placeholder.png'}" alt="${p.name}" data-product-id="${p.id}">
+            <img src="${p.img || 'img/placeholder.png'}" alt="${p.name}" data-product-id="${p.id}" loading="lazy">
           </a>
           <h4>
             <a href="producto.html?id=${p.id}" class="prod-link">${p.name}</a>
