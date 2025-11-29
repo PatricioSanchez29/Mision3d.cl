@@ -1309,7 +1309,19 @@ body.dark .announcement-bar{background:linear-gradient(90deg,#0891b2,#0e7490)}
 .featured-grid .card .badge--sale{background:#ef4444;color:#fff}
 .featured-grid .card .badge--bf{background:#ff4d4f;color:#fff;padding:6px 10px;border-radius:999px;font-weight:800}
 .featured-grid .card .badge--new{background:#06b6d4;color:#fff}
-.featured-grid .card .badge--stock{background:#10b981;color:#fff}
+/* Badge para productos agotados */
+.featured-grid .card .badge--out{background:#6b7280;color:#fff;padding:6px 10px;border-radius:999px;font-weight:700}
+
+.card .add.disabled{background:#9ca3af;color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:not-allowed;opacity:0.7}
+
+/* Estilos para botones de catálogo deshabilitados en variantes de diseño */
+.btn-options.add.disabled, .btn-options.add[disabled] {
+  background: linear-gradient(90deg,#9ca3af,#94a3b8);
+  color: #fff;
+  border: none;
+  cursor: not-allowed;
+  opacity: 0.85;
+}
 
 /* Ver todo button align */
 .featured-section .btn.primary{background:linear-gradient(135deg,#7c3aed 0%, #6d28d9 100%);color:#fff}
