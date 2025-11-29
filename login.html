@@ -46,6 +46,11 @@
       display: flex;
       flex-direction: column;
       padding: 0;
+      /* Reservar espacio para el header fijo y evitar solapamiento */
+      padding-top: 96px;
+    }
+    @media (max-width: 768px) {
+      body.login-page { padding-top: 120px; }
     }
     /* Microinteracciones para botones principales */
     .btn-register, .btn.primary, .btn.small, .btn.outline, .cart-btn, .search-btn {
