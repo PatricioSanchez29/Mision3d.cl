@@ -510,7 +510,8 @@ function renderCatalog(filterText = ""){
       p.name.includes('Pokebola')   ? 'Pokebola coleccionable' : 'Personalizado con tu logo';
 
     const energia = '<span class="label">Mision3D</span>';
-    const stockTxt = p.stock === 'bajo' ? '<span class="stock">Stock bajo</span>' : '';
+    const isOut = String(p.stock || '').toLowerCase() === 'agotado';
+    const stockTxt = isOut ? `<span class="badge badge--out">Agotado</span>` : (p.stock === 'bajo' ? '<span class="stock">Stock bajo</span>' : '');
 
     const daysDiff = (Date.now() - new Date(p.dateAdded).getTime()) / (1000*60*60*24);
     let badges = '';
@@ -558,8 +559,8 @@ function renderCatalog(filterText = ""){
           ${energia} ${stockTxt}
           <div></div>
         </div>
-        <div class="btns" style="justify-content:flex-end">
-          <button class="btn-options add" data-id="${p.id}">${btnLabel}</button>
+          <div class="btns" style="justify-content:flex-end">
+          ${isOut ? `<button class="btn-options add disabled" disabled>Agotado</button>` : `<button class="btn-options add" data-id="${p.id}">${btnLabel}</button>`}
           <button class="btn-options" data-view id="view-${p.id}">Ver</button>
         </div>`;
     } else {
@@ -574,7 +575,7 @@ function renderCatalog(filterText = ""){
         
         <div class="btns">
           <button class="btn-quick" data-view>Ver</button>
-          <button class="btn-options add" data-id="${p.id}">${btnLabel}</button>
+          ${isOut ? `<button class="btn-options add disabled" disabled>Agotado</button>` : `<button class="btn-options add" data-id="${p.id}">${btnLabel}</button>`}
         </div>`;
     }
 
@@ -818,6 +819,9 @@ async function iniciarPago(payMethod, payload) {
 
 /* ==================== Confirmar checkout ==================== */
 async function confirmCheckout(){
+  // Asegurarse de usar la versión más reciente del carrito (puede haberse modificado
+  // desde la página de checkout que manipula directamente localStorage)
+  try { cart = JSON.parse(localStorage.getItem('cart')||'[]'); } catch(e) { cart = cart || []; }
   // Normalizar precios de ítems del carrito por compatibilidad (evita totales en 0 con variantes antiguas)
   try {
     let changed = false;
