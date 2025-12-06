@@ -23,9 +23,18 @@
   <link rel="icon" type="image/jpeg" href="img/Logo_Mision3d.jpg">
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="header-new-style.css" />
+  <script src="early-error-suppress.js"></script>
   <script src="consent.js"></script>
   <script src="recaptcha-key.js"></script>
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+  <!-- Turnstile (Cloudflare) - opcional: define window.TURNSTILE_SITE_KEY en este archivo o en un archivo separado -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <script>
+    // Define tu clave de sitio Turnstile aquí si ya la generaste en Cloudflare.
+    // EJEMPLO: window.TURNSTILE_SITE_KEY = '0x4AAAAAACFI8O2oNOMQEPN-';
+    // No pegues la 'clave secreta' (secret) en el frontend. La secret va en Supabase Dashboard.
+    // window.TURNSTILE_SITE_KEY = 'REPLACE_WITH_YOUR_SITE_KEY';
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // --- reCAPTCHA integración registro ---
@@ -255,6 +264,7 @@
       </div>
       <div id="registerMsg"></div>
   <div id="recaptcha-container" style="display:none;margin:12px 0;"></div>
+  <div id="turnstile-container" style="display:none;margin:12px 0;"></div>
   <button type="submit" class="btn-register">CONFIRMAR</button>
       <div class="form-footer-text">
         ¿Ya tienes una cuenta? <a href="login.html">Puedes ingresar aquí</a>.
@@ -425,16 +435,43 @@
         msg.className = 'error-msg';
         return;
       }
-      // Si hay 3 o más intentos fallidos, forzar reCAPTCHA
+      // Si hay 3 o más intentos fallidos, intentar ejecutar Turnstile o reCAPTCHA
       if (registerAttempts >= 3) {
-        showRecaptcha();
-        grecaptcha.execute(recaptchaWidgetId);
-        return;
+        // Ejecutar el captcha disponible (Turnstile preferido)
+        let captchaToken = null;
+        try { if (typeof executeCaptcha === 'function') captchaToken = await executeCaptcha({ siteKey: window.TURNSTILE_SITE_KEY, containerId: 'turnstile-container' }); } catch(e){ captchaToken = null; }
+        if (!captchaToken) {
+          showRecaptcha();
+          grecaptcha.execute(recaptchaWidgetId);
+          return;
+        }
+        // Si tenemos token, lo incluimos en la petición (campo `captcha_token`)
+        // Nota: Supabase validará server-side con la secret que pegaste en Dashboard.
       }
-      // Registro con Supabase
-      const { error } = await supabase.auth.signUp({
+
+      // Helper para detectar contraseñas filtradas u otros errores de Auth
+      function handleAuthError(err) {
+        const raw = (err && (err.message || err.error || err.msg)) || '';
+        const msgText = String(raw).toLowerCase();
+        const isLeaked = msgText.includes('leak') || msgText.includes('leaked') || msgText.includes('compromised') || msgText.includes('compromise');
+        if (isLeaked) {
+          // Mostrar mensaje en UI y toast si existe
+          const userMsg = 'Esa contraseña fue encontrada en filtraciones públicas. Elige otra, más segura.';
+          try { document.getElementById('msg').textContent = userMsg; document.getElementById('msg').className = 'error-msg'; } catch(e){}
+          try { if (typeof showToast === 'function') showToast(userMsg, 'error'); } catch(e){}
+          return true;
+        }
+        return false;
+      }
+      // Intentar obtener token de captcha (Turnstile preferido)
+      let captchaToken = null;
+      try { if (typeof executeCaptcha === 'function') captchaToken = await executeCaptcha({ siteKey: window.TURNSTILE_SITE_KEY, containerId: 'turnstile-container' }); } catch(e){ captchaToken = null; }
+
+      // Registro con Supabase - incluir captcha_token si está disponible
+      const payload = {
         email,
         password,
+        captcha_token: captchaToken,
         options: {
           emailRedirectTo:
             window.location.hostname === 'mision3d.cl' || window.location.hostname === 'www.mision3d.cl'
@@ -442,11 +479,14 @@
               : window.location.origin + '/login.html?correo_confirmado=1',
           data: { phone }
         }
-      });
+      };
+      const { error } = await supabase.auth.signUp(payload);
       if (error) {
         registerAttempts++;
         localStorage.setItem('registerAttempts', registerAttempts);
         if (registerAttempts >= 3) showRecaptcha();
+        // Primero detectar contraseñas filtradas
+        if (handleAuthError(error)) return;
         let msgText = (error.message || '').toLowerCase();
         if (
           msgText.includes('already registered') ||

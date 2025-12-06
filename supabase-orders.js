@@ -19,16 +19,27 @@ try {
   }
 } catch {
   // Fallback por si window no existe (SSR/otros entornos)
-  supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  try {
+    supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  } catch (e) {
+    console.warn('[supabase-orders] No se pudo inicializar supabase:', e);
+    supabase = null;
+  }
 }
 
 export { supabase };
 
 // Obtiene el usuario autenticado actual
 export async function getCurrentUser() {
-  const { data, error } = await supabase.auth.getUser();
-  if (error || !data.user) return null;
-  return data.user;
+  try {
+    if (!supabase || !supabase.auth || typeof supabase.auth.getUser !== 'function') return null;
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data?.user) return null;
+    return data.user;
+  } catch (e) {
+    console.warn('[supabase-orders] getCurrentUser error', e);
+    return null;
+  }
 }
 
 // Guarda un pedido en la tabla "pedidos" de Supabase
@@ -37,7 +48,13 @@ export async function saveOrderSupabase(pedido) {
   if (!user) throw new Error('Debes iniciar sesión para registrar tu pedido.');
   // Asociar el pedido al usuario
   const pedidoData = { ...pedido, user_id: user.id };
-  const { data, error } = await supabase.from('pedidos').insert([pedidoData]).select('id');
-  if (error) throw error;
-  return data && data[0];
+  try {
+    if (!supabase || typeof supabase.from !== 'function') throw new Error('Supabase no disponible');
+    const { data, error } = await supabase.from('pedidos').insert([pedidoData]).select('id');
+    if (error) throw error;
+    return data && data[0];
+  } catch (e) {
+    console.warn('[supabase-orders] saveOrderSupabase error', e);
+    throw e;
+  }
 }

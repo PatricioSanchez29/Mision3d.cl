@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="header-new-style.css"/>
+  <script src="early-error-suppress.js"></script>
   <style>
     body { font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji'; }
     .profile-wrap { max-width: 1000px; margin: 30px auto; padding: 0 16px; }
@@ -126,6 +127,20 @@
       return true;
     }
 
+    // Helper para detectar contraseñas filtradas u otros errores de Auth
+    function handleAuthError(err) {
+      const raw = (err && (err.message || err.error || err.msg)) || '';
+      const msgText = String(raw).toLowerCase();
+      const isLeaked = msgText.includes('leak') || msgText.includes('leaked') || msgText.includes('compromised') || msgText.includes('compromise');
+      if (isLeaked) {
+        const userMsg = 'La contraseña proporcionada fue encontrada en filtraciones públicas. Elige otra, más segura.';
+        try { showError(userMsg); } catch(e){}
+        try { if (typeof showToast === 'function') showToast(userMsg, 'error'); } catch(e){}
+        return true;
+      }
+      return false;
+    }
+
     // Cargar sesión Supabase y prellenar
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -160,7 +175,7 @@
         // Actualizar metadata (teléfono)
         try {
           const { error: metaErr } = await supabase.auth.updateUser({ data: { phone } });
-          if(metaErr) return showError('No se pudo actualizar el teléfono: ' + metaErr.message);
+          if(metaErr) { if(handleAuthError(metaErr)) return; return showError('No se pudo actualizar el teléfono: ' + metaErr.message); }
         } catch(e){ return showError('Error actualizando datos: ' + (e?.message||e)); }
 
         // Cambio de contraseña si corresponde
@@ -168,7 +183,7 @@
           if(newPassword !== confirmPassword) return showError('Las nuevas contraseñas no coinciden.');
           if(!validatePassword(newPassword)) return showError('La nueva contraseña no cumple los requisitos.');
           const { error: pwdErr } = await supabase.auth.updateUser({ password: newPassword });
-          if(pwdErr) return showError('No se pudo actualizar la contraseña: ' + pwdErr.message);
+          if(pwdErr) { if(handleAuthError(pwdErr)) return; return showError('No se pudo actualizar la contraseña: ' + pwdErr.message); }
         }
 
         okBox.classList.add('active');

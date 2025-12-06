@@ -2,6 +2,7 @@
 <link rel="icon" type="image/jpeg" href="img/Logo_Mision3d.jpg">
 <link rel="apple-touch-icon" href="img/Logo_Mision3d.jpg">
 <link rel="stylesheet" href="style.css?v=20251128-1">
+<script src="early-error-suppress.js"></script>
 <script type="module" src="auth-header.js"></script>
 <script>window.GA_MEASUREMENT_ID = window.GA_MEASUREMENT_ID || 'G-XXXXXXXXXX';</script>
 <script src="consent.js"></script>
@@ -27,6 +28,7 @@
 .short-desc{color:#444;line-height:1.45;margin-bottom:20px}
 .stock-msg{font-size:.85rem;margin-bottom:12px}
 .stock-low{color:#d9534f;font-weight:600}
+.stock-out{color:#fff;background:#6b7280;padding:6px 10px;border-radius:8px;font-weight:700;display:inline-block}
 .qty-box{display:flex;align-items:center;border:1px solid #ddd;border-radius:10px;overflow:hidden;width:max-content;margin:0 0 22px}
 .qty-box button{background:#fff;border:none;padding:12px 14px;font-size:1.1rem;cursor:pointer;line-height:1}
 .qty-box span{display:inline-block;width:48px;text-align:center;font-weight:600}
@@ -392,7 +394,8 @@ function renderProductDetail(){
   thumbs.innerHTML=gallery.map((g,i)=>`<div class='product-thumb ${i===0?'active':''}' data-img='${g}'><img src='${g}' alt='thumb' loading='lazy'></div>`).join('');
   thumbs.querySelectorAll('.product-thumb').forEach(th=>th.onclick=()=>{document.getElementById('mainImage').src=th.dataset.img;thumbs.querySelectorAll('.product-thumb').forEach(x=>x.classList.remove('active'));th.classList.add('active');});
   document.getElementById('mainImage').src=gallery[0];
-  const isLow=p.stock==='bajo';
+  const isLow = p.stock === 'bajo';
+  const isOut = p.stock === 'agotado';
   const daysDiff=(Date.now()-new Date(p.dateAdded))/86400000; let badges='';
   if(daysDiff<=21) badges+=`<span class='badge new'>Nuevo</span>`; if(p.discount) badges+=`<span class='badge discount'>-${p.discount}%</span>`;
   const priceOriginal=p.discount?`<span class='price-old'>${money(p.price)}</span>`:'';
@@ -420,7 +423,7 @@ function renderProductDetail(){
   <div class='price-block'>${priceOriginal}<span class='price-final' id='priceDisplay'>${money(variants.length>0 ? (variants[0]._displayPrice || variants[0].price) : finalPrice)}</span></div>
   ${variantsHTML}
   <div class='short-desc'>${p.name.includes('Calendario')?'Calendario detallado con todos los circuitos en relieve y acabado premium.':'Producto personalizado impreso en 3D.'}</div>
-  <div class='stock-msg ${isLow?'stock-low':''}'>${isLow?'¡Quedan pocas unidades!':'Stock disponible'}</div>
+  ${isOut?`<div class='stock-msg stock-out'>Agotado</div>`:`<div class='stock-msg ${isLow?'stock-low':''}'>${isLow?'¡Quedan pocas unidades!':'Stock disponible'}</div>`}
   <div class='qty-box'><button id='qtyMinus'>-</button><span id='qtyValue'>1</span><button id='qtyPlus'>+</button></div>
   <div class='action-buttons'>
     <button class='btn-primary' id='addCartBtn'>Añadir al carrito</button>
@@ -518,28 +521,36 @@ function renderProductDetail(){
     openCart();
     render(itemKey, nombre + variantText);
   }
-  document.getElementById('addCartBtn').onclick=()=>addBulk(p.id, qty, p.name);
-  document.getElementById('buyNowBtn').onclick=()=>{
-    // Agregar productos seleccionados y redirigir a página de checkout dedicada
-    const itemKey = selectedVariant ? `${p.id}-${selectedVariant.name}` : p.id;
-    let it = cart.find(x=>x.id===itemKey);
-    const customNoteVal = (document.getElementById('customNoteInput')?.value || '').trim();
-    if(it) {
-      it.qty += qty;
-      if (customNoteVal) it.customNote = customNoteVal;
-    } else {
-      cart.push({
-        id: itemKey,
-        originalId: p.id,
-        qty,
-        variant: selectedVariant ? selectedVariant.name : null,
-        price: currentPrice,
-        customNote: customNoteVal || null
-      });
-    }
-    save(); badge();
-    window.location.href = 'checkout.html';
-  };
+  // Manejar botones respetando estado de stock
+  const _addBtn = document.getElementById('addCartBtn');
+  const _buyBtn = document.getElementById('buyNowBtn');
+  if (isOut) {
+    if(_addBtn){ _addBtn.disabled = true; _addBtn.textContent = 'Agotado'; _addBtn.style.opacity = '0.6'; _addBtn.style.cursor = 'not-allowed'; }
+    if(_buyBtn){ _buyBtn.disabled = true; _buyBtn.style.opacity = '0.6'; _buyBtn.style.cursor = 'not-allowed'; }
+  } else {
+    if(_addBtn) _addBtn.onclick = ()=>addBulk(p.id, qty, p.name);
+    if(_buyBtn) _buyBtn.onclick = ()=>{
+      // Agregar productos seleccionados y redirigir a página de checkout dedicada
+      const itemKey = selectedVariant ? `${p.id}-${selectedVariant.name}` : p.id;
+      let it = cart.find(x=>x.id===itemKey);
+      const customNoteVal = (document.getElementById('customNoteInput')?.value || '').trim();
+      if(it) {
+        it.qty += qty;
+        if (customNoteVal) it.customNote = customNoteVal;
+      } else {
+        cart.push({
+          id: itemKey,
+          originalId: p.id,
+          qty,
+          variant: selectedVariant ? selectedVariant.name : null,
+          price: currentPrice,
+          customNote: customNoteVal || null
+        });
+      }
+      save(); badge();
+      window.location.href = 'checkout.html';
+    };
+  }
 }
 </script>
 <!-- Cargar productos desde Supabase para asegurar datos frescos (incluye gallery) -->

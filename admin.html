@@ -8,6 +8,8 @@
   <link rel="icon" type="image/jpeg" href="img/Logo_Mision3d.jpg">
   <link rel="apple-touch-icon" href="img/Logo_Mision3d.jpg">
   <link rel="stylesheet" href="style.css">
+  <script src="early-error-suppress.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- XLSX para exportación a Excel -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
@@ -118,7 +120,8 @@
 </head>
 <body>
   <!-- Login -->
-  <div id="loginPanel" style="max-width:340px;margin:80px auto 0 auto;padding:32px 28px;background:#fff;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.07);display:none">
+  <!-- Mostrar el login por defecto para que la página sea accesible incluso si algún script falla -->
+  <div id="loginPanel" style="max-width:340px;margin:80px auto 0 auto;padding:32px 28px;background:#fff;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.07);">
     <h2 style="margin-bottom:18px">Acceso administrador</h2>
     <form id="loginForm">
       <label style="display:block;margin-bottom:12px;font-size:1rem">Contraseña:
@@ -201,8 +204,87 @@
       </div>
     </div>
   </div>
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+  <!-- Fallback: hacer que el formulario de login funcione incluso si el módulo ESM no carga -->
+  <script>
+    // Contraseña de admin en fallback (mantener en sync con el valor del módulo)
+    const ADMIN_PASSWORD_FALLBACK = "Casa452229.";
+    document.addEventListener('DOMContentLoaded', function () {
+      try {
+        const loginForm = document.getElementById('loginForm');
+        const loginPanel = document.getElementById('loginPanel');
+        const adminPanel = document.querySelector('.admin-panel');
+        if (loginForm) {
+          loginForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const pass = document.getElementById('adminPass').value;
+            if (pass === ADMIN_PASSWORD_FALLBACK) {
+              if (loginPanel) loginPanel.style.display = 'none';
+              if (adminPanel) adminPanel.style.display = '';
+              // Intentar llamar a initAdmin si está disponible (si el módulo se cargó correctamente)
+              try { if (typeof initAdmin === 'function') initAdmin(); } catch (err) {}
+            } else {
+              const err = document.getElementById('loginError');
+              if (err) { err.textContent = 'Contraseña incorrecta'; err.style.display = ''; }
+            }
+          });
+        }
+      } catch (e) { /* noop */ }
+    });
+  </script>
+
+  <script>
+    // Forzar UMD-only: usar la versión global `window.supabase` cargada en el <head>.
+    // Esto evita intentar el import ESM dinámico que en algunos entornos lanza errores
+    // (p.ej. transformadores/extensiones que inyectan wrappers).
+    let createClient = null;
+    try {
+      if (window.supabase && typeof window.supabase.createClient === 'function') {
+        createClient = window.supabase.createClient;
+      } else {
+        console.error('[admin] window.supabase (UMD) no está disponible — funcionalidades admin limitadas');
+      }
+    } catch (err) {
+      console.error('[admin] Error comprobando window.supabase', err);
+    }
+
+    // Helper para intentar múltiples orígenes del backend (útil en dev: live-server vs backend separado)
+    // Durante desarrollo preferimos servidores locales (puerto 3000 o 4000). Si no hay ninguno,
+    // como última opción se intentará la API de producción.
+    const API_BASES = [
+      'http://localhost:3000',
+      'http://127.0.0.1:3000',
+      'http://localhost:3001',
+      'http://127.0.0.1:3001',
+      'http://localhost:4000',
+      'http://127.0.0.1:4000',
+      'https://api.mision3d.cl',
+      window.location.origin
+    ];
+    async function fetchAdmin(path, opts = {}) {
+      const tried = [];
+      for (const base of API_BASES) {
+        if (!base) continue;
+        const url = (base.replace(/\/$/, '')) + path;
+        tried.push(url);
+        try {
+          // Incluir x-admin-key si está presente en localStorage o en window.ADMIN_KEY
+          const storedKey = (typeof window !== 'undefined' && (localStorage.getItem('ADMIN_KEY') || window.ADMIN_KEY)) || '';
+          const mergedHeaders = Object.assign({}, opts.headers || {});
+          if (storedKey) mergedHeaders['x-admin-key'] = storedKey;
+          const fetchOpts = Object.assign({}, opts, { headers: mergedHeaders });
+          const resp = await fetch(url, fetchOpts);
+          // Si la respuesta es 404, intentar siguiente base (p. ej. backend no servido en ese origen)
+          if (resp.status === 404) continue;
+          return { resp, url };
+        } catch (e) {
+          // ignore and try next
+        }
+      }
+      const err = new Error('No backend reachable (tried: ' + tried.join(', ') + ')');
+      err.tried = tried;
+      throw err;
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       // --- Lógica de pestañas ---
       const tabProductos = document.getElementById('tabProductos');
@@ -226,13 +308,31 @@
       tabProductos.onclick = () => activarTab('productos');
       tabPedidos.onclick = () => activarTab('pedidos');
 
+      
+
       // --- Pedidos: renderizado y gestión ---
       async function renderPedidos() {
         const tbody = document.querySelector('#pedidosTable tbody');
         tbody.innerHTML = '<tr><td colspan="17">Cargando pedidos...</td></tr>';
-        let { data, error } = await supabase.from('pedidos').select('*').order('created_at', { ascending: false });
-        if(error) {
-          tbody.innerHTML = `<tr><td colspan="6" style="color:#c00">Error cargando pedidos: ${error.message}</td></tr>`;
+        // Obtener pedidos desde backend seguro (/api/admin/pedidos) usando ADMIN_KEY
+        // Intentar primero sin ADMIN_KEY (si el backend permite lectura en dev)
+        let data = null;
+        try {
+          const { resp, url } = await fetchAdmin('/api/admin/pedidos', { method: 'GET', headers: { 'accept': 'application/json' } });
+          if (!resp.ok) {
+            if (resp.status === 401) {
+              // Backend requiere autenticación; informar en UI en lugar de pedir prompt
+              tbody.innerHTML = `<tr><td colspan="17" style="color:#c00">No autorizado: el backend requiere ADMIN_KEY. Configura el backend para permitir lectura en desarrollo o utiliza el panel con una sesión admin.</td></tr>`;
+              return;
+            }
+            const errBody = await resp.json().catch(()=>({}));
+            tbody.innerHTML = `<tr><td colspan="17" style="color:#c00">Error cargando pedidos: ${errBody?.detail||resp.statusText||resp.status} (${url})</td></tr>`;
+            return;
+          }
+          const json = await resp.json();
+          data = json?.pedidos || [];
+        } catch (err) {
+          tbody.innerHTML = `<tr><td colspan="17" style="color:#c00">Error cargando pedidos: ${err?.message||err} (tried: ${err?.tried?.join(', ')||'unknown'})</td></tr>`;
           return;
         }
         if(!data || data.length === 0) {
@@ -381,11 +481,21 @@
           sel.addEventListener('change', async function() {
             const pedidoId = this.getAttribute('data-id');
             const nuevoEstado = this.value;
-            const { error } = await supabase.from('pedidos').update({ estado: nuevoEstado, status: nuevoEstado }).eq('id', pedidoId);
-            if(error) {
-              showAdminToast('Error actualizando estado: '+error.message, 'error');
-            } else {
-              showAdminToast('Estado actualizado', 'success');
+            try {
+              let adminKey = sessionStorage.getItem('ADMIN_KEY');
+              if (!adminKey) { adminKey = prompt('Ingresa ADMIN_KEY para actualizar estado'); if (!adminKey) return; sessionStorage.setItem('ADMIN_KEY', adminKey); }
+              const resp = await fetch(window.location.origin + '/api/admin/pedidos/' + encodeURIComponent(pedidoId) + '/update', {
+                method: 'POST', headers: { 'content-type': 'application/json', 'x-admin-key': adminKey },
+                body: JSON.stringify({ estado: nuevoEstado, status: nuevoEstado })
+              });
+              if (!resp.ok) {
+                const err = await resp.json().catch(()=>({}));
+                showAdminToast('Error actualizando estado: ' + (err?.detail||resp.statusText||resp.status), 'error');
+              } else {
+                showAdminToast('Estado actualizado', 'success');
+              }
+            } catch (err) {
+              showAdminToast('Error actualizando estado: ' + (err?.message||err), 'error');
             }
           });
         });
@@ -394,12 +504,21 @@
           btn.addEventListener('click', async function() {
             if(!confirm('¿Seguro que deseas eliminar este pedido?')) return;
             const pedidoId = this.getAttribute('data-id');
-            const { error } = await supabase.from('pedidos').delete().eq('id', pedidoId);
-            if(error) {
-              showAdminToast('Error eliminando pedido: '+error.message, 'error');
-            } else {
-              showAdminToast('Pedido eliminado', 'success');
-              renderPedidos();
+            try {
+              let adminKey = sessionStorage.getItem('ADMIN_KEY');
+              if (!adminKey) { adminKey = prompt('Ingresa ADMIN_KEY para eliminar pedido'); if (!adminKey) return; sessionStorage.setItem('ADMIN_KEY', adminKey); }
+              const resp = await fetch(window.location.origin + '/api/admin/pedidos/' + encodeURIComponent(pedidoId), {
+                method: 'DELETE', headers: { 'x-admin-key': adminKey }
+              });
+              if (!resp.ok) {
+                const err = await resp.json().catch(()=>({}));
+                showAdminToast('Error eliminando pedido: ' + (err?.detail||resp.statusText||resp.status), 'error');
+              } else {
+                showAdminToast('Pedido eliminado', 'success');
+                renderPedidos();
+              }
+            } catch (err) {
+              showAdminToast('Error eliminando pedido: ' + (err?.message||err), 'error');
             }
           });
         });
@@ -856,8 +975,17 @@
           const tracking = prompt('Número de tracking (o texto de envío):', p.tracking||p.tracking_number||'');
           if (tracking === null) return;
           try {
-            const { error } = await supabase.from('pedidos').update({ tracking, estado: 'enviado' }).eq('id', p.id);
-            if (error) { showAdminToast('Error guardando tracking: '+error.message, 'error'); return; }
+            let adminKey = sessionStorage.getItem('ADMIN_KEY');
+            if (!adminKey) { adminKey = prompt('Ingresa ADMIN_KEY para actualizar tracking'); if (!adminKey) return; sessionStorage.setItem('ADMIN_KEY', adminKey); }
+            const resp = await fetch(window.location.origin + '/api/admin/pedidos/' + encodeURIComponent(p.id) + '/update', {
+              method: 'POST', headers: { 'content-type': 'application/json', 'x-admin-key': adminKey },
+              body: JSON.stringify({ tracking, estado: 'enviado' })
+            });
+            if (!resp.ok) {
+              const err = await resp.json().catch(()=>({}));
+              showAdminToast('Error guardando tracking: ' + (err?.detail||resp.statusText||resp.status), 'error');
+              return;
+            }
             showAdminToast('Tracking guardado', 'success'); overlay.style.display = 'none'; renderPedidos();
           } catch (err) { console.error(err); showAdminToast('Error guardando tracking', 'error'); }
         });
@@ -865,7 +993,27 @@
       const PASSWORD = "Casa452229.";
       const SUPABASE_URL = 'https://ytuwkynphdttotifgyaf.supabase.co';
       const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0dXdreW5waGR0dG90aWZneWFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3ODUyMzYsImV4cCI6MjA3NzM2MTIzNn0.JIFDBzpYTcChc1fnmp6pFL0K9SZPnn2ltp4iKxLdSus';
-      const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      // Preferir función createClient (ESM). Si no existe, usar UMD `window.supabase.createClient`.
+      let supabase = null;
+      try {
+        if (typeof createClient === 'function') {
+          supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        } else if (window.supabase && typeof window.supabase.createClient === 'function') {
+          // doble comprobación: algunos bundlers/transformadores pueden exponer "createClient"
+          // pero sus internals (AuthClient) podrían ser null y provocar errores en tiempo de ejecución.
+          if (typeof window.supabase.AuthClient !== 'undefined' && window.supabase.AuthClient !== null) {
+            try {
+              supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            } catch (errCreate) {
+              console.error('[admin] Error al instanciar window.supabase.createClient', errCreate);
+            }
+          } else {
+            console.error('[admin] window.supabase present but AuthClient is null — skipping createClient call');
+          }
+        } else {
+          console.error('[admin] No se encontró createClient ni window.supabase.createClient');
+        }
+      } catch(e){ console.error('[admin] Error creando client Supabase', e); }
       const money = v => Number(v||0).toLocaleString('es-CL',{style:'currency',currency:'CLP'});
       const toNum  = v => Number(v)||0;
       let PRODUCTS = [];
@@ -1116,6 +1264,7 @@
                   <select id="prodStock">
                     <option value="disponible">Disponible</option>
                     <option value="bajo">Bajo</option>
+                    <option value="agotado">Agotado</option>
                   </select>
                 </label>
               </div>

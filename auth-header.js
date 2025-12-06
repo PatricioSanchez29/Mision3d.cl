@@ -15,6 +15,19 @@
 // Actualiza el menú de usuario del header según el estado de sesión de Supabase
 import { supabase } from './supabase-orders.js';
 
+// Helper seguro para obtener usuario (evita errores si auth no existe)
+async function safeGetUser() {
+  try {
+    if (!supabase || !supabase.auth || typeof supabase.auth.getUser !== 'function') {
+      console.warn('[auth-header] Supabase auth no disponible');
+      return { data: { user: null } };
+    }
+    return await supabase.auth.getUser();
+  } catch (e) {
+    console.warn('[auth-header] error en supabase.auth.getUser', e);
+    return { data: { user: null } };
+  }
+}
 function setupDropdownToggle(btn, content) {
   if (!btn || !content) return;
   btn.addEventListener('click', function (e) {
@@ -59,7 +72,7 @@ async function initHeaderAuth() {
   if (dropdownBtn && dropdownContent) {
     setupDropdownToggle(dropdownBtn, dropdownContent);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await safeGetUser();
       if (user) renderLoggedIn(dropdownContent); else renderLoggedOut(dropdownContent);
     } catch {
       renderLoggedOut(dropdownContent);
@@ -70,7 +83,7 @@ async function initHeaderAuth() {
   const loginLink = document.getElementById('loginLink');
   if (loginLink) {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await safeGetUser();
       if (user) {
         loginLink.href = 'mi-cuenta.html';
         const label = loginLink.querySelector('.label');

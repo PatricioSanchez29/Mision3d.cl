@@ -1,6 +1,97 @@
 (function ($, $$, money) {
   "use strict";
 
+  // Manejador global temporal para suprimir errores venidos de wrapper.mjs
+  // (normalmente inyectado por CDN/extension). Registra una advertencia pero
+  // evita que la consola se llene con trazas irrelevantes.
+  try {
+    window.addEventListener('error', function (ev) {
+      try {
+        const file = ev.filename || (ev.error && ev.error.sourceURL) || '';
+        if (file && file.includes('wrapper.mjs')) {
+          console.warn('[global] Ignorado error de', file, ev.message || ev.error);
+          ev.preventDefault && ev.preventDefault();
+          return true;
+        }
+      } catch (e) {
+        // noop
+      }
+    });
+
+    window.addEventListener('unhandledrejection', function (ev) {
+      try {
+        const reason = String(ev.reason || '');
+        if (reason.includes('AuthClient') || reason.includes('wrapper.mjs')) {
+          console.warn('[global] Ignorado unhandledrejection:', reason);
+          ev.preventDefault && ev.preventDefault();
+        }
+      } catch (e) {
+        // noop
+      }
+    });
+  } catch (e) {
+    // Si por alguna razón window no está disponible, no hacer nada
+  }
+
+  /**
+   * Ejecuta CAPTCHA: soporta Cloudflare Turnstile y reCAPTCHA como fallback.
+   * Devuelve una Promise que resuelve con el token (string) o `null` si no hay captcha disponible.
+   * Opciones: { siteKey, containerId, timeout }
+   */
+  async function executeCaptcha(opts = {}){
+    const siteKey = opts.siteKey || window.TURNSTILE_SITE_KEY || null;
+    const containerId = opts.containerId || 'turnstile-container';
+    const timeout = Number(opts.timeout || 10000);
+    // Turnstile (Cloudflare)
+    try{
+      if (window.turnstile && siteKey){
+        // asegurar contenedor
+        let container = document.getElementById(containerId);
+        if(!container){ container = document.createElement('div'); container.id = containerId; container.style.display='none'; document.body.appendChild(container); }
+        window.__turnstileWidgets = window.__turnstileWidgets || {};
+        let widgetId = window.__turnstileWidgets[containerId];
+        if (!widgetId){
+          try { widgetId = turnstile.render(container, { sitekey: siteKey, size: 'invisible' }); } catch(e){ console.warn('turnstile.render error', e); }
+          window.__turnstileWidgets[containerId] = widgetId;
+        }
+        try { if (typeof turnstile.execute === 'function') turnstile.execute(widgetId); } catch(e){}
+        return await new Promise((resolve)=>{
+          const start = Date.now();
+          const iv = setInterval(()=>{
+            try{
+              const tok = (typeof turnstile.getResponse === 'function') ? turnstile.getResponse(widgetId) : null;
+              if (tok){ clearInterval(iv); resolve(tok); return; }
+              if (Date.now() - start > timeout){ clearInterval(iv); resolve(null); }
+            }catch(e){ clearInterval(iv); resolve(null); }
+          }, 200);
+        });
+      }
+    }catch(e){ console.warn('executeCaptcha turnstile check failed', e); }
+
+    // reCAPTCHA v2 invisible fallback
+    try{
+      if (window.grecaptcha && typeof grecaptcha.execute === 'function'){
+        const wid = window.recaptchaWidgetId || null;
+        if (wid !== null){
+          try { grecaptcha.execute(wid); } catch(e){}
+          return await new Promise((resolve)=>{
+            const start = Date.now();
+            const iv = setInterval(()=>{
+              try{
+                const tok = (typeof grecaptcha.getResponse === 'function' && wid !== null) ? grecaptcha.getResponse(wid) : '';
+                if (tok){ clearInterval(iv); resolve(tok); return; }
+                if (Date.now() - start > timeout){ clearInterval(iv); resolve(null); }
+              }catch(e){ clearInterval(iv); resolve(null); }
+            },200);
+          });
+        }
+      }
+    }catch(e){ console.warn('executeCaptcha grecaptcha check failed', e); }
+
+    // No captcha disponible
+    return null;
+  }
+
 /* ==================== RUT utils ==================== */
 function cleanRut(rut){ return String(rut||'').replace(/[^0-9kK]/g,'').toUpperCase(); }
 function formatRUT(rut){

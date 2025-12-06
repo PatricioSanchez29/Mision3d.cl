@@ -23,10 +23,13 @@
   <link rel="icon" type="image/jpeg" href="img/Logo_Mision3d.jpg">
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="header-new-style.css" />
+  <script src="early-error-suppress.js"></script>
   <script>window.GA_MEASUREMENT_ID = window.GA_MEASUREMENT_ID || 'G-XXXXXXXXXX';</script>
   <script src="consent.js"></script>
   <script src="recaptcha-key.js"></script>
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+  <!-- Cloudflare Turnstile (se usará si defines window.TURNSTILE_SITE_KEY en recaptcha-key.js) -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   <style>
     .form-label.required::after {
       content: ' *';
@@ -499,6 +502,8 @@
           <button type="button" id="toggleLoginPass" style="position:absolute;right:10px;background:none;border:none;cursor:pointer;font-size:14px;padding:6px;color:#1f2937;" tabindex="-1" aria-label="Mostrar/Ocultar contraseña">Mostrar</button>
         </div>
         <div id="loginPasswordErrorMsg" class="error-msg"></div>
+        <!-- Turnstile container (renderizado si tienes TURNSTILE_SITE_KEY configurada) -->
+        <div id="turnstile-container" style="margin:12px 0"></div>
         <button type="submit" class="btn-login-full">INICIAR SESIÓN</button>
         <div style="text-align:center;margin-top:10px;">
           <a href="#" id="forgotPasswordLink" style="color:#222;text-decoration:underline;font-size:14px;">Restablecer mi Clave</a>
@@ -676,6 +681,45 @@
         pass.type = pass.type === 'password' ? 'text' : 'password';
         this.textContent = pass.type === 'password' ? 'Mostrar' : 'Ocultar';
       });
+
+      // --- Turnstile integration: render widget if TURNSTILE_SITE_KEY is provided ---
+      // Define helper executeCaptcha() that returns a token (or null)
+      window.__turnstileToken = null;
+      window.__turnstileWidgetId = undefined;
+      window.executeCaptcha = async function() {
+        // If token already present, return it
+        if (window.__turnstileToken) return window.__turnstileToken;
+        try {
+          if (window.turnstile && typeof window.turnstile.getResponse === 'function' && typeof window.__turnstileWidgetId !== 'undefined') {
+            const t = window.turnstile.getResponse(window.__turnstileWidgetId);
+            if (t) return t;
+          }
+        } catch (e) {
+          console.warn('executeCaptcha getResponse error', e);
+        }
+        return null;
+      };
+
+      if (window.TURNSTILE_SITE_KEY) {
+        const tryRenderTurnstile = () => {
+          try {
+            if (window.turnstile && typeof window.turnstile.render === 'function') {
+              window.__turnstileWidgetId = window.turnstile.render('turnstile-container', {
+                sitekey: window.TURNSTILE_SITE_KEY,
+                theme: 'light',
+                callback: function(token) { window.__turnstileToken = token; console.log('Turnstile token received'); },
+                'error-callback': function() { window.__turnstileToken = null; }
+              });
+              return true;
+            }
+          } catch (e) { console.warn('Turnstile render error', e); }
+          return false;
+        };
+        if (!tryRenderTurnstile()) {
+          const intv = setInterval(() => { if (tryRenderTurnstile()) clearInterval(intv); }, 300);
+          setTimeout(() => clearInterval(intv), 10000);
+        }
+      }
       // Formulario de login con Supabase
       const loginForm = document.getElementById('loginForm');
       const msg = document.getElementById('msg');
@@ -719,22 +763,87 @@
             return;
           }
           // Intentar login con contraseña
-          const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-          if (error) {
+          try {
+            // Intento estándar con supabase-js
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            console.log('supabase.signInWithPassword =>', { data, error });
+            if (!error && data && data.session && data.session.user) {
+              const user = data.session.user;
+              const userSession = { email: user.email, name: user.user_metadata?.full_name || '', guest: false };
+              window.localStorage.setItem('userSession', JSON.stringify(userSession));
+              msg.style.color = '#059669';
+              msg.textContent = '¡Acceso exitoso! Redirigiendo...';
+              setTimeout(() => { window.location.href = 'index.html'; }, 1200);
+              return;
+            }
+            if (error) throw error;
+          } catch (err) {
+            console.error('Supabase auth error (full):', err);
+            const text = String(err?.message || err || 'Error al autenticar');
+            if (text.toLowerCase().includes('captcha')) {
+              // Si detectamos que falta captcha, intentar obtener token desde Turnstile y reintentar
+              msg.style.color = '#dc2626';
+              msg.textContent = 'Se requiere verificación captcha. Por favor completa el captcha y reintenta.';
+              // Si existe helper executeCaptcha (definido abajo al renderizar Turnstile), úsalo
+              try {
+                let captchaToken = null;
+                if (typeof window.executeCaptcha === 'function') {
+                  captchaToken = await window.executeCaptcha();
+                } else if (window.turnstile && typeof window.turnstile.getResponse === 'function' && typeof window.__turnstileWidgetId !== 'undefined') {
+                  try { captchaToken = window.turnstile.getResponse(window.__turnstileWidgetId); } catch(e) { captchaToken = null; }
+                }
+
+                if (!captchaToken) {
+                  // No tenemos token: pedir al usuario que complete el widget
+                  msg.style.color = '#dc2626';
+                  msg.textContent = 'Por favor completa el captcha y presiona Iniciar sesión de nuevo.';
+                  return;
+                }
+
+                // Reintentar autenticación enviando captcha_token directamente al endpoint Auth de Supabase
+                const authUrl = SUPABASE_URL.replace(/\/+$/, '') + '/auth/v1/token?grant_type=password';
+                const body = new URLSearchParams();
+                body.set('username', email);
+                body.set('email', email);
+                body.set('password', password);
+                body.set('captcha_token', captchaToken);
+
+                const resp = await fetch(authUrl, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/x-www-form-urlencoded', apikey: SUPABASE_ANON_KEY },
+                  body: body.toString(),
+                });
+                let json = null;
+                try { json = await resp.json(); } catch (e) { json = null; }
+                console.log('Auth direct response:', resp.status, json);
+                if (!resp.ok) {
+                  msg.style.color = '#dc2626';
+                  msg.textContent = (json && (json.error_description || json.error || json.msg || JSON.stringify(json))) || `Error ${resp.status} al autenticar`;
+                  return;
+                }
+                // Éxito
+                if (json && json.access_token) {
+                  const user = json.user || null;
+                  const userSession = { email: user?.email || email, name: user?.user_metadata?.full_name || '', guest: false };
+                  window.localStorage.setItem('userSession', JSON.stringify(userSession));
+                  msg.style.color = '#059669';
+                  msg.textContent = '¡Acceso exitoso! Redirigiendo...';
+                  setTimeout(() => { window.location.href = 'index.html'; }, 1200);
+                  return;
+                }
+                msg.style.color = '#dc2626';
+                msg.textContent = 'No se pudo autenticar tras verificar captcha.';
+                return;
+              } catch (captchaErr) {
+                console.error('Error durante flow de captcha:', captchaErr);
+                msg.style.color = '#dc2626';
+                msg.textContent = 'Error durante verificación de captcha. Intenta recargar la página.';
+                return;
+              }
+            }
+            // Si no es captcha, mostrar error genérico
             msg.style.color = '#dc2626';
-            msg.textContent = error.message;
-          } else if (data && data.session && data.session.user) {
-            // Guardar sesión
-            const user = data.session.user;
-            const userSession = {
-              email: user.email,
-              name: user.user_metadata && user.user_metadata.full_name ? user.user_metadata.full_name : '',
-              guest: false
-            };
-            window.localStorage.setItem('userSession', JSON.stringify(userSession));
-            msg.style.color = '#059669';
-            msg.textContent = '¡Acceso exitoso! Redirigiendo...';
-            setTimeout(() => { window.location.href = 'index.html'; }, 1200);
+            msg.textContent = text;
           }
         });
         // Restablecer clave

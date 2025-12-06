@@ -17,6 +17,7 @@ import sitemapRouter from "./sitemap.js";
 
 dotenv.config();
 
+
 // ===== Log filter opcional =====
 (() => {
   const silence = String(process.env.LOG_SILENCE || '').toLowerCase();
@@ -94,46 +95,59 @@ const allowedOrigins = [
 // En desarrollo, permitir localhost y 127.0.0.1 con cualquier puerto
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
-app.use(cors({
-  origin: (origin, callback) => {
-    // Permitir peticiones sin origin (como Postman, curl, etc.)
+// CORS
+// En desarrollo: permitir cualquier origen local (útil para live-server / vscode live)
+if (isDevelopment) {
+  app.use(cors({ origin: (origin, callback) => {
+    // Permitir requests sin origin (Postman, curl)
     if (!origin) return callback(null, true);
+    try {
+      const o = String(origin || '');
+      // Permitir localhost/127.0.0.1 con cualquier puerto
+      if (o.includes('localhost') || o.includes('127.0.0.1')) return callback(null, true);
+      // También permitir file: (callbacks locales)
+      if (o.startsWith('file:')) return callback(null, true);
+    } catch (e) {}
+    // Para el resto, deferir a la comprobación normal más abajo
+    return callback(null, true);
+  }, credentials: true }));
+} else {
+  app.use(cors({
+    origin: (origin, callback) => {
+      // Permitir peticiones sin origin (como Postman, curl, etc.)
+      if (!origin) return callback(null, true);
 
-    // Algunos agentes (o integraciones de pago) pueden enviar 'file://' como origin
-    // (por ejemplo redirecciones desde apps o callbacks locales). Permitirlo explícitamente.
-    if (typeof origin === 'string' && origin.startsWith('file:')) return callback(null, true);
+      // Algunos agentes (o integraciones de pago) pueden enviar 'file://' como origin
+      // (por ejemplo redirecciones desde apps o callbacks locales). Permitirlo explícitamente.
+      if (typeof origin === 'string' && origin.startsWith('file:')) return callback(null, true);
 
-    // Permitir orígenes de Flow (flow.cl / sandbox.flow.cl) para callbacks/redirecciones
-    if (typeof origin === 'string' && origin.includes('flow.cl')) return callback(null, true);
+      // Permitir orígenes de Flow (flow.cl / sandbox.flow.cl) para callbacks/redirecciones
+      if (typeof origin === 'string' && origin.includes('flow.cl')) return callback(null, true);
 
-    // En desarrollo, permitir localhost y 127.0.0.1
-    if (isDevelopment && (origin.includes('localhost') || origin.includes('127.0.0.1'))) {
-      return callback(null, true);
-    }
+      // Permitir dominios principales mision3d.cl y www
+      if (/^https?:\/\/(www\.)?mision3d\.cl$/.test(origin)) {
+        return callback(null, true);
+      }
 
-    // Permitir dominios principales mision3d.cl y www
-    if (/^https?:\/\/(www\.)?mision3d\.cl$/.test(origin)) {
-      return callback(null, true);
-    }
+      // Permitir proyecto de Cloudflare Pages y sus previews (subdominios)
+      if (origin === 'https://mision3dcl.pages.dev' || origin.endsWith('.mision3dcl.pages.dev')) {
+        return callback(null, true);
+      }
+      if (origin === 'https://mision3d-cl.pages.dev' || origin.endsWith('.mision3d-cl.pages.dev')) {
+        return callback(null, true);
+      }
 
-    // Permitir proyecto de Cloudflare Pages y sus previews (subdominios)
-    if (origin === 'https://mision3dcl.pages.dev' || origin.endsWith('.mision3dcl.pages.dev')) {
-      return callback(null, true);
-    }
-    if (origin === 'https://mision3d-cl.pages.dev' || origin.endsWith('.mision3d-cl.pages.dev')) {
-      return callback(null, true);
-    }
+      // Permitir explícitos por variable de entorno
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
 
-    // Permitir explícitos por variable de entorno
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-
-    console.warn(`[CORS] Origin bloqueado: ${origin}`);
-    callback(new Error('Not allowed by CORS'));
-  },
-  credentials: true
-}));
+      console.warn(`[CORS] Origin bloqueado: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    },
+    credentials: true
+  }));
+}
 
 // ===== Health Check Endpoints (Render) =====
 app.get("/health", (req, res) => {
@@ -1542,6 +1556,93 @@ app.post('/api/admin/pedidos/:id/marcar-pagado', async (req, res) => {
   }
 });
 
+// ===== Admin: actualizar campos de un pedido (protegido) =====
+app.post('/api/admin/pedidos/:id/update', async (req, res) => {
+  try {
+    const provided = String(req.headers['x-admin-key'] || '').trim();
+    const expected = String(process.env.ADMIN_KEY || '').trim();
+    if (!expected) return res.status(401).json({ error: 'unauthorized', reason: 'ADMIN_KEY not configured' });
+    if (!provided || provided !== expected) return res.status(401).json({ error: 'unauthorized' });
+
+    const id = req.params.id;
+    const updates = req.body || {};
+    if (!Object.keys(updates).length) return res.status(400).json({ error: 'no_data', message: 'No update fields provided' });
+
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!supabaseUrl || !supabaseKey) return res.status(500).json({ error: 'server', detail: 'Supabase credentials missing' });
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const { error } = await supabase.from('pedidos').update(updates).eq('id', id);
+    if (error) return res.status(500).json({ error: 'update_failed', detail: error.message });
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error('[Admin update-pedido] Error:', err?.message || err);
+    return res.status(500).json({ error: 'server', detail: err?.message || String(err) });
+  }
+});
+
+// ===== Admin: eliminar pedido =====
+app.delete('/api/admin/pedidos/:id', async (req, res) => {
+  try {
+    const provided = String(req.headers['x-admin-key'] || '').trim();
+    const expected = String(process.env.ADMIN_KEY || '').trim();
+    if (!expected) return res.status(401).json({ error: 'unauthorized', reason: 'ADMIN_KEY not configured' });
+    if (!provided || provided !== expected) return res.status(401).json({ error: 'unauthorized' });
+
+    const id = req.params.id;
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!supabaseUrl || !supabaseKey) return res.status(500).json({ error: 'server', detail: 'Supabase credentials missing' });
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const { error } = await supabase.from('pedidos').delete().eq('id', id);
+    if (error) return res.status(500).json({ error: 'delete_failed', detail: error.message });
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error('[Admin delete-pedido] Error:', err?.message || err);
+    return res.status(500).json({ error: 'server', detail: err?.message || String(err) });
+  }
+});
+
+// ===== Admin: listar pedidos (protegido por x-admin-key) =====
+app.get('/api/admin/pedidos', async (req, res) => {
+  try {
+    const provided = String(req.headers['x-admin-key'] || '').trim();
+    const expected = String(process.env.ADMIN_KEY || '').trim();
+    // Si no hay ADMIN_KEY configurada, permitir lectura en desarrollo (INSEGURO)
+    if (!expected) {
+      if (isDevelopment) {
+        console.warn('[Admin list-pedidos] ADMIN_KEY ausente en entorno de desarrollo - permitiendo lectura (INSEGURO)');
+      } else {
+        return res.status(401).json({ error: 'unauthorized', reason: 'ADMIN_KEY not configured' });
+      }
+    } else {
+      if (!provided || provided !== expected) return res.status(401).json({ error: 'unauthorized' });
+    }
+
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!supabaseUrl || !supabaseKey) return res.status(500).json({ error: 'server', detail: 'Supabase credentials missing' });
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const { data, error } = await supabase.from('pedidos').select('*').order('created_at', { ascending: false });
+    if (error) return res.status(500).json({ error: 'supabase_error', detail: error.message });
+
+    // Mapear a formato simple para el frontend (mantener estructura previa)
+    const pedidos = (data || []).map(p => ({
+      ...p
+    }));
+    return res.json({ ok: true, pedidos: pedidos });
+  } catch (err) {
+    console.error('[Admin list-pedidos] Error:', err?.message || err);
+    return res.status(500).json({ error: 'server', detail: err?.message || String(err) });
+  }
+});
+
 // ===== Admin: actualizar datos del comprador (full_name, rut) =====
 app.post('/api/admin/pedidos/:id/update-buyer', async (req, res) => {
   try {
@@ -1731,9 +1832,29 @@ app.get("/api/health", (_, res) => res.json({ ok: true }));
 
 // ===== Start Server =====
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, '0.0.0.0', () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Mision3D API escuchando en http://localhost:${PORT}`);
   console.log(`📡 Solo rutas API - Frontend servido por Cloudflare Pages`);
+});
+
+server.on('error', (err) => {
+  try {
+    if (err && err.code === 'EADDRINUSE') {
+      console.error(`Error: puerto ${PORT} ya está en uso (EADDRINUSE).`);
+      console.error('Sugerencias: libera el puerto o cambia la variable de entorno PORT.');
+      console.error('En PowerShell:');
+      console.error(`  netstat -ano | findstr :${PORT}`);
+      console.error('  taskkill /PID <PID> /F');
+      process.exit(1);
+    }
+  } catch (e) {
+    // Si algo falla al reportar el error, logueamos el error original y salimos
+    console.error('Error manejando evento de servidor:', err, e);
+    process.exit(1);
+  }
+  // Para otros errores, los imprimimos y salimos
+  console.error('Error en el servidor:', err);
+  process.exit(1);
 });
 
 export default app;
