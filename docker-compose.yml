@@ -1,0 +1,62 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mision3d-backend
+    ports:
+      - "3000:3000"
+    environment:
+      # Configura tus variables reales en un archivo .env (compose soporta env_file)
+      - NODE_ENV=production
+      - PORT=3000
+      - FLOW_API_KEY=${FLOW_API_KEY}
+      - FLOW_SECRET=${FLOW_SECRET}
+      - FLOW_COMMERCE_ID=${FLOW_COMMERCE_ID:-99999}
+      - FLOW_BASE_URL=${FLOW_BASE_URL:-https://sandbox.flow.cl/api}
+      - FLOW_RETURN_URL=${FLOW_RETURN_URL:-http://localhost:3000/flow/retorno}
+      - FLOW_CONFIRM_URL=${FLOW_CONFIRM_URL:-http://localhost:3000/flow/confirm}
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:8080}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_SECURE=${SMTP_SECURE:-false}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - MAIL_FROM=${MAIL_FROM}
+    # Descomenta para montar credenciales cuando las tengas
+    # volumes:
+    #   - ./backend/firebase-credentials.json:/app/firebase-credentials.json:ro
+    profiles:
+      - dev
+      - production
+
+  backend-prod:
+    extends: backend
+    environment:
+      - NODE_ENV=production
+      - FLOW_BASE_URL=https://www.flow.cl/api
+      - FLOW_RETURN_URL=https://tudominio.cl/flow/retorno
+      - FLOW_CONFIRM_URL=https://tudominio.cl/flow/confirm
+      - CORS_ORIGIN=https://tudominio.cl,https://www.tudominio.cl
+    volumes:
+      - ./backend/firebase-credentials.json:/app/firebase-credentials.json:ro
+    profiles:
+      - production
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mision3d-frontend
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+    environment:
+      - NGINX_PORT=80
+    profiles:
+      - dev
+      - production
+    # No necesita volúmenes en producción; en desarrollo podrías usar bind mounts

@@ -1,0 +1,27 @@
+{
+  "name": "mision3d_cart_v2",
+  "version": "1.0.0",
+  "description": "Backend de pagos Flow para Mision3D",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test:security": "node test-webhook-security.js"
+  },
+  "author": "Mision3D",
+  "license": "ISC",
+  "dependencies": {
+    "@sendgrid/mail": "^8.1.4",
+    "@supabase/supabase-js": "^2.48.1",
+    "axios": "^1.7.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.2",
+    "express-rate-limit": "^8.1.0",
+    "helmet": "^7.2.0",
+    "nodemailer": "^6.10.1",
+    "resend": "^4.0.0",
+    "transbank-sdk": "^5.0.0"
+  }
+}

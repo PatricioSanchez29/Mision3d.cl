@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Editar mis detalles - Misión 3D</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="header-new-style.css"/>
+  <style>
+    body { font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji'; }
+    .profile-wrap { max-width: 1000px; margin: 30px auto; padding: 0 16px; }
+    .breadcrumb { font-size: 14px; color: #6b7280; margin-bottom: 16px; }
+    .panel { background:#fff; border:1px solid #e5e7eb; border-radius: 14px; overflow:hidden; box-shadow: 0 4px 20px rgba(0,0,0,.06); }
+    .panel-head { background:#f3f4f6; padding:26px; text-align:center; }
+    .panel-head h1 { margin:0; letter-spacing:.5px; color:#0f172a; }
+    .panel-body { padding: 26px; }
+    .form-row { margin-bottom:14px; }
+    .form-row label { display:block; font-size:14px; color:#111827; margin-bottom:6px; font-weight:600; }
+    .form-row input[type="text"],
+    .form-row input[type="email"],
+    .form-row input[type="password"]{ width:100%; border:1px solid #d1d5db; border-radius:10px; padding:12px 14px; outline:none; transition:border .2s, box-shadow .2s; background:#f8fafc; }
+    .form-row input:focus{ border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.15); background:#fff; }
+    .help { font-size:12px; color:#6b7280; margin-top:6px; }
+    .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .actions { display:flex; justify-content:center; padding: 18px 26px 26px; }
+    .btn-primary { background:#0ea5e9; color:#fff; border:none; padding:12px 26px; border-radius:10px; font-weight:700; cursor:pointer; }
+    .btn-primary:hover { background:#0284c7; }
+    .success-box { display:none; margin-top:16px; padding:12px 14px; background:#ecfdf5; border:1px solid #10b981; color:#065f46; border-radius:10px; }
+    .success-box.active{ display:block; }
+    .error-msg{ color:#dc2626; font-size:13px; }
+    @media(max-width: 720px){ .grid-2{ grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <header class="header" style="margin-bottom:10px">
+    <button class="menu-btn" id="hamburgerBtn" aria-label="Abrir menú">
+      <div class="hamburger-icon"><span></span><span></span><span></span></div>
+      <span class="menu-text">MENU</span>
+    </button>
+    <h1 class="logo" style="margin:0;display:flex;align-items:center">
+      <a href="index.html" style="display:inline-flex;align-items:center;text-decoration:none">
+        <img src="img/Logo_Mision3d.jpg" alt="Misión 3D" class="logo-img" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-text',textContent:'Misión 3D'}));" />
+      </a>
+    </h1>
+    <nav class="nav desktop-nav">
+      <a href="index.html">Inicio</a>
+      <a href="catalogo.html" id="navCatalog">Catálogo</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
+    <div class="right-actions">
+      <div id="userArea" class="user-area">
+        <a href="login.html" id="loginLink" class="header-icon-btn">
+          <span class="icon">👤</span>
+          <span class="label">ACCESO</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="profile-wrap">
+    <div class="breadcrumb"><a href="index.html">Inicio</a> › <a href="login.html">Cuenta del cliente</a> › <strong>Editar Cliente</strong></div>
+
+    <div class="panel">
+      <div class="panel-head"><h1>EDITA  TUS  DATOS</h1></div>
+      <div class="panel-body">
+        <form id="editForm" novalidate>
+          <div class="form-row">
+            <label for="email">E‑mail *</label>
+            <input type="email" id="email" autocomplete="email" required />
+          </div>
+          <div class="form-row">
+            <label for="phone">Teléfono *</label>
+            <input type="text" id="phone" autocomplete="tel" required />
+            <div class="help">Formato sugerido: 9 dígitos sin espacios (ej: 977548593)</div>
+          </div>
+          <div class="form-row">
+            <label for="currentPassword">Contraseña actual *</label>
+            <input type="password" id="currentPassword" autocomplete="current-password" required />
+          </div>
+          <div class="grid-2">
+            <div class="form-row">
+              <label for="newPassword">Nueva contraseña</label>
+              <input type="password" id="newPassword" autocomplete="new-password" />
+              <div class="help">Mín. 8 caracteres, 1 letra, 1 número y 1 símbolo.</div>
+            </div>
+            <div class="form-row">
+              <label for="confirmPassword">Confirmar nueva contraseña</label>
+              <input type="password" id="confirmPassword" autocomplete="new-password" />
+            </div>
+          </div>
+          <div id="errorBox" class="error-msg" style="display:none"></div>
+          <div id="successBox" class="success-box">✔ Tus datos fueron actualizados.</div>
+          <div class="actions"><button class="btn-primary" type="submit">CONFIRMAR</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    // Tema oscuro si aplica
+    if(localStorage.getItem('theme')==='dark') document.body.classList.add('dark');
+
+    import { supabase } from './supabase-orders.js';
+
+    const editForm = document.getElementById('editForm');
+    const emailEl = document.getElementById('email');
+    const phoneEl = document.getElementById('phone');
+    const curPassEl = document.getElementById('currentPassword');
+    const newPassEl = document.getElementById('newPassword');
+    const confPassEl = document.getElementById('confirmPassword');
+    const errBox = document.getElementById('errorBox');
+    const okBox = document.getElementById('successBox');
+
+    function showError(msg){ errBox.textContent = msg; errBox.style.display='block'; okBox.classList.remove('active'); }
+    function clearError(){ errBox.style.display='none'; errBox.textContent=''; }
+
+    function validatePassword(p){
+      if(!p) return true; // vacía = no cambiar
+      if(p.length < 8) return false;
+      if(!/[a-zA-Z]/.test(p)) return false;
+      if(!/[0-9]/.test(p)) return false;
+      if(!/[!@#$%^&*(),.?":{}|<>]/.test(p)) return false;
+      return true;
+    }
+
+    // Cargar sesión Supabase y prellenar
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if(!user){
+        alert('Debes iniciar sesión para editar tus datos.');
+        window.location.href = 'login.html';
+        return;
+      }
+      emailEl.value = user.email || '';
+      emailEl.readOnly = true; // por ahora no permitimos cambiar email desde aquí
+      const phone = user.user_metadata?.phone || '';
+      phoneEl.value = phone;
+
+      editForm.addEventListener('submit', async (e)=>{
+        e.preventDefault();
+        clearError();
+        const email = (user.email || '').toLowerCase();
+        const phone = phoneEl.value.trim();
+        const currentPassword = curPassEl.value;
+        const newPassword = newPassEl.value;
+        const confirmPassword = confPassEl.value;
+
+        if(!email || !phone || !currentPassword){
+          return showError('Por favor completa los campos obligatorios.');
+        }
+        if(!/^[0-9]{8,11}$/.test(phone)) return showError('Ingresa un teléfono válido (solo números, 8-11 dígitos).');
+
+        // Validar contraseña actual re-autenticando
+        const { error: signErr } = await supabase.auth.signInWithPassword({ email, password: currentPassword });
+        if(signErr) return showError('La contraseña actual es incorrecta.');
+
+        // Actualizar metadata (teléfono)
+        try {
+          const { error: metaErr } = await supabase.auth.updateUser({ data: { phone } });
+          if(metaErr) return showError('No se pudo actualizar el teléfono: ' + metaErr.message);
+        } catch(e){ return showError('Error actualizando datos: ' + (e?.message||e)); }
+
+        // Cambio de contraseña si corresponde
+        if(newPassword || confirmPassword){
+          if(newPassword !== confirmPassword) return showError('Las nuevas contraseñas no coinciden.');
+          if(!validatePassword(newPassword)) return showError('La nueva contraseña no cumple los requisitos.');
+          const { error: pwdErr } = await supabase.auth.updateUser({ password: newPassword });
+          if(pwdErr) return showError('No se pudo actualizar la contraseña: ' + pwdErr.message);
+        }
+
+        okBox.classList.add('active');
+        // Limpiar campos de contraseña
+        curPassEl.value = '';
+        newPassEl.value = '';
+        confPassEl.value = '';
+        // Volver a Mi Cuenta luego de 2.5s
+        setTimeout(()=>{ window.location.href = 'mi-cuenta.html#details'; }, 2500);
+      });
+    })();
+  </script>
+  <script type="module" src="./auth-header.js"></script>
+  <script src="mobile-menu.js"></script>
+  <script src="script.js?v=20251106-2"></script>
+</body>
+</html>

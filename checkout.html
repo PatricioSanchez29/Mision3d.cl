@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<style>
+  /* Zoom en imagen del resumen checkout */
+  .sum-item-thumb {
+    position: relative;
+    overflow: visible;
+    display: inline-block;
+  }
+  .sum-item-thumb img {
+    transition: transform 0.25s cubic-bezier(.4,1.3,.5,1), box-shadow 0.2s;
+    z-index: 1;
+    border-radius: 6px;
+    max-width: 48px;
+    max-height: 48px;
+    box-shadow: none;
+  }
+  .sum-item-thumb:hover img {
+    transform: scale(2.2);
+    z-index: 10;
+    box-shadow: 0 4px 24px 0 rgba(0,0,0,0.18);
+  }
+  .sum-item-thumb {
+    cursor: zoom-in;
+  }
+  .sum-item-thumb:active img {
+    transform: scale(1.1);
+  }
+  @media (max-width: 600px) {
+    .sum-item-thumb img:hover {
+      transform: scale(1.2);
+    }
+  }
+</style>
+  <meta charset="UTF-8">
+  <title>Checkout | Mision3D</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Finaliza tu compra de impresión 3D personalizada en Misión 3D. Pago seguro y envío rápido a todo Chile.">
+  <meta name="keywords" content="checkout, compra, impresión 3D, personalizado, Chile, tienda, pago">
+  <meta property="og:title" content="Checkout | Misión 3D"/>
+  <meta property="og:description" content="Finaliza tu compra de impresión 3D personalizada en Misión 3D. Pago seguro y envío rápido a todo Chile."/>
+  <meta property="og:image" content="https://mision3d.cl/img/Logo_Mision3d.jpg"/>
+  <meta property="og:url" content="https://mision3d.cl/checkout.html"/>
+  <meta property="og:type" content="website"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="Checkout | Misión 3D"/>
+  <meta name="twitter:description" content="Finaliza tu compra de impresión 3D personalizada en Misión 3D. Pago seguro y envío rápido a todo Chile."/>
+  <meta name="twitter:image" content="https://mision3d.cl/img/Logo_Mision3d.jpg"/>
+  <link rel="canonical" href="https://mision3d.cl/checkout.html"/>
+  <meta name="robots" content="noindex, nofollow"/>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/jpeg" href="img/Logo_Mision3d.jpg">
+  <link rel="apple-touch-icon" href="img/Logo_Mision3d.jpg">
+  <link rel="stylesheet" href="style.css">
+  <script>window.GA_MEASUREMENT_ID = window.GA_MEASUREMENT_ID || 'G-XXXXXXXXXX';</script>
+  <script>
+    // Configuración dinámica del backend (local => http://localhost:3001, prod => https://api.mision3d.cl)
+    (function(){
+      try{
+        var isLocal = /localhost|127\.0\.0\.1/.test(location.hostname);
+        window.API_BASE_URL = isLocal ? 'http://localhost:3001' : 'https://api.mision3d.cl';
+      }catch(e){}
+    })();
+  </script>
+  <script type="module" src="auth-header.js"></script>
+  <script src="consent.js"></script>
+  <style>
+  /* Microinteracciones para botones principales */
+  .btn-register, .btn.primary, .btn.small, .btn.outline, .cart-btn, .search-btn, .btn-wide {
+    transition: background 0.18s, color 0.18s, box-shadow 0.18s, transform 0.12s;
+    box-shadow: 0 1px 4px #0001;
+  }
+  .btn-register:hover, .btn.primary:hover, .btn.small:hover, .btn.outline:hover, .cart-btn:hover, .search-btn:hover, .btn-wide:hover {
+    background: #4f46e5;
+    color: #fff;
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 4px 16px #4f46e522;
+  }
+  .btn-register:active, .btn.primary:active, .btn.small:active, .btn.outline:active, .cart-btn:active, .search-btn:active, .btn-wide:active {
+    background: #312e81;
+    color: #fff;
+    transform: scale(0.97);
+    box-shadow: 0 1px 4px #0002;
+  }
+  .btn-register:focus, .btn.primary:focus, .btn.small:focus, .btn.outline:focus, .cart-btn:focus, .search-btn:focus, .btn-wide:focus {
+    outline: 2px solid #6366f1;
+    outline-offset: 2px;
+  }
+    /* Oculta el bloque de usuario en checkout */
+    #userArea { display: none !important; }
+  </style>
+  <style>
+    /* ============ TU CSS ORIGINAL ============ */
+    .checkout-layout{max-width:1200px;margin:0 auto;padding:30px 20px;display:grid;grid-template-columns:1fr 380px;gap:50px}
+    .checkout-form-panel h2{margin:0 0 22px;font-size:1.4rem}
+    .section-title{font-size:1.05rem;margin:28px 0 10px;font-weight:600}
+    .field-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
+    .field{display:flex;flex-direction:column;gap:4px}
+    .field label{font-size:.72rem;text-transform:uppercase;letter-spacing:.5px;color:#555;font-weight:600}
+    .field input, .field select{padding:12px 14px;border:1px solid #ccc;border-radius:8px;font-size:.9rem;background:#fff}
+    .summary{background:#fafafa;padding:24px 24px 28px;border-radius:14px;align-self:start;position:sticky;top:20px;box-shadow:0 2px 4px rgba(0,0,0,.04)}
+    .summary h3{margin:0 0 18px;font-size:1.1rem}
+    .summary-items{display:flex;flex-direction:column;gap:14px;margin-bottom:18px;max-height:300px;overflow:auto}
+    .sum-item{display:flex;gap:12px;align-items:center;font-size:.85rem}
+    .sum-item img{width:54px;height:54px;object-fit:cover;border-radius:8px;border:1px solid #eee}
+    .sum-item .qty-badge{position:absolute;top:-6px;right:-6px;background:#222;color:#fff;font-size:.65rem;font-weight:600;padding:4px 6px;border-radius:40px}
+    .sum-item-thumb{position:relative}
+    .price-line{display:flex;justify-content:space-between;font-size:.85rem;margin:4px 0}
+    .total-line{display:flex;justify-content:space-between;font-weight:700;margin-top:14px;font-size:1.05rem}
+    .discount-box{display:flex;gap:10px;margin:12px 0 10px}
+    .discount-box input{flex:1;padding:10px 12px;border:1px solid #ccc;border-radius:8px}
+    .btn-wide{width:100%;padding:16px 22px;border:none;border-radius:40px;background:#e6462f;color:#fff;font-weight:600;font-size:.95rem;cursor:pointer;transition:.3s;margin-top:18px}
+    .btn-wide:hover{background:#c83824}
+    .notice{display:flex;gap:10px;background:#f1faf1;border:1px solid #cbe8cb;padding:12px 14px;border-radius:10px;font-size:.75rem;color:#215721;margin-bottom:10px}
+    .note-danger{background:#fdf2f2;border:1px solid #f5c2c7;color:#a23131}
+    .inline{display:flex;align-items:center;gap:8px;margin:4px 0 12px;font-size:.75rem}
+    @media (max-width:980px){
+      .checkout-layout{
+        grid-template-columns:1fr;
+        display:flex;
+        flex-direction:column;
+      }
+      .summary{
+        order:-1;
+        position:relative;
+        top:0;
+        margin-bottom:20px;
+      }
+      .checkout-form-panel{
+        order:1;
+      }
+    }
+  </style>
+</head>
+<body class="checkout">
+<header class="header">
+  <!-- Botón Hamburguesa (solo móvil) -->
+  <button class="hamburger-btn" id="hamburgerBtn" aria-label="Abrir menú">
+    <div class="hamburger-icon">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </button>
+
+  <h1 class="logo" style="margin:0;display:flex;align-items:center">
+    <a href="index.html" style="display:inline-flex;align-items:center;text-decoration:none">
+      <img src="img/Logo_Mision3d.jpg" alt="Misión 3D" class="logo-img" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-text',textContent:'Misión 3D'}));" />
+    </a>
+  </h1>
+  <nav class="nav">
+    <a href="index.html">Inicio</a>
+    <a href="catalogo.html" class="active">Catálogo</a>
+    <a href="index.html#contacto">Contacto</a>
+  </nav>
+  <div class="search-header">
+    <div class="advanced-search-bar">
+      <select id="headerCategorySelect" class="category-select">
+        <option value="all">Todas las categorías</option>
+      </select>
+      <input type="text" id="searchInput" placeholder="¿Qué estás buscando?" class="search-input" autocomplete="off">
+      <button type="button" id="headerSearchBtn" class="search-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <path d="m21 21-4.35-4.35"></path>
+        </svg>
+      </button>
+    </div>
+    <div id="searchSuggestions" class="search-suggestions"></div>
+    <div id="headerTrendChips" class="trend-chips" aria-label="Búsquedas populares"></div>
+  </div>
+  <div class="right-actions" style="display:flex;align-items:center;gap:10px">
+    <div id="userArea" class="user-area">
+      <a href="login.html" id="loginLink" class="btn small outline">Ingresar</a>
+    </div>
+    <button class="cart-btn" id="openCart" aria-label="Abrir carrito">🛒 <span id="cartCount">0</span></button>
+  </div>
+</header>
+
+<main class="checkout-layout">
+  <div class="checkout-form-panel">
+    <h2>Contacto</h2>
+    <div class="field-grid">
+      <div class="field" style="grid-column:1/-1">
+        <label>Correo electrónico</label>
+        <input id="inputEmail" type="email" placeholder="correo@dominio.cl">
+      </div>
+    </div>
+
+    <div class="section-title">Entrega</div>
+    <div class="field-grid">
+      <div class="field"><label>Nombre</label><input id="inputName"></div>
+      <div class="field"><label>Apellidos</label><input id="inputApellido"></div>
+      <div class="field" style="grid-column:1/-1"><label>RUT</label><input id="inputRut"></div>
+      <div class="field" style="grid-column:1/-1"><label>Dirección</label><input id="inputDireccion" placeholder="Ej: Av. Providencia 1234"></div>
+      <div class="field" style="grid-column:1/-1"><label>Región</label><select id="inputRegion"><option value="">Selecciona región</option></select></div>
+      <div class="field"><label>Comuna</label><select id="inputComuna"><option value="">Selecciona comuna</option></select></div>
+      <div class="field" style="grid-column:1/-1"><label>Teléfono</label><input id="inputTelefono"></div>
+      <!-- Campo de método de envío removido visualmente; dejamos input oculto para compatibilidad -->
+      <input type="hidden" id="inputEnvio" value="">
+      <div class="field"><label>Código Postal</label><input id="inputPostal" placeholder="Opcional"></div>
+      <div class="field" style="grid-column:1/-1"><label>Notas</label><input id="inputNotes" placeholder="Indicaciones adicionales (opcional)"></div>
+    </div>
+    <!-- Nueva sección visual de métodos de envío -->
+    <div class="section-title" style="margin-top:30px">Métodos de envío</div>
+    <div id="shippingMethods" style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+      <label class="ship-option" id="shipPorPagarCard" style="display:flex;gap:14px;border:1px solid #d5d5d5;padding:14px 16px;border-radius:12px;cursor:pointer;align-items:flex-start;position:relative">
+        <input type="radio" name="shipMethod" value="porpagar" style="margin-top:5px" checked>
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:.85rem;line-height:1.2">Despacho a Regiones / Fuera de Santiago (Envío POR PAGAR)</div>
+          <div style="font-size:.7rem;color:#555;margin-top:4px">Starken / Chilexpress. Pagas el envío al recibir o retirar. No se suma al total aquí.</div>
+        </div>
+        <div style="font-size:.7rem;font-weight:600;color:#444;white-space:nowrap">POR PAGAR</div>
+      </label>
+      <label class="ship-option" id="shipSantiagoCard" style="display:flex;gap:14px;border:1px solid #d5d5d5;padding:16px 18px;border-radius:12px;cursor:pointer;align-items:flex-start;position:relative;opacity:.55">
+        <input type="radio" name="shipMethod" value="santiago" style="margin-top:5px" disabled>
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:.88rem;line-height:1.3">Envío Comunas de Santiago</div>
+          <div style="font-size:.7rem;color:#555;margin-top:4px">Disponible al seleccionar Región Metropolitana de Santiago.</div>
+        </div>
+        <div style="font-size:.8rem;font-weight:700;color:#222;white-space:nowrap">$2.990</div>
+      </label>
+      <!-- Nuevo: Retiro en tienda/la Florida (gratis) -->
+      <label class="ship-option" id="shipRetiroCard" style="display:flex;gap:14px;border:1px solid #d5d5d5;padding:14px 16px;border-radius:12px;cursor:pointer;align-items:flex-start;position:relative">
+        <input type="radio" name="shipMethod" value="retiro" style="margin-top:5px">
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:.85rem;line-height:1.2">Retiro gratis en La Florida</div>
+          <div style="font-size:.7rem;color:#555;margin-top:4px">Coordinamos por correo/WhatsApp. Dirección y horario al confirmar el pedido.</div>
+        </div>
+        <div style="font-size:.8rem;font-weight:700;color:#0a7a0a;white-space:nowrap">GRATIS</div>
+      </label>
+    </div>
+    <button class="btn-wide" id="btnConfirmOrder">Confirmar pedido</button>
+    <div class="section-title" style="margin-top:34px">Método de pago</div>
+   
+<div id="paymentMethods" class="payment-options">
+  
+ <div id="paymentMethods">
+<div id="paymentMethods">
+
+  <!-- Transferencia Bancaria -->
+  <label class="pay-option">
+    <input type="radio" name="payMethod" value="transferencia">
+    <div class="pay-content">
+      <div class="pay-title">
+        <span>Transferencia Bancaria</span>
+        <div class="pay-icons">
+          
+        </div>
+      </div>
+      <!-- Mensaje que aparece al seleccionar -->
+      <div class="pay-detail">
+  <img src="img/browser-icon.svg" alt="Navegador">
+  <p>Una vez ordene el pedido, recibirá un correo con toda la información para transferir.</p>
+      </div>
+    </div>
+  </label>
+
+  <!-- Flow -->
+  <label class="pay-option">
+    <input type="radio" name="payMethod" value="flow" checked>
+    <div class="pay-content">
+      <div class="pay-title">
+        <span>Checkout Flow</span>
+        <div class="pay-icons">
+          <img src="img/Visa_Inc._logo.svg" alt="Visa">
+          <img src="img/Mastercard-logo.png" alt="MasterCard">
+          <img src="img/American_Express_logo.svg" alt="Amex">
+          <span class="more">+2</span>
+        </div>
+      </div>
+      <small>Transacciones seguras y protegidas.</small>
+
+      <!-- Mensaje que aparece al seleccionar -->
+      <div class="pay-detail">
+        <img src="img/browser-icon.svg" alt="Navegador">
+        <p>Después de hacer clic en “Pagar ahora”, serás redirigido a <b>Checkout Flow</b> para completar tu compra de forma segura.</p>
+      </div>
+    </div>
+  </label>
+
+  
+
+</div>
+
+
+</div>
+
+
+</div>
+
+  <small style="display:block;font-size:.65rem;color:#555;margin-bottom:18px">Serás redirigido a la pasarela seleccionada.</small>
+  </div>
+
+  <aside class="summary">
+    <h3>Resumen</h3>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+      <span title="SSL Seguro" style="display:flex;align-items:center;gap:4px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span style="font-size:11px;color:#059669;font-weight:600;">SSL</span>
+      </span>
+      <span title="Webpay" style="display:flex;align-items:center;gap:4px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="3"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01"/></svg>
+        <span style="font-size:11px;color:#2563eb;font-weight:600;">Webpay</span>
+      </span>
+      <span title="Transbank" style="display:flex;align-items:center;gap:4px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e11d48" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+        <span style="font-size:11px;color:#e11d48;font-weight:600;">Transbank</span>
+      </span>
+      <a href="privacidad.html" target="_blank" style="font-size:13px;color:#0ea5e9;text-decoration:underline;">Política de Privacidad</a>
+    </div>
+    <div class="summary-items" id="summaryItems">
+      <p style="font-size:.8rem;color:#666">Carrito vacío</p>
+    </div>
+    <div class="discount-box" id="discountBox">
+      <input id="discountCode" placeholder="Código de descuento">
+      <button type="button" id="btnApplyDiscount" style="padding:10px 14px;border-radius:8px;border:none;background:#222;color:#fff;cursor:pointer;font-size:.7rem;font-weight:600">Aplicar</button>
+    </div>
+    <div class="price-line" style="display:none" id="lineSubtotal"><span>Subtotal</span><span id="subtotalValue">$0</span></div>
+    <div class="price-line" style="display:none" id="lineDiscount"><span>Descuento</span><span id="discountValue">-$0</span></div>
+    <div class="price-line" style="display:none" id="lineShipping"><span>Envío</span><span id="shippingValue">$0</span></div>
+    <div class="total-line"><span>Total</span><span>$0</span></div>
+  </aside>
+  <section id="checkoutRecommendations" style="background:#f8fafc;padding:18px 20px 20px 20px;border-radius:12px;margin-top:18px;box-shadow:0 1px 6px #0001">
+    <h4 style="margin:0 0 12px 0;font-size:1rem;color:#0052cc;font-weight:700">Te puede interesar</h4>
+    <div id="recommendGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:16px;"></div>
+  </section>
+ </main>
+<script src="ui-components.js"></script>
+<script src="validations.js"></script>
+<script>
+  // Cambia esto por la URL pública de tu backend en Render o Railway
+  window.API_URL = "https://mision3d-api.onrender.com"; 
+</script>
+
+<!-- Cargar productos desde Supabase ANTES de script.js -->
+<script type="module">
+  // En local, evita intentar llamar a Supabase (para no llenar la consola si hay DNS/firewall)
+  const isLocal = /localhost|127\.0\.0\.1/.test(location.hostname);
+  const forceRemote = Boolean(window.FORCE_REMOTE_PRODUCTS);
+
+  // Función utilitaria para fusionar productos en window.PRODUCTS
+  const mergeProducts = (arr) => {
+    if (!Array.isArray(arr)) return;
+    if (Array.isArray(window.PRODUCTS) && window.PRODUCTS.length > 0) {
+      const map = new Map(window.PRODUCTS.map(p => [String(p.id), p]));
+      for (const sp of arr) {
+        const key = String(sp.id);
+        if (map.has(key)) {
+          const existing = map.get(key);
+          existing.name = sp.name ?? existing.name;
+          existing.price = typeof sp.price === 'number' ? sp.price : existing.price;
+          existing.img = sp.img || existing.img;
+          existing.description = sp.description || existing.description;
+          existing.category = sp.category || existing.category;
+          existing.gallery = sp.gallery || existing.gallery;
+          // Mantener/actualizar variantes
+          existing.variants = (typeof sp.variants !== 'undefined') ? sp.variants : existing.variants;
+        } else {
+          window.PRODUCTS.push(sp);
+        }
+      }
+    } else {
+      window.PRODUCTS = arr;
+    }
+  };
+
+  // Si estamos en local y no se fuerza el remoto, usa PRODUCTS de localStorage o los existentes y no consultes Supabase
+  if (isLocal && !forceRemote) {
+    try {
+      const ls = JSON.parse(localStorage.getItem('PRODUCTS')||'[]');
+      if (Array.isArray(ls) && ls.length > 0) {
+        mergeProducts(ls);
+        console.log('[checkout] Usando PRODUCTS desde localStorage (modo local)');
+        window.dispatchEvent(new CustomEvent('productsLoaded'));
+        // Salir para no hacer request remoto
+        throw new Error('skip-remote-in-local');
+      }
+    } catch {}
+    // Si no hay en localStorage, igual seguimos con el remoto (puede fallar, pero hay fallback más abajo)
+  }
+
+  // Reutiliza el cliente central para evitar múltiples GoTrueClient
+  const { supabase } = await import('./supabase-orders.js');
+  
+  // Cargar productos desde Supabase
+  const { data: productos, error } = await supabase.from('productos').select('*');
+  if (error) {
+    console.warn('[checkout] Error cargando productos de Supabase (se usará fallback/localStorage si existe):', error);
+  } else {
+    // Convertir formato Supabase a formato esperado por script.js
+    const supaProducts = (productos||[]).map(p => ({
+      id: p.id,
+      name: p.name,
+      price: p.price,
+      img: p.img,
+      description: p.description || '',
+      category: p.category || '',
+      gallery: p.gallery || [],
+      variants: (typeof p.variants !== 'undefined') ? p.variants : undefined
+    }));
+    // Fusionar con existentes
+    mergeProducts(supaProducts);
+  console.log('[checkout] Productos cargados desde Supabase:', (window.PRODUCTS||[]).length);
+  try { localStorage.setItem('PRODUCTS', JSON.stringify(window.PRODUCTS||[])); } catch {}
+    
+    // Disparar evento para que checkout sepa que los productos están listos
+    window.dispatchEvent(new CustomEvent('productsLoaded'));
+  }
+</script>
+
+  <script src="script.js?v=20251106-2"></script>
+</main>
+<script>
+// Si por algún motivo script.js no definió PRODUCTS, inicializar vacío.
+window.PRODUCTS = window.PRODUCTS || [];
+// === Códigos de descuento ===
+const DISCOUNT_CODES = {
+  "BIENVENIDO10": { type:'percent', value:10, desc:'10% de descuento' },
+  "ENVIOGRATIS": { type:'freeshipping', value:0, desc:'Envío gratis' },
+  "MENOS2000": { type:'fixed', value:2000, desc:'Descuento de $2.000' }
+};
+
+function getAppliedDiscount(){
+  try { return JSON.parse(localStorage.getItem('discountApplied')||'null'); } catch(e){ return null; }
+}
+function setAppliedDiscount(obj){
+  if(!obj) localStorage.removeItem('discountApplied'); else localStorage.setItem('discountApplied', JSON.stringify(obj));
+}
+/* ============ REGIONES Y COMUNAS ============ */
+const REGIONES_COMUNAS_FALLBACK = {
+  "Arica y Parinacota": ["Arica", "Camarones", "Putre", "General Lagos"],
+  "Tarapacá": ["Iquique", "Alto Hospicio", "Pozo Almonte", "Camiña", "Colchane", "Huara", "Pica"],
+  "Antofagasta": ["Antofagasta", "Mejillones", "Sierra Gorda", "Taltal", "Calama", "Ollagüe", "San Pedro de Atacama", "Tocopilla", "María Elena"],
+  "Atacama": ["Copiapó", "Caldera", "Tierra Amarilla", "Chañaral", "Diego de Almagro", "Vallenar", "Alto del Carmen", "Freirina", "Huasco"],
+  "Coquimbo": ["La Serena", "Coquimbo", "Andacollo", "La Higuera", "Paiguano", "Vicuña", "Illapel", "Canela", "Los Vilos", "Salamanca", "Ovalle", "Combarbalá", "Monte Patria", "Punitaqui", "Río Hurtado"],
+  "Valparaíso": ["Valparaíso", "Viña del Mar", "Quilpué", "Villa Alemana", "Concón", "Quintero", "Puchuncaví", "Casablanca", "Juan Fernández", "San Antonio", "Cartagena", "El Tabo", "El Quisco", "Algarrobo", "Santo Domingo", "San Felipe", "Catemu", "Llaillay", "Panquehue", "Putaendo", "Santa María", "Los Andes", "Calle Larga", "Rinconada", "San Esteban", "La Ligua", "Cabildo", "Papudo", "Petorca", "Zapallar", "Quillota", "La Calera", "Hijuelas", "La Cruz", "Nogales", "Limache", "Olmué"],
+  "Metropolitana de Santiago": ["Cerrillos", "Cerro Navia", "Conchalí", "El Bosque", "Estación Central", "Huechuraba", "Independencia", "La Cisterna", "La Florida", "La Granja", "La Pintana", "La Reina", "Las Condes", "Lo Barnechea", "Lo Espejo", "Lo Prado", "Macul", "Maipú", "Ñuñoa", "Pedro Aguirre Cerda", "Peñalolén", "Providencia", "Pudahuel", "Quilicura", "Quinta Normal", "Recoleta", "Renca", "San Joaquín", "San Miguel", "San Ramón", "Vitacura", "Santiago", "Puente Alto", "Pirque", "San José de Maipo", "Colina", "Lampa", "Tiltil", "San Bernardo", "Buin", "Calera de Tango", "Paine", "Melipilla", "Alhué", "Curacaví", "María Pinto", "San Pedro", "Talagante", "El Monte", "Isla de Maipo", "Padre Hurtado", "Peñaflor"],
+  "O'Higgins": ["Rancagua", "Codegua", "Coinco", "Coltauco", "Doñihue", "Graneros", "Las Cabras", "Machalí", "Malloa", "Mostazal", "Olivar", "Peumo", "Pichidegua", "Quinta de Tilcoco", "Rengo", "Requínoa", "San Vicente", "Pichilemu", "La Estrella", "Litueche", "Marchihue", "Navidad", "Paredones", "San Fernando", "Chépica", "Chimbarongo", "Lolol", "Nancagua", "Palmilla", "Peralillo", "Placilla", "Pumanque", "Santa Cruz"],
+  "Maule": ["Talca", "Constitución", "Curepto", "Empedrado", "Maule", "Pelarco", "Pencahue", "Río Claro", "San Clemente", "San Rafael", "Cauquenes", "Chanco", "Pelluhue", "Curicó", "Hualañé", "Licantén", "Molina", "Rauco", "Romeral", "Sagrada Familia", "Teno", "Vichuquén", "Linares", "Colbún", "Longaví", "Parral", "Retiro", "San Javier", "Villa Alegre", "Yerbas Buenas"],
+  "Ñuble": ["Chillán", "Bulnes", "Chillán Viejo", "El Carmen", "Pemuco", "Pinto", "Quillón", "San Ignacio", "Yungay", "Cobquecura", "Coelemu", "Ninhue", "Portezuelo", "Quirihue", "Ránquil", "Treguaco", "San Carlos", "Coihueco", "Ñiquén", "San Fabián", "San Nicolás"],
+  "Biobío": ["Concepción", "Coronel", "Chiguayante", "Florida", "Hualqui", "Lota", "Penco", "San Pedro de la Paz", "Santa Juana", "Talcahuano", "Tomé", "Hualpén", "Lebu", "Arauco", "Cañete", "Contulmo", "Curanilahue", "Los Álamos", "Tirúa", "Los Ángeles", "Antuco", "Cabrero", "Laja", "Mulchén", "Nacimiento", "Negrete", "Quilaco", "Quilleco", "San Rosendo", "Santa Bárbara", "Tucapel", "Yumbel", "Alto Biobío"],
+  "La Araucanía": ["Temuco", "Carahue", "Cunco", "Curarrehue", "Freire", "Galvarino", "Gorbea", "Lautaro", "Loncoche", "Melipeuco", "Nueva Imperial", "Padre Las Casas", "Perquenco", "Pitrufquén", "Pucón", "Saavedra", "Teodoro Schmidt", "Toltén", "Vilcún", "Villarrica", "Cholchol", "Angol", "Collipulli", "Curacautín", "Ercilla", "Lonquimay", "Los Sauces", "Lumaco", "Purén", "Renaico", "Traiguén", "Victoria"],
+  "Los Ríos": ["Valdivia", "Corral", "Lanco", "Los Lagos", "Máfil", "Mariquina", "Paillaco", "Panguipulli", "La Unión", "Futrono", "Lago Ranco", "Río Bueno"],
+  "Los Lagos": ["Puerto Montt", "Calbuco", "Cochamó", "Fresia", "Frutillar", "Los Muermos", "Llanquihue", "Maullín", "Puerto Varas", "Castro", "Ancud", "Chonchi", "Curaco de Vélez", "Dalcahue", "Puqueldón", "Queilén", "Quellón", "Quemchi", "Quinchao", "Osorno", "Puerto Octay", "Purranque", "Puyehue", "Río Negro", "San Juan de la Costa", "San Pablo", "Chaitén", "Futaleufú", "Hualaihué", "Palena"],
+  "Aysén": ["Coyhaique", "Lago Verde", "Aysén", "Cisnes", "Guaitecas", "Cochrane", "O'Higgins", "Tortel", "Chile Chico", "Río Ibáñez"],
+  "Magallanes": ["Punta Arenas", "Laguna Blanca", "Río Verde", "San Gregorio", "Cabo de Hornos", "Antártica", "Porvenir", "Primavera", "Timaukel", "Natales", "Torres del Paine"]
+};
+
+function initRegions(){
+  const regionSel=document.getElementById('inputRegion');
+  const comunaSel=document.getElementById('inputComuna');
+  if(!regionSel||!comunaSel) return;
+
+  // Poblar regiones
+  regionSel.innerHTML='<option value="">Selecciona región</option>';
+  Object.keys(REGIONES_COMUNAS_FALLBACK).forEach(r=>{
+    const o=document.createElement('option');
+    o.value=r;
+    o.textContent=r;
+    regionSel.appendChild(o);
+  });
+
+  // Poblar comunas al elegir región
+  regionSel.onchange=function(){
+    const comunas=REGIONES_COMUNAS_FALLBACK[this.value]||[];
+    comunaSel.innerHTML='<option value="">Selecciona comuna</option>';
+    comunas.forEach(c=>{
+      const o=document.createElement('option');
+      o.value=c;
+      o.textContent=c;
+      comunaSel.appendChild(o);
+    });
+  };
+}
+
+// Ejecutar al cargar
+document.addEventListener("DOMContentLoaded", ()=>{
+  initRegions();
+  
+  // IMPORTANTE: Esperar a que los productos se carguen desde Supabase
+  const checkCartAndRender = () => {
+    const currentCart = window.cart || JSON.parse(localStorage.getItem('cart') || '[]');
+    
+    if (!currentCart || currentCart.length === 0) {
+      alert('Tu carrito está vacío. Serás redirigido al catálogo.');
+      window.location.href = 'catalogo.html';
+      return;
+    }
+    
+    // Verificar que los productos estén cargados
+    if (typeof window.PRODUCTS === 'undefined' || window.PRODUCTS.length === 0) {
+      console.log('[checkout] Esperando a que se carguen los productos...');
+      return; // No renderizar hasta que los productos estén disponibles
+    }
+    
+    renderCheckoutSummary();
+  };
+  
+  // Escuchar evento de productos cargados
+  window.addEventListener('productsLoaded', checkCartAndRender);
+  
+  // También intentar inmediatamente por si los productos ya están cargados
+  if (window.PRODUCTS && window.PRODUCTS.length > 0) {
+    checkCartAndRender();
+  } else {
+    // Reintento suave: esperar hasta 5s sin bloquear con alertas
+    const startedAt = Date.now();
+    const retry = () => {
+      if (window.PRODUCTS && window.PRODUCTS.length > 0) {
+        checkCartAndRender();
+        return;
+      }
+      if (Date.now() - startedAt > 5000) {
+        console.warn('[checkout] Productos no disponibles tras 5s; usando lo que haya en fallback/localStorage');
+        checkCartAndRender();
+        return;
+      }
+      setTimeout(retry, 400);
+    };
+    retry();
+  }
+  
+  // Conectar botón principal con confirmCheckout (definida en script.js)
+  const btn = document.getElementById('btnConfirmOrder');
+  if(btn){
+    btn.addEventListener('click', (e)=>{
+      e.preventDefault();
+      if(typeof confirmCheckout === 'function'){
+        confirmCheckout();
+      } else {
+        alert('Función de checkout no disponible');
+      }
+    });
+  }
+  // Sincronizar radios de envío con el select oculto (para no reescribir confirmCheckout aún)
+  const envioSelectHidden = document.getElementById('inputEnvio');
+  if(envioSelectHidden) envioSelectHidden.style.display='none';
+  const shipRadios = document.querySelectorAll('input[name="shipMethod"]');
+  function syncShipping(){
+    const r = document.querySelector('input[name="shipMethod"]:checked');
+    if(!r) return;
+    if(envioSelectHidden){
+      // Mantener el mismo valor seleccionado; confirmCheckout maneja santiago/retiro/porpagar
+      envioSelectHidden.value = r.value;
+    }
+    renderCheckoutSummary();
+  }
+  shipRadios.forEach(r=>r.addEventListener('change', syncShipping));
+// Eliminado fetch automático de prueba a Flow para evitar 500 al cargar.
+
+
+  // Activar opción Santiago si la región es Metropolitana de Santiago
+  const regionSel = document.getElementById('inputRegion');
+  function updateSantiagoAvailability(){
+    const santiagoCard = document.getElementById('shipSantiagoCard');
+    const santiagoRadio = santiagoCard ? santiagoCard.querySelector('input[type="radio"]') : null;
+    const porCard = document.getElementById('shipPorPagarCard');
+    const porRadio = porCard ? porCard.querySelector('input[type="radio"]') : null;
+    const retiroCard = document.getElementById('shipRetiroCard');
+    const retiroRadio = retiroCard ? retiroCard.querySelector('input[type="radio"]') : null;
+    if(!santiagoRadio || !porRadio || !retiroRadio) return;
+
+    if(regionSel && regionSel.value === 'Metropolitana de Santiago'){
+      // En Santiago: permitir "Santiago" y "Retiro"; desactivar Por Pagar
+      santiagoRadio.disabled = false; santiagoCard.style.opacity = '1';
+      retiroRadio.disabled = false; retiroCard.style.opacity = '1';
+      porRadio.disabled = true; porCard.style.opacity = '.45';
+      // Seleccionar por defecto Retiro gratis
+      retiroRadio.checked = true;
+    } else {
+      // Fuera de Santiago: solo Por Pagar
+      santiagoRadio.disabled = true; santiagoCard.style.opacity = '.55'; santiagoRadio.checked = false;
+      retiroRadio.disabled = true; retiroCard.style.opacity = '.55'; retiroRadio.checked = false;
+      porRadio.disabled = false; porCard.style.opacity = '1'; porRadio.checked = true;
+    }
+    syncShipping();
+  }
+  if(regionSel){ 
+    regionSel.addEventListener('change', ()=>{
+      updateSantiagoAvailability();
+      renderCheckoutSummary(); // Recalcular total al cambiar región
+    }); 
+    setTimeout(updateSantiagoAvailability,0); 
+  }
+  // Restaurar código aplicado
+  const stored = getAppliedDiscount();
+  if(stored){
+    const input = document.getElementById('discountCode');
+    if(input) input.value = stored.code;
+  }
+  const btnApply = document.getElementById('btnApplyDiscount');
+  if(btnApply){
+    btnApply.addEventListener('click', ()=>{
+      const code = document.getElementById('discountCode').value.trim().toUpperCase();
+      if(!code){ setAppliedDiscount(null); renderCheckoutSummary(); return; }
+      const data = DISCOUNT_CODES[code];
+      if(!data){
+        alert('Código inválido');
+        setAppliedDiscount(null);
+        renderCheckoutSummary();
+        return;
+      }
+      setAppliedDiscount({...data, code});
+      renderCheckoutSummary();
+    });
+  }
+  const envioSel = document.getElementById('inputEnvio');
+  if(envioSel){
+    envioSel.addEventListener('change', ()=>renderCheckoutSummary());
+  }
+  // Método de pago: no hace falta recalcular total, solo registrar selección
+  const payRadios = document.querySelectorAll('input[name="payMethod"]');
+  payRadios.forEach(r=>r.addEventListener('change',()=>{}));
+});
+
+// Renderizar productos recomendados en checkout
+function renderCheckoutRecommendations() {
+  const grid = document.getElementById('recommendGrid');
+  if (!grid || !window.PRODUCTS) return;
+  // Excluir productos ya en el carrito
+  const cart = JSON.parse(localStorage.getItem('cart')||'[]');
+  const cartIds = cart.map(it => String(it.originalId || it.id));
+  // Elegir hasta 4 productos aleatorios que no estén en el carrito
+  const pool = window.PRODUCTS.filter(p => !cartIds.includes(String(p.id)));
+  if (pool.length === 0) {
+    grid.innerHTML = '<p style="color:#888;font-size:.9rem">No hay más productos para recomendar.</p>';
+    return;
+  }
+  // Mezclar y tomar 4
+  const shuffled = pool.sort(()=>0.5-Math.random()).slice(0,4);
+  grid.innerHTML = shuffled.map(p => `
+    <div class="rec-card" tabindex="0" aria-label="${p.name}" style="background:#fff;border-radius:8px;box-shadow:0 1px 4px #0001;padding:10px 8px;display:flex;flex-direction:column;align-items:center;gap:7px;transition:box-shadow .18s">
+      <img src="${p.img||'img/placeholder.png'}" alt="${p.name}" loading="lazy" style="width:70px;height:70px;object-fit:cover;border-radius:7px;box-shadow:0 1px 4px #0001">
+      <div style="font-size:.85rem;font-weight:600;text-align:center;line-height:1.2">${p.name}</div>
+      <div style="font-size:.8rem;color:#0052cc;font-weight:700">${(p.price||0).toLocaleString('es-CL',{style:'currency',currency:'CLP'})}</div>
+      <button onclick="window.location.href='producto.html?id=${p.id}'" style="margin-top:4px;padding:5px 12px;border-radius:6px;border:none;background:#0052cc;color:#fff;font-size:.8rem;cursor:pointer;font-weight:600">Ver</button>
+    </div>
+  `).join('');
+}
+function renderCheckoutSummary(){
+  const cont = document.getElementById('summaryItems');
+  const totalLine = document.querySelector('.total-line span:last-child');
+  if(!cont) return;
+  const cart = JSON.parse(localStorage.getItem('cart')||'[]');
+  if(!cart.length){
+    cont.innerHTML = '<p style="font-size:.8rem;color:#666">Carrito vacío</p>';
+    if(totalLine) totalLine.textContent = '$0';
+    return;
+  }
+  // Necesitamos PRODUCTS: si no existe en window (por orden de carga), abortar amable
+  if(typeof window.PRODUCTS === 'undefined'){
+    cont.innerHTML = '<p style="font-size:.75rem;color:#c00">No se pudieron cargar los productos (PRODUCTS indefinido)</p>';
+    return;
+  }
+  let html='';
+  let subtotal=0;
+  cart.forEach(it=>{
+    // Buscar producto por originalId si existe (productos con variantes), sino por id normal
+    const productId = it.originalId || it.id;
+    const p = PRODUCTS.find(pr=>String(pr.id)===String(productId));
+    if(!p) return; // ignora items huérfanos
+    // Usar precio de la variante si existe, sino el precio del producto
+    const itemPrice = it.price || p.price;
+    const sub = itemPrice * it.qty;
+    subtotal += sub;
+    // Nombre con variante si existe
+    const displayName = it.variant ? `${p.name} (${it.variant})` : p.name;
+    // Detectar stock bajo
+    let stockLow = false, stockMsg = '';
+    if (typeof p.stock === 'string' && p.stock.toLowerCase().includes('bajo')) {
+      stockLow = true;
+      stockMsg = '<span class="stock-low-msg" style="color:#b91c1c;font-weight:600;font-size:.7rem;margin-left:4px">¡Quedan pocas unidades!</span>';
+    }
+    html += `
+      <div class="sum-item" style="display:flex;align-items:center;gap:8px${stockLow ? ';background:#fff6f6;border-radius:7px;border:1px solid #fbb;' : ''}">
+        <div class="sum-item-thumb"><img src="${p.img||'img/placeholder.png'}" alt="${p.name}" loading="lazy"></div>
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:.78rem;margin-bottom:4px">${displayName} ${stockMsg}</div>
+          <div style="font-size:.7rem;color:#555;display:flex;align-items:center;gap:6px">
+            <button class="qty-minus-summary" data-id="${it.id}" style="background:#eee;border:none;border-radius:4px;width:22px;height:22px;font-size:1.1rem;cursor:pointer;">-</button>
+            <span style="min-width:22px;display:inline-block;text-align:center;font-weight:600;">${it.qty}</span>
+            <button class="qty-plus-summary" data-id="${it.id}" style="background:#eee;border:none;border-radius:4px;width:22px;height:22px;font-size:1.1rem;cursor:pointer;">+</button>
+            <span style="margin-left:8px">x ${itemPrice.toLocaleString('es-CL',{style:'currency',currency:'CLP'})}</span>
+          </div>
+          <div style=\"margin-top:4px\">
+            ${(() => {
+              const isPersonalizable = p.name && p.name.trim().toLowerCase() === 'calendario f1 2026 (personalizado con el nombre o apodo)'.toLowerCase();
+              if (isPersonalizable) {
+                return `<div style=\"width:100%;font-size:.9rem;padding:4px 7px;margin-top:2px;border:1px solid #ddd;border-radius:5px;background:#f8f8f8;min-height:28px;display:flex;align-items:center;gap:7px;\">
+                  <svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#888\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"11\" width=\"18\" height=\"10\" rx=\"2\"/><path d=\"M7 11V7a5 5 0 0 1 10 0v4\"/></svg>
+                  <span>${it.customNote ? String(it.customNote).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;') : ''}</span>
+                </div>`;
+              } else {
+                return `<input class=\"note-summary-input\" data-id=\"${it.id}\" type=\"text\" placeholder=\"Personalización (opcional)\" value=\"${it.customNote ? String(it.customNote).replace(/&/g,'&amp;').replace(/\"/g,'&quot;').replace(/</g,'&lt;') : ''}\" readonly aria-readonly=\"true\" tabindex=\"-1\" style=\"width:100%;font-size:.72rem;padding:4px 7px;margin-top:2px;border:1px solid #ddd;border-radius:5px;background:#f8f8f8;cursor:not-allowed\">`;
+              }
+            })()}
+          </div>
+        </div>
+        <div style="font-weight:600;font-size:.75rem">${sub.toLocaleString('es-CL',{style:'currency',currency:'CLP'})}</div>
+        <button class="remove-summary-item" data-id="${it.id}" title="Quitar del carrito" style="background:none;border:none;color:#c00;font-size:1.2rem;cursor:pointer;margin-left:8px">🗑️</button>
+      </div>`;
+  // Asignar eventos a los inputs de nota de personalización
+  cont.querySelectorAll('.note-summary-input').forEach(input => {
+    input.addEventListener('change', function() {
+      const id = this.getAttribute('data-id');
+      let cart = JSON.parse(localStorage.getItem('cart')||'[]');
+      const idx = cart.findIndex(x=>String(x.id)===String(id));
+      if(idx>=0){
+        cart[idx].customNote = this.value;
+        localStorage.setItem('cart', JSON.stringify(cart));
+        // No es necesario re-renderizar todo, pero si quieres feedback visual, puedes hacerlo aquí
+      }
+    });
+  });
+  });
+  cont.innerHTML = html;
+  // Renderizar recomendaciones después de actualizar el carrito
+  renderCheckoutRecommendations();
+  // Forzar readonly por JS solo para el producto personalizado (si por alguna razón aún hay input)
+  document.querySelectorAll('input.note-summary-input').forEach(input => {
+    const prodName = input.closest('.sum-item')?.querySelector('div[style*="font-weight:600"]')?.textContent || '';
+    if(prodName.toLowerCase().includes('calendario f1 2026 (personalizado con el nombre o apodo)')){
+      input.readOnly = true;
+    }
+  });
+  // Asignar eventos a los botones de eliminar
+  cont.querySelectorAll('.remove-summary-item').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const id = this.getAttribute('data-id');
+      let cart = JSON.parse(localStorage.getItem('cart')||'[]');
+      cart = cart.filter(x=>String(x.id)!==String(id));
+      localStorage.setItem('cart', JSON.stringify(cart));
+      renderCheckoutSummary();
+      if(window.badge) window.badge();
+    });
+  });
+  // Asignar eventos a los botones de cantidad -
+  cont.querySelectorAll('.qty-minus-summary').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const id = this.getAttribute('data-id');
+      let cart = JSON.parse(localStorage.getItem('cart')||'[]');
+      const idx = cart.findIndex(x=>String(x.id)===String(id));
+      if(idx>=0 && cart[idx].qty>1){
+        cart[idx].qty -= 1;
+        localStorage.setItem('cart', JSON.stringify(cart));
+        renderCheckoutSummary();
+        if(window.badge) window.badge();
+      }
+    });
+  });
+  // Asignar eventos a los botones de cantidad +
+  cont.querySelectorAll('.qty-plus-summary').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const id = this.getAttribute('data-id');
+      let cart = JSON.parse(localStorage.getItem('cart')||'[]');
+      const idx = cart.findIndex(x=>String(x.id)===String(id));
+      if(idx>=0){
+        cart[idx].qty += 1;
+        localStorage.setItem('cart', JSON.stringify(cart));
+        renderCheckoutSummary();
+        if(window.badge) window.badge();
+      }
+    });
+  });
+  
+  // Calcular envío basado en los radio buttons
+  const regionSel = document.getElementById('inputRegion');
+  const selectedShipMethod = document.querySelector('input[name="shipMethod"]:checked');
+  
+  let shipping = 0;
+  if (selectedShipMethod) {
+    if (selectedShipMethod.value === 'santiago') {
+      // Envío a Santiago: $2.990
+      shipping = 2990;
+    } else if (selectedShipMethod.value === 'domicilio') {
+      // Envío a domicilio (antiguo)
+      shipping = 2990;
+    } else if (selectedShipMethod.value === 'retiro') {
+      shipping = 0;
+    } else if (selectedShipMethod.value === 'porpagar') {
+      shipping = 0;
+    } else {
+      // Por pagar o porpagar: shipping = 0 (no se suma aquí)
+      shipping = 0;
+    }
+  }
+  
+  let applied = getAppliedDiscount();
+  let discountAmount = 0;
+  if(applied){
+    switch(applied.type){
+      case 'percent': discountAmount = Math.round(subtotal * applied.value / 100); break;
+      case 'fixed': discountAmount = Math.min(subtotal, applied.value); break;
+      case 'freeshipping': shipping = 0; break;
+    }
+  }
+  const totalFinal = Math.max(0, subtotal - discountAmount + shipping);
+  // Mostrar líneas
+  const lineSubtotal = document.getElementById('lineSubtotal');
+  const subtotalValue = document.getElementById('subtotalValue');
+  const lineDiscount = document.getElementById('lineDiscount');
+  const discountValue = document.getElementById('discountValue');
+  const lineShipping = document.getElementById('lineShipping');
+  const shippingValue = document.getElementById('shippingValue');
+  if(lineSubtotal){ lineSubtotal.style.display='flex'; subtotalValue.textContent=subtotal.toLocaleString('es-CL',{style:'currency',currency:'CLP'}); }
+  if(lineShipping){ lineShipping.style.display='flex'; shippingValue.textContent=shipping.toLocaleString('es-CL',{style:'currency',currency:'CLP'}); }
+  if(applied){
+    if(lineDiscount){
+      lineDiscount.style.display='flex';
+      if(applied.type==='freeshipping') discountValue.textContent='Envío gratis'; else discountValue.textContent='-'+discountAmount.toLocaleString('es-CL',{style:'currency',currency:'CLP'});
+    }
+  } else {
+    if(lineDiscount){ lineDiscount.style.display='none'; }
+  }
+  if(totalLine) totalLine.textContent = totalFinal.toLocaleString('es-CL',{style:'currency',currency:'CLP'});
+}
+
+
+
+// Escuchar cambios en localStorage (otro tab modificó el carrito)
+window.addEventListener('storage', (e)=>{
+  if(e.key==='cart') renderCheckoutSummary();
+});
+
+
+
+
+
+
+</script>
+<script src="mobile-menu.js"></script>
+</script>
+</body>
+</html>
+

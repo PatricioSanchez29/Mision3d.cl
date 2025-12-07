@@ -1,0 +1,17 @@
+# Global ignore for frontend build context (root)
+node_modules/
+.git/
+.gitignore
+.vscode/
+.DS_Store
+npm-debug.log*
+yarn-error.log
+*.log
+# Exclude backend from frontend image (backend has its own build context)
+backend/
+# Secrets
+*.env
+.env*
+# Cache
+coverage/
+.tmp/

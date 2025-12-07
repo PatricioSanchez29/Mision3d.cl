@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Inicia sesión en Misión 3D. Accede a tu cuenta para gestionar tus pedidos de impresión 3D personalizada en Chile.">
+  <meta name="keywords" content="login, acceso, impresión 3D, cuenta, Chile, tienda, personalizado">
+  <meta property="og:title" content="Iniciar sesión - Misión 3D"/>
+  <meta property="og:description" content="Accede a tu cuenta para gestionar tus pedidos de impresión 3D personalizada en Chile."/>
+  <meta property="og:image" content="https://mision3d.cl/img/Logo_Mision3d.jpg"/>
+  <meta property="og:url" content="https://mision3d.cl/login.html"/>
+  <meta property="og:type" content="website"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="Iniciar sesión - Misión 3D"/>
+  <meta name="twitter:description" content="Accede a tu cuenta para gestionar tus pedidos de impresión 3D personalizada en Chile."/>
+  <meta name="twitter:image" content="https://mision3d.cl/img/Logo_Mision3d.jpg"/>
+  <link rel="canonical" href="https://mision3d.cl/login.html"/>
+  <meta name="robots" content="index, follow"/>
+  <title>Iniciar sesión - Misión 3D</title>
+  <link rel="icon" type="image/jpeg" href="img/Logo_Mision3d.jpg">
+  <link rel="apple-touch-icon" href="img/Logo_Mision3d.jpg">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/jpeg" href="img/Logo_Mision3d.jpg">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="header-new-style.css" />
+  <script>window.GA_MEASUREMENT_ID = window.GA_MEASUREMENT_ID || 'G-XXXXXXXXXX';</script>
+  <script src="consent.js"></script>
+  <script src="recaptcha-key.js"></script>
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+  <style>
+    .form-label.required::after {
+      content: ' *';
+      color: #e11d48;
+      font-weight: bold;
+    }
+    .error-msg {
+      color: #e11d48;
+      font-size: 0.97em;
+      margin-top: 4px;
+      display: block;
+      min-height: 18px;
+    }
+    body.login-page {
+      background: #f9fafb;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+      /* Reservar espacio para el header fijo y evitar solapamiento */
+      padding-top: 96px;
+    }
+    @media (max-width: 768px) {
+      body.login-page { padding-top: 120px; }
+    }
+    /* Microinteracciones para botones principales */
+    .btn-register, .btn.primary, .btn.small, .btn.outline, .cart-btn, .search-btn {
+      transition: background 0.18s, color 0.18s, box-shadow 0.18s, transform 0.12s;
+      box-shadow: 0 1px 4px #0001;
+    }
+    .btn-register:hover, .btn.primary:hover, .btn.small:hover, .btn.outline:hover, .cart-btn:hover, .search-btn:hover {
+      background: #4f46e5;
+      color: #fff;
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 4px 16px #4f46e522;
+    }
+    .btn-register:active, .btn.primary:active, .btn.small:active, .btn.outline:active, .cart-btn:active, .search-btn:active {
+      background: #312e81;
+      color: #fff;
+      transform: scale(0.97);
+      box-shadow: 0 1px 4px #0002;
+    }
+    .btn-register:focus, .btn.primary:focus, .btn.small:focus, .btn.outline:focus, .cart-btn:focus, .search-btn:focus {
+      outline: 2px solid #6366f1;
+      outline-offset: 2px;
+    }
+    
+    .main-content-login {
+      flex: 1 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 480px;
+      padding: 40px 20px 0 20px;
+    }
+    
+    .login-container {
+      width: 100%;
+      max-width: 420px;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 16px #0001;
+      padding: 48px 24px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: stretch;
+    }
+    
+    .login-title {
+      font-size: 14px;
+      color: #6b7280;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .login-brand {
+      font-size: 32px;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 30px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .password-input-wrapper {
+      position: relative;
+    }
+    
+    .password-toggle {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #6b7280;
+      cursor: pointer;
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.2s;
+    }
+    
+    .password-toggle:hover {
+      color: #0ea5e9;
+    }
+    
+    .password-toggle svg {
+      width: 20px;
+      height: 20px;
+    }
+    
+    body.dark .password-toggle {
+      color: #94a3b8;
+    }
+    
+    body.dark .password-toggle:hover {
+      color: #38bdf8;
+    }
+    
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: #374151;
+      margin-bottom: 8px;
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 15px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: #0ea5e9;
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+    }
+    
+    .btn-login {
+      width: 100%;
+      padding: 14px 24px;
+      background: #0ea5e9;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 10px;
+    }
+    
+    .btn-login:hover {
+      background: #0284c7;
+    }
+    
+    .forgot-password {
+      text-align: center;
+      margin-top: 16px;
+    }
+    
+    .forgot-password a {
+      color: #0ea5e9;
+      text-decoration: none;
+      font-size: 14px;
+    }
+    
+    .forgot-password a:hover {
+      text-decoration: underline;
+    }
+    
+    .register-section {
+      text-align: center;
+    }
+    
+    .register-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 16px;
+    }
+    
+    .register-text {
+      font-size: 15px;
+      color: #6b7280;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+    
+    .btn-register {
+      display: inline-block;
+      padding: 14px 32px;
+      background: #0ea5e9;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+    
+    .btn-register:hover {
+      background: #0284c7;
+    }
+    
+    /* Formulario de registro completo */
+    .register-form-container {
+      display: none;
+      max-width: 800px;
+      width: 100%;
+      background: #fff;
+      border-radius: 12px;
+      padding: 50px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.08);
+    }
+    
+    .register-form-container.active {
+      display: block;
+    }
+    
+    .register-form-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    
+    .form-checkbox-group {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin: 20px 0;
+    }
+    
+    .form-checkbox-group input[type="checkbox"] {
+      margin-top: 4px;
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+    
+    .form-checkbox-group label {
+      font-size: 14px;
+      color: #374151;
+      cursor: pointer;
+    }
+    
+    .form-checkbox-group a {
+      color: #0ea5e9;
+      text-decoration: none;
+    }
+    
+    .form-checkbox-group a:hover {
+      text-decoration: underline;
+    }
+    
+    /* Requisitos de contraseña */
+    .password-requirements {
+      margin-top: 8px;
+      padding: 12px;
+      background: #f9fafb;
+      border-radius: 6px;
+      border: 1px solid #e5e7eb;
+    }
+    
+    .password-requirements small {
+      display: block;
+      color: #6b7280;
+      font-size: 13px;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+    
+    .password-requirements ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .password-requirements li {
+      font-size: 13px;
+      color: #dc2626;
+      padding: 3px 0;
+      transition: color 0.2s;
+    }
+    
+    .password-requirements li.valid {
+      color: #16a34a;
+    }
+    
+    body.dark .password-requirements {
+      background: #1e293b;
+      border-color: #334155;
+    }
+    
+    body.dark .password-requirements small {
+      color: #94a3b8;
+    }
+    
+    body.dark .password-requirements li {
+      color: #ef4444;
+    }
+    
+    body.dark .password-requirements li.valid {
+      color: #22c55e;
+    }
+    
+    .form-footer-text {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+      color: #6b7280;
+    }
+    
+    .form-footer-text a {
+      color: #0ea5e9;
+      text-decoration: none;
+    }
+    
+    .form-footer-text a:hover {
+      text-decoration: underline;
+    }
+    
+    /* Mensaje de confirmación */
+    .success-message {
+      background: #dbeafe;
+      border: 1px solid #93c5fd;
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      color: #1e40af;
+      font-size: 14px;
+      line-height: 1.6;
+      text-align: center;
+      display: none;
+    }
+    
+    .success-message.active {
+      display: block;
+    }
+    
+    /* Modo oscuro */
+    body.dark.login-page {
+      background: #0f172a;
+    }
+    
+    body.dark .login-container {
+      background: #1e293b;
+    }
+    
+    body.dark .login-left {
+      background: #0f172a;
+    }
+    
+    body.dark .login-brand,
+    body.dark .register-title {
+      color: #f1f5f9;
+    }
+    
+    body.dark .form-label {
+      color: #cbd5e1;
+    }
+    
+    body.dark .form-input {
+      background: #334155;
+      border-color: #475569;
+      color: #f1f5f9;
+    }
+    
+    body.dark .form-input:focus {
+      border-color: #0ea5e9;
+    }
+    
+    body.dark .register-text {
+      color: #94a3b8;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .login-container {
+        grid-template-columns: 1fr;
+        gap: 0;
+      }
+      
+      .login-left,
+      .login-right {
+        padding: 40px 30px;
+      }
+      
+      .login-right {
+        border-top: 1px solid #e5e7eb;
+      }
+      
+      body.dark .login-right {
+        border-top-color: #334155;
+      }
+    }
+  </style>
+<!-- Header con logo para mantener consistencia -->
+</head>
+<body class="login login-page">
+  <header class="header">
+    <!-- Botón Hamburguesa (solo móvil) -->
+    <button class="hamburger-btn" id="hamburgerBtn" aria-label="Abrir menú">
+      <div class="hamburger-icon">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </button>
+
+    <h1 class="logo" style="margin:0;display:flex;align-items:center">
+      <a href="index.html" style="display:inline-flex;align-items:center;text-decoration:none">
+  <img src="img/Logo_Mision3d.jpg" alt="Misión 3D" class="logo-img" loading="lazy" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-text',textContent:'Misión 3D'}));" />
+      </a>
+    </h1>
+    <nav class="nav">
+      <a href="index.html">Inicio</a>
+      <a href="catalogo.html" class="active">Catálogo</a>
+      <a href="index.html#contacto">Contacto</a>
+    </nav>
+    <div class="search-header">
+      <div class="advanced-search-bar">
+        <input type="text" id="searchInput" placeholder="¿Qué estás buscando?" class="search-input" autocomplete="off">
+        <button type="button" id="headerSearchBtn" class="search-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+        </button>
+      </div>
+      <div id="searchSuggestions" class="search-suggestions"></div>
+      <div id="headerTrendChips" class="trend-chips" aria-label="Búsquedas populares"></div>
+    </div>
+    <div class="right-actions" style="display:flex;align-items:center;gap:10px">
+      <div id="userArea" class="user-area">
+        <a href="login.html" id="loginLink" class="btn small outline">Ingresar</a>
+      </div>
+      <button class="cart-btn" id="openCart" aria-label="Abrir carrito">🛒 <span id="cartCount">0</span></button>
+    </div>
+  </header>
+  <div class="login-main-flex">
+    <div class="login-box">
+      <div class="login-header">
+        <span class="login-breadcrumb"><a href="index.html">Inicio</a> &gt; Registro de Clientes</span>
+        <div class="login-title">INGRESA A</div>
+        <div class="login-brand">MISION3D.CL</div>
+      </div>
+      <form id="loginForm">
+        <label for="loginEmail" class="form-label required">E-mail</label>
+        <input type="email" id="loginEmail" class="form-input" required autocomplete="email">
+        <div id="loginEmailErrorMsg" class="error-msg"></div>
+        <label for="loginPassword" class="form-label required">Contraseña</label>
+        <div style="position:relative;display:flex;align-items:center;">
+          <input type="password" id="loginPassword" class="form-input" autocomplete="current-password" style="flex:1;">
+          <button type="button" id="toggleLoginPass" style="position:absolute;right:10px;background:none;border:none;cursor:pointer;font-size:14px;padding:6px;color:#1f2937;" tabindex="-1" aria-label="Mostrar/Ocultar contraseña">Mostrar</button>
+        </div>
+        <div id="loginPasswordErrorMsg" class="error-msg"></div>
+        <button type="submit" class="btn-login-full">INICIAR SESIÓN</button>
+        <div style="text-align:center;margin-top:10px;">
+          <a href="#" id="forgotPasswordLink" style="color:#222;text-decoration:underline;font-size:14px;">Restablecer mi Clave</a>
+        </div>
+        <div id="msg" style="margin-top:10px;"></div>
+  <div id="correoConfirmadoMsg" class="success-msg" style="display:none;margin-top:10px;"></div>
+      </form>
+    </div>
+    <div class="login-side-welcome">
+      <div class="side-title">¿ERES NUEVO EN MISION3D.CL?</div>
+      <div class="side-desc">Al registrarte, podrás agilizar tu proceso de compra. Edita tus datos, añade varias direcciones, revisa y realiza un seguimiento de tus pedidos, y mucho más.</div>
+      <a href="register.html" class="btn-register-full">CREAR CUENTA</a>
+    </div>
+  </div>
+  <style>
+    .login-main-flex { display: flex; justify-content: center; align-items: flex-start; gap: 40px; margin: 40px 0; flex-wrap: wrap; }
+    .login-box { background: #f5f6f7; border-radius: 18px; padding: 40px 32px; min-width: 340px; max-width: 400px; flex: 1 1 340px; box-shadow: 0 2px 16px #0001; }
+    .login-header { text-align: center; margin-bottom: 18px; }
+    .login-breadcrumb { color: #7a7a7a; font-size: 15px; display: block; margin-bottom: 8px; }
+    .login-title { font-size: 13px; color: #888; margin-bottom: 4px; }
+    .login-brand { font-size: 2.2rem; font-weight: bold; color: #111; margin-bottom: 18px; }
+    .form-input { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #d1d5db; font-size: 15px; margin-bottom: 16px; }
+    .btn-login-full { width: 100%; padding: 14px; background: #1991d6; color: #fff; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 8px; }
+    .btn-login-full:hover { background: #0e6fa1; }
+    .login-side-welcome { background: #fff; border-radius: 18px; padding: 40px 32px; min-width: 320px; max-width: 420px; flex: 1 1 320px; box-shadow: 0 2px 16px #0001; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .side-title { font-size: 1.5rem; font-weight: bold; color: #111; margin-bottom: 18px; text-align: center; }
+    .side-desc { font-size: 1rem; color: #222; margin-bottom: 28px; text-align: center; }
+    .btn-register-full { display: inline-block; padding: 14px 32px; background: #1991d6; color: #fff; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; text-decoration: none; }
+    .btn-register-full:hover { background: #0e6fa1; }
+    @media (max-width: 900px) { .login-main-flex { flex-direction: column; align-items: center; } .login-side-welcome, .login-box { max-width: 100%; min-width: 0; } }
+  </style>
+
+  <!-- Formulario de registro completo -->
+  <div class="register-form-container" id="registerFormContainer">
+    <div class="breadcrumb">
+      <a href="index.html" style="display:inline-flex;align-items:center;text-decoration:none">Inicio</a> > Registro de Cliente
+    </div>
+    
+    <h1 class="register-form-title">CREAR UNA CUENTA</h1>
+    
+    <form id="registerForm">
+      <div class="form-group">
+        <label class="form-label" for="regEmail">E-mail *</label>
+        <input 
+          type="email" 
+          id="regEmail" 
+          class="form-input" 
+          required 
+          autocomplete="email"
+          pattern="[^\s@]+@[^\s@]+\.[^\s@]+"
+          title="Por favor ingresa un email válido (ejemplo: usuario@dominio.com)"
+        >
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="regPhone">Teléfono *</label>
+        <input type="tel" id="regPhone" class="form-input" required autocomplete="tel">
+      </div>
+      
+      <div class="form-checkbox-group">
+        <input type="checkbox" id="termsCheckbox" required>
+        <label for="termsCheckbox">
+          He leído y acepto los <a href="#" onclick="alert('Demo: Términos y Condiciones'); return false;">Términos y Condiciones</a>.
+        </label>
+      </div>
+      
+      <button type="submit" class="btn-login">CONFIRMAR</button>
+      
+      <div class="form-footer-text">
+        ¿Ya tienes una cuenta? <a href="#" id="backToLogin">Puedes ingresar aquí</a>.
+      </div>
+    </form>
+  </div>
+
+  <!-- Footer igual que en la página de inicio -->
+  <footer style="background: #181f2a; color: #bfc7d5; padding: 40px 0 20px 0; margin-top: 0; width: 100vw;">
+    <div style="max-width: 1200px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 32px;">
+      <div style="flex: 1; min-width: 220px; display: flex; flex-direction: column; align-items: center;">
+  <img src="img/Logo_Mision3d.jpg" alt="Mision3D Logo" style="width: 110px; margin-bottom: 12px;" loading="lazy">
+        <div style="font-size: 1.1rem; font-weight: 500;">Impresión 3D personalizada</div>
+        <div style="font-size: 0.98rem; color: #bfc7d5;">Transforma tus ideas en realidad</div>
+      </div>
+      <div style="flex: 1; min-width: 220px; text-align: center;">
+        <div style="color: #009fe3; font-weight: bold; font-size: 1.1rem; margin-bottom: 8px;">Contacto</div>
+        <div><span style="margin-right: 6px;">📧</span>mision3d.cl@gmail.com</div>
+        <div><span style="margin-right: 6px;">📍</span>La Florida<br>Santiago, Chile</div>
+        <div><span style="margin-right: 6px;">⏰</span>Lunes a viernes, 9:00 - 18:00 hrs</div>
+      </div>
+      <div style="flex: 1; min-width: 220px; text-align: center;">
+        <div style="color: #009fe3; font-weight: bold; font-size: 1.1rem; margin-bottom: 8px;">Información Legal</div>
+        <div>Mision3D SpA</div>
+        <div style="margin-top: 8px;"><a href="privacidad.html" style="color: #009fe3; text-decoration: none; margin-right: 12px;">Privacidad</a><a href="terminos.html" style="color: #009fe3; text-decoration: none;">Términos</a></div>
+      </div>
+    </div>
+    <hr style="border: none; border-top: 1px solid #2a3140; margin: 32px 0 16px 0;">
+    <div style="text-align: center; color: #bfc7d5; font-size: 0.95rem;">© 2025 Misión 3D - Todos los derechos reservados</div>
+  </footer>
+
+
+  <!-- Scripts al final para asegurar que el DOM esté cargado -->
+  <!-- Supabase UMD global to evitar error wrapper.mjs/AuthClient -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script>
+    // Validación en tiempo real de email y contraseña en login
+    const loginEmail = document.getElementById('loginEmail');
+    const loginPassword = document.getElementById('loginPassword');
+    const loginEmailErrorMsg = document.getElementById('loginEmailErrorMsg');
+    const loginPasswordErrorMsg = document.getElementById('loginPasswordErrorMsg');
+    loginEmail.addEventListener('input', function() {
+      const emailRegex = /^[\w-.]+@([\w-]+\.)+[\w-]{2,}$/;
+      if (loginEmail.value.trim() === '') {
+        loginEmail.classList.remove('valid', 'invalid');
+        loginEmailErrorMsg.textContent = 'El correo es obligatorio.';
+      } else if (emailRegex.test(loginEmail.value.trim())) {
+        loginEmail.classList.add('valid');
+        loginEmail.classList.remove('invalid');
+        loginEmailErrorMsg.textContent = '';
+      } else {
+        loginEmail.classList.remove('valid');
+        loginEmail.classList.add('invalid');
+        loginEmailErrorMsg.textContent = 'Correo electrónico inválido.';
+      }
+    });
+    loginPassword.addEventListener('input', function() {
+      if (loginPassword.value === '') {
+        loginPassword.classList.remove('valid', 'invalid');
+        loginPasswordErrorMsg.textContent = 'La contraseña es obligatoria.';
+      } else if (loginPassword.value.length >= 6) {
+        loginPassword.classList.add('valid');
+        loginPassword.classList.remove('invalid');
+        loginPasswordErrorMsg.textContent = '';
+      } else {
+        loginPassword.classList.remove('valid');
+        loginPassword.classList.add('invalid');
+        loginPasswordErrorMsg.textContent = 'La contraseña debe tener al menos 6 caracteres.';
+      }
+    });
+    // Mostrar mensaje de correo confirmado si viene el parámetro en la URL
+    window.addEventListener('DOMContentLoaded', function() {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('correo_confirmado') === '1') {
+        const correoMsg = document.getElementById('correoConfirmadoMsg');
+        if (correoMsg) {
+          correoMsg.textContent = '¡Correo confirmado exitosamente! Ahora puedes iniciar sesión.';
+          correoMsg.style.display = 'block';
+        }
+      }
+    });
+    // Configuración de Supabase
+    const SUPABASE_URL = 'https://ytuwkynphdttotifgyaf.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0dXdreW5waGR0dG90aWZneWFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3ODUyMzYsImV4cCI6MjA3NzM2MTIzNn0.JIFDBzpYTcChc1fnmp6pFL0K9SZPnn2ltp4iKxLdSus';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Función para mostrar/ocultar contraseña
+    function togglePassword(inputId, button) {
+      const input = document.getElementById(inputId);
+      const eyeOpen = button.querySelector('.eye-open');
+      const eyeClosed = button.querySelector('.eye-closed');
+      if (input.type === 'password') {
+        input.type = 'text';
+        eyeOpen.style.display = 'none';
+        eyeClosed.style.display = 'block';
+      } else {
+        input.type = 'password';
+        eyeOpen.style.display = 'block';
+        eyeClosed.style.display = 'none';
+      }
+    }
+
+    // Esperar a que el DOM esté listo
+    window.addEventListener('DOMContentLoaded', function() {
+      // Heredar tema oscuro si existe
+      if(localStorage.getItem('theme')==='dark') document.body.classList.add('dark');
+      // Mostrar/ocultar contraseña
+      document.getElementById('toggleLoginPass').addEventListener('click', function() {
+        const pass = document.getElementById('loginPassword');
+        pass.type = pass.type === 'password' ? 'text' : 'password';
+        this.textContent = pass.type === 'password' ? 'Mostrar' : 'Ocultar';
+      });
+      // Formulario de login con Supabase
+      const loginForm = document.getElementById('loginForm');
+      const msg = document.getElementById('msg');
+      if (loginForm) {
+        loginForm.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          const email = loginEmail.value.trim();
+          const password = loginPassword.value;
+          msg.textContent = '';
+          msg.style.color = '';
+          let valid = true;
+          // Validación de email
+          if (!email) {
+            loginEmail.classList.add('invalid');
+            loginEmailErrorMsg.textContent = 'El correo es obligatorio.';
+            valid = false;
+          } else if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,}$/.test(email)) {
+            loginEmail.classList.add('invalid');
+            loginEmailErrorMsg.textContent = 'Correo electrónico inválido.';
+            valid = false;
+          } else {
+            loginEmail.classList.remove('invalid');
+            loginEmailErrorMsg.textContent = '';
+          }
+          // Validación de contraseña
+          if (!password) {
+            loginPassword.classList.add('invalid');
+            loginPasswordErrorMsg.textContent = 'La contraseña es obligatoria.';
+            valid = false;
+          } else if (password.length < 6) {
+            loginPassword.classList.add('invalid');
+            loginPasswordErrorMsg.textContent = 'La contraseña debe tener al menos 6 caracteres.';
+            valid = false;
+          } else {
+            loginPassword.classList.remove('invalid');
+            loginPasswordErrorMsg.textContent = '';
+          }
+          if (!valid) {
+            msg.style.color = '#dc2626';
+            msg.textContent = 'Corrige los errores antes de continuar.';
+            return;
+          }
+          // Intentar login con contraseña
+          const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+          if (error) {
+            msg.style.color = '#dc2626';
+            msg.textContent = error.message;
+          } else if (data && data.session && data.session.user) {
+            // Guardar sesión
+            const user = data.session.user;
+            const userSession = {
+              email: user.email,
+              name: user.user_metadata && user.user_metadata.full_name ? user.user_metadata.full_name : '',
+              guest: false
+            };
+            window.localStorage.setItem('userSession', JSON.stringify(userSession));
+            msg.style.color = '#059669';
+            msg.textContent = '¡Acceso exitoso! Redirigiendo...';
+            setTimeout(() => { window.location.href = 'index.html'; }, 1200);
+          }
+        });
+        // Restablecer clave
+        document.getElementById('forgotPasswordLink').addEventListener('click', async function(e) {
+          e.preventDefault();
+          const email = document.getElementById('loginEmail').value.trim();
+          msg.textContent = '';
+          msg.style.color = '';
+          if (!email) {
+            msg.style.color = '#dc2626';
+            msg.textContent = 'Ingresa tu correo para restablecer la clave.';
+            return;
+          }
+          const redirectUrl =
+            window.location.hostname === 'mision3d.cl'
+              ? 'https://mision3d.cl/reset-password.html'
+              : window.location.origin + '/reset-password.html';
+          const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: redirectUrl });
+          if (error) {
+            msg.style.color = '#dc2626';
+            msg.textContent = error.message;
+          } else {
+            msg.style.color = '#059669';
+            msg.textContent = 'Te enviamos un correo para restablecer tu clave.';
+          }
+        });
+      }
+      // Completar login si viene desde el enlace mágico
+      (async function() {
+        const hash = window.location.hash;
+        if (hash && hash.includes('access_token')) {
+          const { data, error } = await supabase.auth.getSession();
+          if (data.session && data.session.user) {
+            // Guardar sesión básica
+            const user = data.session.user;
+            const userSession = {
+              email: user.email,
+              name: user.user_metadata && user.user_metadata.full_name ? user.user_metadata.full_name : '',
+              guest: false
+            };
+            window.localStorage.setItem('userSession', JSON.stringify(userSession));
+            msg.style.color = '#059669';
+            msg.textContent = '¡Acceso exitoso! Redirigiendo...';
+            setTimeout(() => { window.location.href = 'index.html'; }, 1200);
+          } else if (error) {
+            msg.style.color = '#dc2626';
+            msg.textContent = 'Error al completar el acceso: ' + error.message;
+          }
+        }
+      })();
+    });
+  </script>
+</body>
+</html>
