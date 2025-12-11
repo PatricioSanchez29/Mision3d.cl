@@ -4453,8 +4453,8 @@ body.dark .qv-customization small {
 
 /* Mejora de legibilidad del hero: overlay sutil + reforzar CTAs */
 .hero {
-  /* overlay oscuro sutil sobre el gradiente existente */
-  background-image: linear-gradient(180deg, rgba(6,30,60,0.10), rgba(8,24,48,0.06)), linear-gradient(135deg,#06b6d4,#3b82f6,#8b5cf6);
+  /* Gradiente navideño: rojo vino → verde bosque → verde esmeralda */
+  background-image: linear-gradient(180deg, rgba(6,30,60,0.10), rgba(8,24,48,0.06)), linear-gradient(135deg, #991b1b 0%, #065f46 50%, #047857 100%);
   background-blend-mode: overlay, normal;
 }
 
