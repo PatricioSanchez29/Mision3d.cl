@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Crea tu cuenta en Misión 3D y comienza a personalizar tus pedidos de impresión 3D en Chile.">
+  <meta name="keywords" content="registro, crear cuenta, impresión 3D, personalizado, Chile, tienda">
+  <meta property="og:title" content="Crear cuenta - Misión 3D"/>
+  <meta property="og:description" content="Crea tu cuenta y accede a servicios de impresión 3D personalizada en Chile."/>
+  <meta property="og:image" content="https://mision3d.cl/img/Logo_Mision3d.jpg"/>
+  <meta property="og:url" content="https://mision3d.cl/register.html"/>
+  <meta property="og:type" content="website"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="Crear cuenta - Misión 3D"/>
+  <meta name="twitter:description" content="Crea tu cuenta y accede a servicios de impresión 3D personalizada en Chile."/>
+  <meta name="twitter:image" content="https://mision3d.cl/img/Logo_Mision3d.jpg"/>
+  <link rel="canonical" href="https://mision3d.cl/register.html"/>
+  <meta name="robots" content="index, follow"/>
+  <title>Crear cuenta - Misión 3D</title>
+  <link rel="icon" type="image/jpeg" href="img/Logo_Mision3d.jpg">
+  <link rel="apple-touch-icon" href="img/Logo_Mision3d.jpg">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/jpeg" href="img/Logo_Mision3d.jpg">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="header-new-style.css" />
+  <script src="consent.js"></script>
+  <script src="recaptcha-key.js"></script>
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+  <!-- Supabase UMD global para evitar wrapper.mjs/AuthClient error -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script>
+    // --- reCAPTCHA integración registro ---
+    let registerAttempts = parseInt(localStorage.getItem('registerAttempts') || '0');
+    let recaptchaWidgetId = null;
+    function showRecaptcha() {
+      const recaptchaContainer = document.getElementById('recaptcha-container');
+      if (recaptchaContainer) recaptchaContainer.style.display = 'block';
+    }
+    function hideRecaptcha() {
+      const recaptchaContainer = document.getElementById('recaptcha-container');
+      if (recaptchaContainer) recaptchaContainer.style.display = 'none';
+    }
+    function onRecaptchaLoadCallback() {
+      if (document.getElementById('recaptcha-container')) {
+        recaptchaWidgetId = grecaptcha.render('recaptcha-container', {
+          'sitekey': window.RECAPTCHA_SITE_KEY,
+          'size': 'invisible',
+          'callback': onRegisterRecaptchaSuccess
+        });
+      }
+    }
+    async function onRegisterRecaptchaSuccess(token) {
+      // Reintentar submit solo si el captcha fue exitoso
+      hideRecaptcha();
+      // Simular click en submit para reintentar
+      document.getElementById('registerForm').dispatchEvent(new Event('submit'));
+    }
+    // --- Fin integración reCAPTCHA registro ---
+  </script>
+  <style>
+    .register-container {
+      max-width: 600px;
+      margin: 40px auto;
+      background: #f5f6f7;
+      border-radius: 18px;
+      padding: 40px 32px;
+      box-shadow: 0 2px 16px #0001;
+    }
+    .form-group label.required::after {
+      content: ' *';
+      color: #e11d48;
+      font-weight: bold;
+    }
+    .error-msg {
+      color: #e11d48;
+      font-size: 0.97em;
+      margin-top: 4px;
+      display: block;
+      min-height: 18px;
+    }
+    /* Microinteracciones para botones principales */
+    .btn-register, .btn.primary, .btn.small, .btn.outline, .cart-btn, .search-btn {
+      transition: background 0.18s, color 0.18s, box-shadow 0.18s, transform 0.12s;
+      box-shadow: 0 1px 4px #0001;
+    }
+    .btn-register:hover, .btn.primary:hover, .btn.small:hover, .btn.outline:hover, .cart-btn:hover, .search-btn:hover {
+      background: #4f46e5;
+      color: #fff;
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 4px 16px #4f46e522;
+    }
+    .btn-register:active, .btn.primary:active, .btn.small:active, .btn.outline:active, .cart-btn:active, .search-btn:active {
+      background: #312e81;
+      color: #fff;
+      transform: scale(0.97);
+      box-shadow: 0 1px 4px #0002;
+    }
+    .btn-register:focus, .btn.primary:focus, .btn.small:focus, .btn.outline:focus, .cart-btn:focus, .search-btn:focus {
+      outline: 2px solid #6366f1;
+      outline-offset: 2px;
+    }
+    .register-title {
+      text-align: center;
+      font-size: 2rem;
+      font-weight: bold;
+      margin-bottom: 32px;
+    }
+    .form-group { margin-bottom: 18px; }
+    .form-input { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #d1d5db; font-size: 15px; }
+    .form-input.valid {
+      border-color: #22c55e;
+      background: #f0fdf4;
+    }
+    .form-input.invalid {
+      border-color: #dc2626;
+      background: #fef2f2;
+    }
+    .form-group { display: flex; flex-direction: column; position: relative; }
+    .password-requirements-box li {
+      margin-bottom: 2px;
+      list-style: disc inside;
+      color: #222;
+    }
+    .password-requirements-box li.valid {
+      color: #22c55e;
+      font-weight: 600;
+    }
+    .btn-register { width: 100%; padding: 14px; background: #1d4ed8; color: #fff; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+    .btn-register:hover { background: #2563eb; }
+    .form-footer-text { text-align: center; margin-top: 18px; font-size: 14px; }
+    .checkbox-group { margin-bottom: 12px; }
+    .checkbox-group label { font-size: 14px; }
+    .error-msg { color: #dc2626; margin-bottom: 10px; }
+    .success-msg { color: #059669; margin-bottom: 10px; }
+    .password-requirements-box {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 12px 18px;
+      margin-top: 8px;
+      font-size: 14px;
+      color: #222;
+      box-shadow: 0 2px 8px #0001;
+    }
+    .password-requirements-box ul {
+      margin: 8px 0 0 0;
+      padding-left: 18px;
+    }
+    .password-requirements-box li {
+      margin-bottom: 2px;
+    }
+  </style>
+</head>
+<body class="login-page">
+  <header class="header">
+    <!-- Botón Hamburguesa (solo móvil) -->
+    <button class="hamburger-btn" id="hamburgerBtn" aria-label="Abrir menú">
+      <div class="hamburger-icon">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </button>
+
+    <h1 class="logo" style="margin:0;display:flex;align-items:center">
+      <a href="index.html" style="display:inline-flex;align-items:center;text-decoration:none">
+  <img src="img/Logo_Mision3d.jpg" alt="Misión 3D" class="logo-img" loading="lazy" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-text',textContent:'Misión 3D'}));" />
+      </a>
+    </h1>
+    <nav class="nav">
+      <a href="index.html">Inicio</a>
+      <a href="catalogo.html" id="navCatalog">Catálogo</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
+    <div class="search-header">
+      <div class="advanced-search-bar">
+        <select id="headerCategorySelect" class="category-select">
+          <option value="all">Todas las categorías</option>
+        </select>
+        <input type="text" id="searchInput" placeholder="¿Qué estás buscando?" class="search-input" autocomplete="off">
+        <button type="button" id="headerSearchBtn" class="search-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+        </button>
+      </div>
+      <div id="searchSuggestions" class="search-suggestions"></div>
+      <div id="headerTrendChips" class="trend-chips" aria-label="Búsquedas populares"></div>
+    </div>
+    <div class="right-actions" style="display:flex;align-items:center;gap:10px">
+      <div id="userArea" class="user-area">
+        <div class="dropdown" style="position:relative;">
+          <button class="btn small outline" id="loginDropdownBtn" style="display:flex;align-items:center;gap:6px;">
+            <svg width="22" height="22" fill="#5b3fa2" viewBox="0 0 24 24"><path d="M12 12c2.7 0 8 1.34 8 4v2H4v-2c0-2.66 5.3-4 8-4zm0-2a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>
+            <span style="font-weight:600;letter-spacing:1px;">ACCESO</span>
+          </button>
+          <div class="dropdown-content" id="loginDropdownContent" style="display:none;position:absolute;right:0;z-index:10;background:#fff;border-radius:8px;box-shadow:0 2px 8px #0002;padding:8px 0;min-width:140px;">
+            <a href="login.html" style="display:block;padding:8px 18px;color:#222;text-decoration:none;">Ingresar</a>
+            <a href="register.html" style="display:block;padding:8px 18px;color:#222;text-decoration:none;">Crear cuenta</a>
+          </div>
+        </div>
+      </div>
+      <button class="cart-btn" id="openCart" aria-label="Abrir carrito">🛒 <span id="cartCount">0</span></button>
+    </div>
+  </header>
+  <div class="register-container">
+    <div style="margin-bottom: 18px; color: #7a7a7a; font-size: 15px;">
+      <a href="index.html" style="color: #009fe3; text-decoration: none; font-weight: 500;">Inicio</a> &gt; Registro de Cliente
+    </div>
+    <div class="register-title">CREAR UNA CUENTA</div>
+    <form id="registerForm">
+      <div class="form-group">
+        <label for="regEmail" class="required">E-mail</label>
+        <input type="email" id="regEmail" class="form-input" required autocomplete="email">
+        <div id="emailErrorMsg" class="error-msg"></div>
+      </div>
+      <div class="form-group">
+        <label for="regPhone" class="required">Teléfono</label>
+        <input type="tel" id="regPhone" class="form-input" required autocomplete="tel">
+        <div id="phoneErrorMsg" class="error-msg"></div>
+      </div>
+      <div class="form-group">
+        <label for="regPassword" class="required">Contraseña</label>
+        <div style="position:relative;display:flex;align-items:center;">
+          <input type="password" id="regPassword" class="form-input" required autocomplete="new-password" style="flex:1;">
+          <button type="button" id="togglePass1" style="position:absolute;right:10px;background:none;border:none;cursor:pointer;font-size:14px;padding:6px;color:#1f2937;" tabindex="-1" aria-label="Mostrar/Ocultar contraseña">Mostrar</button>
+        </div>
+        <div class="password-requirements-box" id="passwordReqBox">
+          <strong>Requisitos de contraseña:</strong>
+          <ul>
+            <li id="req-length">Mínimo 8 caracteres</li>
+            <li id="req-mayus">Al menos una mayúscula</li>
+            <li id="req-minus">Al menos una minúscula</li>
+            <li id="req-num">Al menos un número</li>
+            <li id="req-symbol">Al menos un símbolo</li>
+          </ul>
+        </div>
+        <div id="passwordErrorMsg" class="error-msg"></div>
+      </div>
+      <div class="form-group">
+        <label for="regPassword2" class="required">Confirmar Contraseña</label>
+        <div style="position:relative;display:flex;align-items:center;">
+          <input type="password" id="regPassword2" class="form-input" required autocomplete="new-password" style="flex:1;">
+          <button type="button" id="togglePass2" style="position:absolute;right:10px;background:none;border:none;cursor:pointer;font-size:14px;padding:6px;color:#1f2937;" tabindex="-1" aria-label="Mostrar/Ocultar contraseña">Mostrar</button>
+        </div>
+        <div id="password2ErrorMsg" class="error-msg"></div>
+      </div>
+      <div class="checkbox-group">
+        <input type="checkbox" id="newsletter">
+        <label for="newsletter">Subscríbete para recibir noticias y ofertas exclusivas</label>
+      </div>
+      <div class="checkbox-group">
+        <input type="checkbox" id="termsCheckbox" required>
+        <label for="termsCheckbox">He leído y acepto los <a href="#" onclick="alert('Demo: Términos y Condiciones'); return false;">Términos y Condiciones</a>.</label>
+      </div>
+      <div id="registerMsg"></div>
+  <div id="recaptcha-container" style="display:none;margin:12px 0;"></div>
+  <button type="submit" class="btn-register">CONFIRMAR</button>
+      <div class="form-footer-text">
+        ¿Ya tienes una cuenta? <a href="login.html">Puedes ingresar aquí</a>.
+      </div>
+    </form>
+  </div>
+  <script>
+    const SUPABASE_URL = 'https://ytuwkynphdttotifgyaf.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0dXdreW5waGR0dG90aWZneWFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3ODUyMzYsImV4cCI6MjA3NzM2MTIzNn0.JIFDBzpYTcChc1fnmp6pFL0K9SZPnn2ltp4iKxLdSus';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // Validación en tiempo real de email
+    const regEmail = document.getElementById('regEmail');
+    regEmail.addEventListener('input', function() {
+      const emailRegex = /^[\w-.]+@([\w-]+\.)+[\w-]{2,}$/;
+      const errorMsg = document.getElementById('emailErrorMsg');
+      if (regEmail.value.trim() === '') {
+        regEmail.classList.remove('valid', 'invalid');
+        errorMsg.textContent = 'El correo es obligatorio.';
+      } else if (emailRegex.test(regEmail.value.trim())) {
+        regEmail.classList.add('valid');
+        regEmail.classList.remove('invalid');
+        errorMsg.textContent = '';
+      } else {
+        regEmail.classList.remove('valid');
+        regEmail.classList.add('invalid');
+        errorMsg.textContent = 'Correo electrónico inválido.';
+      }
+    });
+
+    // Validación en Supabase si el email ya está registrado (al salir del campo)
+
+    // Validación en tiempo real de teléfono chileno
+    const regPhone = document.getElementById('regPhone');
+    regPhone.addEventListener('input', function() {
+      const phoneRegex = /^9\d{8}$/;
+      const errorMsg = document.getElementById('phoneErrorMsg');
+      if (regPhone.value.trim() === '') {
+        regPhone.classList.remove('valid', 'invalid');
+        errorMsg.textContent = 'El teléfono es obligatorio.';
+      } else if (phoneRegex.test(regPhone.value.trim())) {
+        regPhone.classList.add('valid');
+        regPhone.classList.remove('invalid');
+        errorMsg.textContent = '';
+      } else {
+        regPhone.classList.remove('valid');
+        regPhone.classList.add('invalid');
+        errorMsg.textContent = 'Debe ser un número chileno válido (9 dígitos, comienza con 9).';
+      }
+    });
+
+    // Validación en tiempo real de requisitos de contraseña
+    const regPassword = document.getElementById('regPassword');
+    const reqLength = document.getElementById('req-length');
+    const reqMayus = document.getElementById('req-mayus');
+    const reqMinus = document.getElementById('req-minus');
+    const reqNum = document.getElementById('req-num');
+    const reqSymbol = document.getElementById('req-symbol');
+    const passwordErrorMsg = document.getElementById('passwordErrorMsg');
+    regPassword.addEventListener('input', function() {
+      const val = regPassword.value;
+      let valid = true;
+      // Largo
+      if (val.length >= 8) { reqLength.classList.add('valid'); } else { reqLength.classList.remove('valid'); valid = false; }
+      // Mayúscula
+      if (/[A-Z]/.test(val)) { reqMayus.classList.add('valid'); } else { reqMayus.classList.remove('valid'); valid = false; }
+      // Minúscula
+      if (/[a-z]/.test(val)) { reqMinus.classList.add('valid'); } else { reqMinus.classList.remove('valid'); valid = false; }
+      // Número
+      if (/\d/.test(val)) { reqNum.classList.add('valid'); } else { reqNum.classList.remove('valid'); valid = false; }
+      // Símbolo
+      if (/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(val)) { reqSymbol.classList.add('valid'); } else { reqSymbol.classList.remove('valid'); valid = false; }
+      if (val === '') {
+        regPassword.classList.remove('valid', 'invalid');
+        passwordErrorMsg.textContent = 'La contraseña es obligatoria.';
+      } else if (valid) {
+        regPassword.classList.add('valid');
+        regPassword.classList.remove('invalid');
+        passwordErrorMsg.textContent = '';
+      } else {
+        regPassword.classList.remove('valid');
+        regPassword.classList.add('invalid');
+        passwordErrorMsg.textContent = 'La contraseña no cumple todos los requisitos.';
+      }
+    });
+    // Validación de coincidencia de contraseñas
+    const regPassword2 = document.getElementById('regPassword2');
+    const password2ErrorMsg = document.getElementById('password2ErrorMsg');
+    function checkPasswordsMatch() {
+      if (regPassword2.value === '') {
+        regPassword2.classList.remove('valid', 'invalid');
+        password2ErrorMsg.textContent = 'Debes confirmar la contraseña.';
+      } else if (regPassword2.value === regPassword.value) {
+        regPassword2.classList.add('valid');
+        regPassword2.classList.remove('invalid');
+        password2ErrorMsg.textContent = '';
+      } else {
+        regPassword2.classList.remove('valid');
+        regPassword2.classList.add('invalid');
+        password2ErrorMsg.textContent = 'Las contraseñas no coinciden.';
+      }
+    }
+    regPassword2.addEventListener('input', checkPasswordsMatch);
+    regPassword.addEventListener('input', checkPasswordsMatch);
+
+    // Mostrar/ocultar contraseña
+    document.getElementById('togglePass1').addEventListener('click', function() {
+      const pass = document.getElementById('regPassword');
+      pass.type = pass.type === 'password' ? 'text' : 'password';
+      this.textContent = pass.type === 'password' ? 'Mostrar' : 'Ocultar';
+    });
+    document.getElementById('togglePass2').addEventListener('click', function() {
+      const pass = document.getElementById('regPassword2');
+      pass.type = pass.type === 'password' ? 'text' : 'password';
+      this.textContent = pass.type === 'password' ? 'Mostrar' : 'Ocultar';
+    });
+
+    document.getElementById('registerForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const email = regEmail.value.trim();
+      const emailErrorMsg = document.getElementById('emailErrorMsg');
+      const phone = regPhone.value.trim();
+      const password = regPassword.value;
+      const password2 = document.getElementById('regPassword2').value;
+      const terms = document.getElementById('termsCheckbox').checked;
+      const msg = document.getElementById('registerMsg');
+      msg.textContent = '';
+      msg.className = '';
+      // Si el email ya está registrado, no enviar el formulario
+      if (emailErrorMsg && emailErrorMsg.style.display === 'block' && emailErrorMsg.textContent) {
+        msg.textContent = '';
+        msg.className = '';
+        regEmail.classList.add('invalid');
+        regEmail.focus();
+        return;
+      }
+      emailErrorMsg.style.display = 'none';
+      emailErrorMsg.textContent = '';
+      // Validación de email
+      const emailRegex = /^[\w-.]+@([\w-]+\.)+[\w-]{2,}$/;
+      if (!email || !emailRegex.test(email)) {
+        msg.textContent = 'Ingresa un correo electrónico válido.';
+        msg.className = 'error-msg';
+        regEmail.classList.add('invalid');
+        return;
+      }
+      // Validación de teléfono chileno (9 dígitos, comienza con 9)
+      const phoneRegex = /^9\d{8}$/;
+      if (!phone || !phoneRegex.test(phone)) {
+        msg.textContent = 'Ingresa un teléfono chileno válido (ej: 912345678).';
+        msg.className = 'error-msg';
+        regPhone.classList.add('invalid');
+        return;
+      }
+      // Validación de contraseña segura
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/;
+      if (!passwordRegex.test(password)) {
+        msg.textContent = 'La contraseña debe tener mínimo 8 caracteres, incluir mayúscula, minúscula, número y símbolo.';
+        msg.className = 'error-msg';
+        return;
+      }
+      if (password !== password2) {
+        msg.textContent = 'Las contraseñas no coinciden.';
+        msg.className = 'error-msg';
+        return;
+      }
+      if (!terms) {
+        msg.textContent = 'Debes aceptar los Términos y Condiciones.';
+        msg.className = 'error-msg';
+        return;
+      }
+      // Si hay 3 o más intentos fallidos, forzar reCAPTCHA
+      if (registerAttempts >= 3) {
+        showRecaptcha();
+        grecaptcha.execute(recaptchaWidgetId);
+        return;
+      }
+      // Registro con Supabase
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo:
+            window.location.hostname === 'mision3d.cl' || window.location.hostname === 'www.mision3d.cl'
+              ? 'https://www.mision3d.cl/login.html?correo_confirmado=1'
+              : window.location.origin + '/login.html?correo_confirmado=1',
+          data: { phone }
+        }
+      });
+      if (error) {
+        registerAttempts++;
+        localStorage.setItem('registerAttempts', registerAttempts);
+        if (registerAttempts >= 3) showRecaptcha();
+        let msgText = (error.message || '').toLowerCase();
+        if (
+          msgText.includes('already registered') ||
+          msgText.includes('already exists') ||
+          msgText.includes('ya existe') ||
+          msgText.includes('usuario ya registrado') ||
+          msgText.includes('user already')
+        ) {
+          document.getElementById('emailErrorMsg').textContent = 'Este correo ya está en uso. Intenta iniciar sesión o recuperar tu contraseña.';
+          document.getElementById('emailErrorMsg').style.display = 'block';
+          msg.textContent = '';
+          msg.className = '';
+        } else {
+          msg.textContent = error.message || 'Ocurrió un error inesperado. Intenta nuevamente.';
+          msg.className = 'error-msg';
+        }
+        return;
+      }
+      // Solo si NO hay error
+      localStorage.setItem('registerAttempts', '0');
+      msg.textContent = '¡Registro exitoso! Revisa tu correo para confirmar tu cuenta.';
+      msg.className = 'success-msg';
+      document.getElementById('registerForm').reset();
+      regEmail.classList.remove('valid');
+      regPhone.classList.remove('valid');
+      reqLength.classList.remove('valid');
+      reqMayus.classList.remove('valid');
+      reqMinus.classList.remove('valid');
+      reqNum.classList.remove('valid');
+      reqSymbol.classList.remove('valid');
+    });
+  </script>
+  <footer class="footer" style="background:#181f2a;color:#bfc7d5;padding:40px 0 20px 0;margin-top:40px;width:100vw;">
+    <div style="max-width:1200px;margin:0 auto;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:32px;">
+      <div style="flex:1;min-width:220px;display:flex;flex-direction:column;align-items:center;">
+  <img src="img/Logo_Mision3d.jpg" alt="Mision3D Logo" style="width:110px;margin-bottom:12px;" loading="lazy">
+        <div style="font-size:1.1rem;font-weight:500;">Impresión 3D personalizada</div>
+        <div style="font-size:0.98rem;color:#bfc7d5;">Transforma tus ideas en realidad</div>
+      </div>
+      <div style="flex:1;min-width:220px;text-align:center;">
+        <div style="color:#00bfff;font-weight:bold;font-size:1.1rem;margin-bottom:8px;">Contacto</div>
+        <div><span style="margin-right:6px;">📧</span>mision3d.cl@gmail.com</div>
+        <div><span style="margin-right:6px;">📍</span>La Florida<br>Santiago, Chile</div>
+        <div><span style="margin-right:6px;">⏰</span>Lunes a viernes, 9:00 - 18:00 hrs</div>
+      </div>
+      <div style="flex:1;min-width:220px;text-align:center;">
+        <div style="color:#00bfff;font-weight:bold;font-size:1.1rem;margin-bottom:8px;">Información Legal</div>
+        <div>Mision3D SpA</div>
+        <div style="margin-top:8px;"><a href="privacidad.html" style="color:#00bfff;text-decoration:none;margin-right:12px;">Privacidad</a><a href="terminos.html" style="color:#00bfff;text-decoration:none;">Términos</a></div>
+      </div>
+    </div>
+    <hr style="border:none;border-top:1px solid #2a3140;margin:32px 0 16px 0;">
+    <div style="text-align:center;color:#bfc7d5;font-size:0.95rem;">© 2025 Misión 3D - Todos los derechos reservados</div>
+  </footer>
+</body>
+</html>

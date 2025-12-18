@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Ejemplo Login Firebase (Enlace por Email)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f3f4f6; display: flex; align-items: center; justify-content: center; height: 100vh; }
+    .card { background: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px #0001; max-width: 400px; width: 100%; }
+    h2 { margin-top: 0; }
+    input, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 6px; border: 1px solid #d1d5db; }
+    button { background: #0ea5e9; color: #fff; border: none; font-weight: bold; cursor: pointer; }
+    button:hover { background: #0284c7; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Acceso por Correo</h2>
+    <form id="loginForm">
+      <input type="email" id="loginEmail" placeholder="Tu correo electrónico" required autocomplete="email">
+      <button type="submit">Enviar enlace de acceso</button>
+    </form>
+    <div id="msg" style="color:#059669;margin-top:10px;"></div>
+  </div>
+  <script>
+    // Configuración de Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyBiR_MGh0l32mBAKR2vSBzM0WJQQl8T5fg",
+      authDomain: "mision3d-72b4a.firebaseapp.com",
+      databaseURL: "https://mision3d-72b4a-default-rtdb.firebaseio.com",
+      projectId: "mision3d-72b4a",
+      storageBucket: "mision3d-72b4a.firebasestorage.app",
+      messagingSenderId: "626924123840",
+      appId: "1:626924123840:web:e76cdb5c9971a42e069f25",
+      measurementId: "G-6JM53727M3"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    // Enviar enlace de acceso
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim();
+      const msg = document.getElementById('msg');
+      if (!email) return;
+      const actionCodeSettings = {
+        url: window.location.origin + '/ejemplo-login-firebase.html',
+        handleCodeInApp: true
+      };
+      try {
+        await auth.sendSignInLinkToEmail(email, actionCodeSettings);
+        window.localStorage.setItem('emailForSignIn', email);
+        msg.textContent = 'Enlace enviado. Revisa tu correo.';
+      } catch (error) {
+        msg.textContent = error.message;
+      }
+    });
+    // Completar login si viene desde el enlace
+    if (firebase.auth().isSignInWithEmailLink(window.location.href)) {
+      let email = window.localStorage.getItem('emailForSignIn');
+      if (!email) {
+        email = prompt('Ingresa tu correo para completar el acceso:');
+      }
+      auth.signInWithEmailLink(email, window.location.href)
+        .then(function(result) {
+          window.localStorage.removeItem('emailForSignIn');
+          document.getElementById('msg').textContent = '¡Acceso exitoso!';
+        })
+        .catch(function(error) {
+          document.getElementById('msg').textContent = 'Error: ' + error.message;
+        });
+    }
+  </script>
+</body>
+</html>

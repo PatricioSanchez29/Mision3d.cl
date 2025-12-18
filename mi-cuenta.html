@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mi cuenta - Misión 3D</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/jpeg" href="img/Logo_Mision3d.jpg">
+  <link rel="apple-touch-icon" href="img/Logo_Mision3d.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="header-new-style.css"/>
+  <script type="module" src="auth-header.js"></script>
+  <style>
+    body { font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial; }
+    .page-wrap { max-width: 1200px; margin: 20px auto; padding: 0 16px; }
+    .breadcrumb { font-size: 14px; color: #6b7280; margin-bottom: 12px; }
+    .account-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin: 10px 0 16px; }
+    .user-title h1 { margin:.2rem 0; font-size: 24px; color:#111827; }
+    .user-sub { color:#6b7280; font-size: 14px; }
+    .btn-outline { background:#fff; border:1px solid #e5e7eb; color:#111827; border-radius:8px; padding:10px 14px; cursor:pointer; font-weight:600; }
+    .btn-outline:hover { background:#f9fafb; }
+
+    .tabs { display:flex; gap:10px; border-bottom:1px solid #e5e7eb; margin: 10px 0 16px; }
+    .tab { padding:10px 14px; font-weight:600; color:#374151; cursor:pointer; border-bottom:2px solid transparent; }
+    .tab.active { color:#111827; border-bottom-color:#0ea5e9; }
+
+    .card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,.05); }
+    .card .card-body { padding:16px; }
+
+    .orders-table { width:100%; border-collapse: collapse; font-size:14px; }
+    .orders-table th, .orders-table td { padding:12px; border-bottom:1px solid #f3f4f6; text-align:left; vertical-align:top; }
+    .orders-table th { color:#6b7280; font-weight:600; }
+    .badge { display:inline-block; padding:4px 8px; border-radius:999px; font-size:12px; font-weight:700; }
+    .badge.gray { background:#f3f4f6; color:#374151; }
+    .badge.green { background:#dcfce7; color:#166534; }
+
+    .fav-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap:16px; margin-top:12px; }
+    .fav-card { background:#fff; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden; position:relative; }
+    .fav-card img { width:100%; height:180px; object-fit:cover; }
+    .fav-card-body { padding:12px; }
+    .fav-card-body h4 { margin:0 0 6px; font-size:14px; color:#111827; }
+    .fav-card-body p { margin:4px 0; font-size:13px; color:#6b7280; }
+    .fav-remove { position:absolute; top:8px; right:8px; background:#fff; border:none; border-radius:50%; width:32px; height:32px; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,.15); }
+    .fav-remove:hover { background:#fee2e2; color:#dc2626; }
+    .fav-empty { text-align:center; padding:40px; color:#6b7280; }
+
+    .details-grid { display:grid; grid-template-columns: 1fr 1fr; gap:14px; }
+    .details-grid .box { background:#f9fafb; padding:14px; border-radius:10px; border:1px solid #e5e7eb; }
+    .box h3 { margin:0 0 8px; font-size:14px; color:#111827; }
+    .box p { margin:6px 0; color:#374151; font-size:14px; }
+
+    @media(max-width: 900px){ .details-grid{ grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <button class="menu-btn" id="hamburgerBtn" aria-label="Abrir menú">
+      <div class="hamburger-icon"><span></span><span></span><span></span></div>
+      <span class="menu-text">MENU</span>
+    </button>
+    <h1 class="logo" style="margin:0;display:flex;align-items:center">
+      <a href="index.html" style="display:inline-flex;align-items:center;text-decoration:none">
+        <img src="img/Logo_Mision3d.jpg" alt="Misión 3D" class="logo-img" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-text',textContent:'Misión 3D'}));" />
+      </a>
+    </h1>
+    <nav class="nav desktop-nav">
+      <a href="index.html">Inicio</a>
+      <a href="catalogo.html">Catálogo</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
+    <div class="right-actions">
+      <div id="userArea" class="user-area">
+        <a href="login.html" id="loginLink" class="header-icon-btn">
+          <span class="icon">👤</span>
+          <span class="label">ACCESO</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="page-wrap">
+    <div class="breadcrumb"><a href="index.html">Inicio</a> › <strong>Cuenta del cliente</strong></div>
+    <div class="account-head">
+      <div class="user-title">
+        <h1 id="userName">Mi cuenta</h1>
+        <div id="userEmail" class="user-sub"></div>
+      </div>
+      <button id="logoutTop" class="btn-outline">CERRAR SESIÓN</button>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="orders">🧾 Pedidos</div>
+      <div class="tab" data-tab="details">🧍 Detalles</div>
+      <div class="tab" data-tab="wishlist">❤️ Lista de favoritos (<span id="favCountTab">0</span>)</div>
+    </div>
+
+    <div id="tab-orders" class="card">
+      <div class="card-body">
+        <table class="orders-table" id="ordersTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Fecha</th>
+              <th>Estado</th>
+              <th>Dirección de envío</th>
+              <th>Estado de entrega</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="ordersBody">
+            <tr><td colspan="6" style="color:#6b7280">Cargando tus pedidos...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="tab-details" class="card" style="display:none">
+      <div class="card-body">
+        <div class="details-grid">
+          <div class="box">
+            <h3>Datos de contacto</h3>
+            <p><strong>Nombre:</strong> <span id="dName">—</span></p>
+            <p><strong>Email:</strong> <span id="dEmail">—</span></p>
+            <p><strong>Teléfono:</strong> <span id="dPhone">—</span></p>
+            <p><a class="btn-outline" href="editar-perfil.html">Editar mis detalles</a></p>
+          </div>
+          <div class="box">
+            <h3>Accesos rápidos</h3>
+            <p><a href="catalogo.html">Ver catálogo</a></p>
+            <p><a href="favoritos.html">Ver mi lista de favoritos</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-wishlist" class="card" style="display:none">
+      <div class="card-body" id="wishlistBody">
+        <p style="color:#6b7280">Cargando favoritos...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lógica de la página -->
+  <script type="module">
+    import { supabase } from './supabase-orders.js';
+
+    // Helpers
+    const $ = (sel) => document.querySelector(sel);
+    const fmtDate = (ts) => {
+      const n = Number(ts);
+      if (!Number.isFinite(n)) return '—';
+      try { return new Date(n).toLocaleString('es-CL'); } catch { return '—'; }
+    };
+
+    // Tema
+    if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+
+    // Favoritos contador
+    try {
+      const wl = JSON.parse(localStorage.getItem('wishlist') || '[]');
+      $('#favCountTab').textContent = wl.length;
+    } catch {}
+
+    // Tabs
+    document.querySelectorAll('.tab').forEach(t => {
+      t.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+        t.classList.add('active');
+        const id = t.dataset.tab;
+        $('#tab-orders').style.display = id === 'orders' ? 'block' : 'none';
+        $('#tab-details').style.display = id === 'details' ? 'block' : 'none';
+        $('#tab-wishlist').style.display = id === 'wishlist' ? 'block' : 'none';
+        if (id === 'wishlist') loadWishlist();
+      });
+    });
+
+    // Cerrar sesión
+    $('#logoutTop').addEventListener('click', async () => {
+      if (!confirm('¿Cerrar sesión?')) return;
+      try { await supabase.auth.signOut(); } catch {}
+      localStorage.removeItem('userSession');
+      window.location.href = 'index.html';
+    });
+
+    // =============== Pedidos (RLS con user_id) ===============
+    async function loadOrders() {
+      const ordersBody = $('#ordersBody');
+      if (!ordersBody) return;
+
+      try {
+        // Usuario autenticado desde Supabase
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        
+        if (userError) {
+          console.error('Error de autenticación:', userError);
+          if (userError.message && userError.message.includes('API key')) {
+            ordersBody.innerHTML = '<tr><td colspan="6" style="color:#dc2626">Error de configuración de Supabase. Verifica las credenciales.</td></tr>';
+            return;
+          }
+          window.location.href = 'login.html';
+          return;
+        }
+        
+        if (!user) {
+          window.location.href = 'login.html';
+          return;
+        }
+
+        // Completar encabezado
+        const displayName = user.user_metadata?.name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'Mi cuenta';
+        $('#userName').textContent = displayName;
+        $('#userEmail').textContent = user.email || '';
+        $('#dName').textContent = displayName;
+        $('#dEmail').textContent = user.email || '—';
+
+        // Consultar pedidos por email usando endpoint backend (evita problemas de RLS)
+        const email = user.email?.trim();
+        if (!email) {
+          ordersBody.innerHTML = '<tr><td colspan="6" style="color:#dc2626">No se pudo obtener el email del usuario.</td></tr>';
+          return;
+        }
+
+        const apiBase = window.API_BASE_URL || 'https://api.mision3d.cl';
+        let response, data;
+        
+        try {
+          response = await fetch(`${apiBase}/api/pedidos/by-email/${encodeURIComponent(email)}`);
+          data = await response.json();
+        } catch (fetchError) {
+          console.error('Error de conexión al servidor:', fetchError);
+          ordersBody.innerHTML = '<tr><td colspan="6" style="color:#f59e0b;text-align:center;padding:20px;">⚠️ No se pudo conectar al servidor. Por favor, intenta más tarde.<br><small style="color:#6b7280;margin-top:8px;display:block;">Si eres el administrador, verifica que el servidor backend esté funcionando.</small></td></tr>';
+          return;
+        }
+
+        if (!response.ok || !data.success) {
+          console.error('Error consultando pedidos:', data);
+          ordersBody.innerHTML = `<tr><td colspan="6" style="color:#dc2626;text-align:center;padding:20px;">❌ Error al cargar pedidos: ${data?.error || 'Error desconocido'}</td></tr>`;
+          return;
+        }
+
+        // Mapear a formato esperado por renderOrders
+        const orders = (data.pedidos || []).map(p => ({
+          id: p.id,
+          createdat: p.fecha,
+          createdAt: p.fecha,
+          estado: p.estado,
+          items: p.items || [],
+          total: p.total,
+          commerce_order: p.orden,
+          payment_method: p.metodoPago || 'flow',
+          direccion: (p.items[0]?.meta?.direccion || '—'),
+          comuna: (p.items[0]?.meta?.comuna || '—'),
+          region: (p.items[0]?.meta?.region || '—'),
+          estado_entrega: p.estado === 'enviado' ? 'Enviado' : (p.estado === 'pagado' ? 'En preparación' : 'Pendiente')
+        }));
+
+        renderOrders(orders);
+      } catch (e) {
+        console.error('Error cargando pedidos:', e);
+        ordersBody.innerHTML = '<tr><td colspan="6" style="color:#dc2626;text-align:center;padding:20px;">❌ Error inesperado al cargar pedidos.<br><small style="color:#6b7280;margin-top:8px;display:block;">' + (e.message || 'Error desconocido') + '</small></td></tr>';
+      }
+    }
+
+    function renderOrders(orders) {
+      const ordersBody = $('#ordersBody');
+      if (!orders || orders.length === 0) {
+        ordersBody.innerHTML = '<tr><td colspan="6" style="color:#6b7280">No tienes pedidos aún.</td></tr>';
+        return;
+      }
+
+      const rows = orders.map((o, idx) => {
+        const nro = o.commerce_order || o.id || `#${idx + 1}`;
+        const fecha = o.createdat ? new Date(o.createdat).toLocaleString('es-CL', { timeZone: 'America/Santiago' }) : (o.createdAt ? new Date(o.createdAt).toLocaleString('es-CL', { timeZone: 'America/Santiago' }) : '—');
+        const estado = (o.estado || 'pendiente').toLowerCase();
+        const badgeClass = estado === 'pagado' || estado === 'enviado' ? 'green' : 'gray';
+        const badgeIcon = estado === 'pagado' ? '✅' : estado === 'enviado' ? '📦' : estado === 'pendiente' ? '⏳' : '❌';
+        
+        // Items
+        const items = o.items || [];
+        const itemsText = items.map(it => `${it.name || it.title || 'Producto'} (x${it.qty || 1})`).join(', ') || 'Sin detalles';
+        const total = Number(o.total || 0).toLocaleString('es-CL');
+        
+        // Método de pago
+        const metodo = o.payment_method || 'flow';
+        const metodoIcon = metodo === 'transferencia' ? '🏦' : '💳';
+        const metodoText = metodo === 'transferencia' ? 'Transferencia' : 'Flow';
+        
+        const envio = `${o.direccion || '—'}, ${o.comuna || '—'}, ${o.region || '—'}`;
+        const entrega = o.estado_entrega || (estado === 'enviado' ? 'Enviado' : estado === 'pagado' ? 'En preparación' : 'Pendiente');
+
+        return `<tr>
+          <td><strong>${nro}</strong><br><small style="color:#6b7280">${itemsText}</small><br><small style="color:#111;font-weight:600">Total: $${total}</small><br><small style="color:#0ea5e9">${metodoIcon} ${metodoText}</small></td>
+          <td>${fecha}</td>
+          <td><span class="badge ${badgeClass}">${badgeIcon} ${estado.charAt(0).toUpperCase() + estado.slice(1)}</span></td>
+          <td>${envio}</td>
+          <td>${entrega}</td>
+          <td>—</td>
+        </tr>`;
+      }).join('');
+
+      ordersBody.innerHTML = rows;
+    }
+
+    // =============== Favoritos ===============
+    function loadWishlist() {
+      const container = document.getElementById('wishlistBody');
+      try {
+        const wl = JSON.parse(localStorage.getItem('wishlist') || '[]');
+        if (wl.length === 0) {
+          container.innerHTML = `<div class="fav-empty">💔 No tienes favoritos aún.<br><a href="catalogo.html">Explorar productos</a></div>`;
+          return;
+        }
+        // Fuente de productos
+        let products = [];
+        if (window.PRODUCTS && Array.isArray(window.PRODUCTS)) {
+          products = window.PRODUCTS;
+          renderFavs(wl, products, container);
+        } else {
+          // Fallback a datos.json
+          fetch('datos.json')
+            .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
+            .then(data => {
+              products = data?.products || [];
+              renderFavs(wl, products, container);
+            })
+            .catch(() => {
+              container.innerHTML = `<p style="color:#b91c1c">No se pudieron cargar los productos.</p>`;
+            });
+        }
+      } catch (err) {
+        console.error('Error cargando favoritos:', err);
+        container.innerHTML = `<p style="color:#b91c1c">Error al cargar favoritos.</p>`;
+      }
+    }
+
+    function renderFavs(wl, products, container) {
+      const favProds = wl.map(id => products.find(p => p.id === id)).filter(Boolean);
+      if (favProds.length === 0) {
+        container.innerHTML = `<div class="fav-empty">Los productos favoritos ya no están disponibles.<br><a href="catalogo.html">Explorar catálogo</a></div>`;
+        return;
+      }
+      const html = favProds.map(p => {
+        const price = (typeof p.price === 'number') ? `$${p.price.toLocaleString('es-CL')}` : 'Consultar';
+        const img = p.img || 'img/placeholder.png';
+        const name = p.name || 'Producto';
+        const id = p.id ?? '';
+        return `<div class="fav-card">
+          <button class="fav-remove" onclick="removeFav('${String(id).replace(/"/g, '&quot;')}')" title="Quitar de favoritos" aria-label="Quitar de favoritos">✕</button>
+          <img src="${img}" alt="${name}" />
+          <div class="fav-card-body">
+            <h4>${name}</h4>
+            <p>${price}</p>
+            <a href="producto.html?id=${encodeURIComponent(id)}" style="color:#0ea5e9; font-size:13px;">Ver producto</a>
+          </div>
+        </div>`;
+      }).join('');
+      container.innerHTML = `<div class="fav-grid">${html}</div>`;
+    }
+
+    // Exponer removeFav para el botón inline
+    window.removeFav = function(id) {
+      let wl = [];
+      try { wl = JSON.parse(localStorage.getItem('wishlist') || '[]'); } catch {}
+      wl = wl.filter(x => x !== id);
+      localStorage.setItem('wishlist', JSON.stringify(wl));
+      document.getElementById('favCountTab').textContent = wl.length;
+      loadWishlist();
+    };
+
+    // Init
+    loadOrders();
+  </script>
+
+  <!-- Scripts externos una sola vez -->
+  <script src="mobile-menu.js"></script>
+  <script src="script.js?v=20251106-2"></script>
+</body>
+</html>

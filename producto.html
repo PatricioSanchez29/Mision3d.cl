@@ -1,0 +1,786 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Producto | Tienda 3D</title><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" type="image/jpeg" href="img/Logo_Mision3d.jpg">
+<link rel="apple-touch-icon" href="img/Logo_Mision3d.jpg">
+<link rel="stylesheet" href="style.css?v=20251128-1">
+<script type="module" src="auth-header.js"></script>
+<script>window.GA_MEASUREMENT_ID = window.GA_MEASUREMENT_ID || 'G-XXXXXXXXXX';</script>
+<script src="consent.js"></script>
+<style>
+/* Estilos específicos página producto (pueden moverse a style.css luego) */
+.product-page{max-width:1250px;margin:40px auto;padding:0 20px;display:grid;grid-template-columns:380px 1fr;gap:50px}
+.product-gallery{display:flex;flex-direction:column;gap:14px}
+.product-main{position:relative;width:100%;aspect-ratio:1/1;border-radius:14px;overflow:hidden;background:#000;display:flex;align-items:center;justify-content:center}
+.product-main img{width:100%;height:100%;object-fit:cover;transition:.4s ease;background:#000;}
+.product-thumbs{display:flex;flex-direction:column;gap:10px;max-height:520px;overflow:auto;padding-right:4px}
+.product-thumb{width:70px;aspect-ratio:1/1;border:none;border-radius:0;overflow:hidden;cursor:pointer;flex:0 0 auto;position:relative;background:none;padding:0;margin:0;display:flex;align-items:center;justify-content:center}
+.product-thumb img{width:auto;height:80px;object-fit:cover;display:block;margin:0;padding:0;}
+.product-thumb.active{border:none}
+.breadcrumb{font-size:.85rem;color:#666;margin-bottom:20px}
+.breadcrumb a{color:#e6462f;text-decoration:none}
+  .product-info h1:not(.product-title){margin:0 0 8px;font-size:2rem;line-height:1.2}
+.price-block{display:flex;align-items:center;gap:10px;margin:12px 0 18px}
+.price-final{font-size:2rem;font-weight:700;color:#e6462f}
+.price-old{color:#999;text-decoration:line-through;font-size:1rem}
+.badges-line{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.badges-line .badge{font-size:.7rem}
+.rating-line{display:flex;align-items:center;gap:6px;font-size:.9rem;margin-bottom:14px}
+.short-desc{color:#444;line-height:1.45;margin-bottom:20px}
+.stock-msg{font-size:.85rem;margin-bottom:12px}
+.stock-low{color:#d9534f;font-weight:600}
+.qty-box{display:flex;align-items:center;border:1px solid #ddd;border-radius:10px;overflow:hidden;width:max-content;margin:0 0 22px}
+.qty-box button{background:#fff;border:none;padding:12px 14px;font-size:1.1rem;cursor:pointer;line-height:1}
+.qty-box span{display:inline-block;width:48px;text-align:center;font-weight:600}
+.action-buttons{display:flex;flex-direction:column;gap:14px;margin-bottom:30px}
+.action-buttons .btn-primary{background:#e6462f;color:#fff;border:none;padding:18px 26px;font-size:1rem;font-weight:600;border-radius:40px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:.3s}
+.action-buttons .btn-outline{background:#fff;border:2px solid #e6462f;color:#e6462f;padding:15px 26px;font-weight:600;font-size:.95rem;border-radius:40px;cursor:pointer;transition:.3s}
+.action-buttons .btn-primary:hover{background:#c93722}
+.action-buttons .btn-outline:hover{background:#e6462f;color:#fff}
+.shipping-box{background:#f1faf1;border:1px solid #b9e3b9;padding:18px 20px;border-radius:12px;font-size:.85rem;line-height:1.4;color:#1a531a;display:flex;gap:12px;margin-bottom:18px}
+.alert-low{background:#fdf2f2;border:1px solid #f5c2c7;color:#a23131;padding:10px 14px;border-radius:10px;font-size:.8rem;width:max-content;margin-bottom:15px}
+.long-desc{line-height:1.55;color:#333;font-size:.93rem;white-space:pre-line}
+.gallery-wrapper{display:flex;gap:14px}
+/* Variantes */
+.variants-section{margin:20px 0}
+.variants-label{font-size:.95rem;font-weight:600;color:#333;margin-bottom:10px;display:block}
+.variants-grid{display:flex;flex-wrap:wrap;gap:10px}
+.variant-btn{
+  padding:10px 18px;
+  border:2px solid #ddd;
+  border-radius:8px;
+  background:#fff;
+  color:#333;
+  font-size:.9rem;
+  font-weight:500;
+  cursor:pointer;
+  transition:all .2s;
+  white-space:nowrap;
+}
+.variant-btn:hover{border-color:#e6462f;background:#fff5f5}
+.variant-btn.active{border-color:#e6462f;background:#e6462f;color:#fff;font-weight:600}
+.dark .variant-btn{background:#1e293b;border-color:#334155;color:#e2e8f0}
+.dark .variant-btn:hover{border-color:#e6462f;background:#2d1f1f}
+.dark .variant-btn.active{background:#e6462f;border-color:#e6462f;color:#fff}
+@media (max-width:980px){.product-page{grid-template-columns:1fr}.gallery-wrapper{flex-direction:row}.product-thumbs{flex-direction:row;max-height:none;overflow:auto}.product-thumb{width:68px}}
+@media (max-width:600px){.product-main{aspect-ratio:4/3}.price-final{font-size:1.7rem}h1{font-size:1.7rem}}
+.dark .product-main{background:#1f1f1f}
+.dark .product-thumb{background:#2a2a2a}
+.dark .shipping-box{background:#173d17;border-color:#236a23;color:#bfeabf}
+/* Secciones relacionadas */
+.related-section{max-width:1250px;margin:60px auto 40px;padding:0 20px}
+.related-section h2{font-size:1.5rem;margin-bottom:24px;color:#333}
+.related-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:20px}
+.related-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px;text-align:center;transition:transform .3s,box-shadow .3s;cursor:pointer}
+.related-card:hover{
+  transform:translateY(-8px) scale(1.035);
+  box-shadow:0 12px 32px 0 rgba(0,0,0,0.18),0 1.5px 6px 0 rgba(0,0,0,0.10);
+  z-index:2;
+}
+.related-card img{
+  transition:transform .35s cubic-bezier(.4,1.6,.4,1);
+}
+.related-card:hover img{
+  transform:scale(1.06);
+}
+.related-card img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:8px;margin-bottom:12px}
+.related-card h3{font-size:1rem;margin:0 0 8px;color:#333}
+.related-card .price{font-size:1.1rem;font-weight:700;color:#e6462f;margin-bottom:10px;display:block}
+.related-card .btn-add{background:#e6462f;color:#fff;border:none;padding:8px 16px;border-radius:20px;font-size:.85rem;cursor:pointer;transition:.3s}
+.related-card .btn-add:hover{background:#c93722}
+.dark .related-section h2{color:#e2e8f0}
+.dark .related-card{background:#1e293b;border-color:#334155}
+.dark .related-card h3{color:#e2e8f0}
+@media (max-width:600px){.related-grid{grid-template-columns:repeat(2,1fr);gap:12px}.related-card{padding:12px}}
+</style>
+</head><body>
+<header class="header">
+  <!-- Botón Hamburguesa (solo móvil) -->
+  <button class="hamburger-btn" id="hamburgerBtn" aria-label="Abrir menú">
+    <div class="hamburger-icon">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </button>
+
+  <h1 class="logo" style="margin:0;display:flex;align-items:center">
+    <a href="index.html" style="display:inline-flex;align-items:center;text-decoration:none">
+      <img src="img/Logo_Mision3d.jpg" alt="Misión 3D" class="logo-img" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-text',textContent:'Misión 3D'}));" />
+    </a>
+  </h1>
+  <nav class="nav">
+    <a href="index.html">Inicio</a>
+    <a href="catalogo.html" class="active">Catálogo</a>
+    <a href="index.html#contacto">Contacto</a>
+  </nav>
+  <div class="search-header">
+    <div class="advanced-search-bar">
+      <select id="headerCategorySelect" class="category-select">
+        <option value="all">Todas las categorías</option>
+      </select>
+      <input type="text" id="searchInput" placeholder="¿Qué estás buscando?" class="search-input" autocomplete="off">
+      <button type="button" id="headerSearchBtn" class="search-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <path d="m21 21-4.35-4.35"></path>
+        </svg>
+      </button>
+    </div>
+    <div id="searchSuggestions" class="search-suggestions"></div>
+    <div id="headerTrendChips" class="trend-chips" aria-label="Búsquedas populares"></div>
+  </div>
+  <div class="right-actions" style="display:flex;align-items:center;gap:10px">
+    <div id="userArea" class="user-area">
+      <a href="login.html" id="loginLink" class="btn small outline">Ingresar</a>
+    </div>
+    <button class="cart-btn" id="openCart" aria-label="Abrir carrito">🛒 <span id="cartCount">0</span></button>
+  </div>
+</header>
+<div id="toast"></div>
+<div class="product-page">
+  <div class="product-gallery">
+    <div class="breadcrumb" id="breadcrumb"></div>
+    <div class="gallery-wrapper">
+      <div class="product-thumbs" id="thumbs"></div>
+      <div class="product-main"><img id="mainImage" alt="Producto"></div>
+    </div>
+  </div>
+  <div class="product-info" id="productInfo">
+    <!-- Se rellena dinámicamente -->
+  </div>
+</div>
+
+
+
+<!-- Carrito y modal (mismo markup que en index) -->
+<aside id="cartDrawer" class="cart">
+  <div class="cart-header"><h3>Tu carrito</h3><button id="closeCart">✕</button></div>
+  <div id="cartAddedMsg" class="cart-added-msg"></div>
+  <div id="cartItems" class="cart-items"></div>
+  <div class="cart-footer">
+    <div class="totals"><span>Total:</span><strong id="cartTotal">$0</strong></div>
+    <button id="checkout" class="btn primary">Finalizar compra</button>
+    <button id="clearCart" class="btn outline">Vaciar</button>
+  </div>
+</aside>
+<div id="overlay" class="overlay"></div>
+<div id="checkoutModal" class="modal">
+  <div class="modal-content">
+    <h3>Entrega</h3>
+    <form id="checkoutForm" class="checkout-form">
+      <div class="form-row">
+        <label>Método de envío:<br>
+          <select id="inputEnvio">
+            <option value="retiro">Retiro en taller (sin costo)</option>
+            <option value="domicilio">Envío a domicilio (Santiago, $2.990)</option>
+          </select>
+        </label>
+        <label>Nombre:<br><input id="inputName" autocomplete="name"></label>
+        <label>Apellidos:<br><input id="inputApellido" autocomplete="family-name"></label>
+      </div>
+      <div class="form-row">
+        <label>RUT (Obligatorio):<br><input id="inputRut" autocomplete="off"></label>
+      </div>
+      <div class="form-row">
+        <label>Dirección:<br><input id="inputDireccion" autocomplete="street-address"></label>
+      </div>
+      <div class="form-row">
+        <label>Agregar Nota (Personalización producto):<br><input id="inputNotes" autocomplete="off"></label>
+      </div>
+      <div class="form-row">
+        <label>Código postal (opcional):<br><input id="inputPostal" autocomplete="postal-code"></label>
+      </div>
+      <div class="form-row">
+        <label>Región:<br>
+          <select id="inputRegion">
+            <option value="">Selecciona región</option>
+          </select>
+        </label>
+        <label>Comuna:<br>
+          <select id="inputComuna">
+            <option value="">Selecciona comuna</option>
+          </select>
+        </label>
+    <meta name="description" content="Detalles del producto de impresión 3D personalizada en Misión 3D. Calidad premium y envío a todo Chile.">
+    <meta name="keywords" content="producto, impresión 3D, personalizado, Chile, tienda, calidad">
+    <meta property="og:title" content="Producto | Tienda 3D"/>
+    <meta property="og:description" content="Detalles y compra de productos de impresión 3D personalizada en Chile."/>
+    <meta property="og:image" content="https://tudominio.cl/img/Logo_Mision3d.jpg"/>
+    <meta property="og:url" content="https://tudominio.cl/producto.html"/>
+    <meta property="og:type" content="product"/>
+    <meta name="twitter:card" content="summary_large_image"/>
+    <meta name="twitter:title" content="Producto | Tienda 3D"/>
+    <meta name="twitter:description" content="Detalles y compra de productos de impresión 3D personalizada en Chile."/>
+    <meta name="twitter:image" content="https://tudominio.cl/img/Logo_Mision3d.jpg"/>
+    <link rel="canonical" href="https://tudominio.cl/producto.html"/>
+    <meta name="robots" content="index, follow"/>
+      </div>
+      <div class="form-row">
+        <label>Teléfono:<br><input id="inputTelefono" autocomplete="tel"></label>
+      </div>
+      <div class="modal-actions">
+        <button type="button" id="confirmCheckout" class="btn primary">Confirmar</button>
+        <button type="button" id="cancelCheckout" class="btn outline">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+<script src="script.js?v=20251106-2"></script>
+<script>
+// Fallback global para formatear precios si no existe window.money
+if(typeof window.money !== 'function') {
+  window.money = function(val) {
+    return Number(val).toLocaleString('es-CL', { style: 'currency', currency: 'CLP' });
+  };
+}
+  // Inserta Product JSON-LD dinámico para SEO
+  (function(){
+    function qs(k){const u=new URL(location.href);return u.searchParams.get(k);} 
+    const id = qs('id');
+    if(!id || !window.PRODUCTS) return;
+    const p = (window.PRODUCTS||[]).find(x=>String(x.id)===String(id));
+    if(!p) return;
+    const price = Number(p.discount? Math.round(p.price*(1-p.discount/100)) : p.price) || 0;
+    const data = {
+      "@context":"https://schema.org",
+      "@type":"Product",
+      "name": p.name,
+      "image": [ (location.origin + '/' + (p.img||'img/placeholder.png')).replace(/([^:])\/\//g,'$1/') ],
+      "description": p.name,
+      "brand": {"@type":"Brand","name":"Misión 3D"},
+      "offers": {"@type":"Offer","priceCurrency":"CLP","price": price,"availability":"https://schema.org/InStock","url": location.href}
+    };
+    // Agregar aggregateRating si hay reseñas y estrellas
+    if (p.reviews && p.stars) {
+      data.aggregateRating = {
+        "@type": "AggregateRating",
+        "ratingValue": String(p.stars),
+        "reviewCount": String(p.reviews)
+      };
+    }
+    // BreadcrumbList dinámico
+    const breadcrumb = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Inicio", "item": "https://mision3d.cl/" },
+        { "@type": "ListItem", "position": 2, "name": "Catálogo", "item": "https://mision3d.cl/catalogo.html" },
+        { "@type": "ListItem", "position": 3, "name": p.name, "item": location.href }
+      ]
+    };
+    const s = document.createElement('script'); s.type='application/ld+json'; s.textContent=JSON.stringify(data); document.head.appendChild(s);
+    const sb = document.createElement('script'); sb.type='application/ld+json'; sb.textContent=JSON.stringify(breadcrumb); document.head.appendChild(sb);
+  })();
+</script>
+<script>
+// Esperar a que PRODUCTS esté disponible
+document.addEventListener('DOMContentLoaded', function() {
+  // Intentar renderizar cuando PRODUCTS esté disponible.
+  // Primero intentar cargar desde memoria/localStorage con reintentos limitados
+  let attempts = 0;
+  const maxAttempts = 50; // ~5s a 100ms
+  const intervalMs = 100;
+
+  function tryRender() {
+    // si ya hay PRODUCTS con datos, renderizamos y terminamos
+    if (window.PRODUCTS && Array.isArray(window.PRODUCTS) && window.PRODUCTS.length) {
+      renderProductDetail();
+      return;
+    }
+
+    // Intentar recuperar desde localStorage como fallback
+    try {
+      const s = localStorage.getItem('PRODUCTS');
+      if (s) {
+        const parsed = JSON.parse(s);
+        if (Array.isArray(parsed) && parsed.length) {
+          window.PRODUCTS = parsed;
+          renderProductDetail();
+          return;
+        }
+      }
+    } catch (e) {
+      // ignore parse errors
+    }
+
+    // Si no disponible, reintentar un número limitado de veces
+    attempts++;
+    if (attempts <= maxAttempts) {
+      setTimeout(tryRender, intervalMs);
+      return;
+    }
+
+    // Si agotamos reintentos, esperamos al evento productsReady (no spam de consola)
+    console.warn('PRODUCTS no disponible tras varios intentos. Esperando productsReady...');
+  }
+
+  tryRender();
+
+  // Cuando el loader asíncrono cargue los productos, re-renderizar
+  document.addEventListener('productsReady', function() {
+    if (window.PRODUCTS && Array.isArray(window.PRODUCTS) && window.PRODUCTS.length) {
+      renderProductDetail();
+    }
+  }, { once: false });
+});
+
+function getParam(name){return new URLSearchParams(location.search).get(name);} 
+function starsHTML(v){const full=Math.floor(v);const half=v%1>=0.5;let s='';for(let i=0;i<full;i++)s+='★';if(half)s+='☆';return `<span class="stars">${s}</span>`}
+function renderProductDetail(){
+  const id=getParam('id');
+  if(!window.PRODUCTS || !Array.isArray(window.PRODUCTS) || !window.PRODUCTS.length){
+    // PRODUCTS no está disponible aún — simplemente abortamos la renderización.
+    // El listener 'productsReady' o el intento inicial se encargará de reintentar.
+    return;
+  }
+  const p=PRODUCTS.find(x=>String(x.id)===String(id));
+  const info=document.getElementById('productInfo');
+  const breadcrumb=document.getElementById('breadcrumb');
+  if(!p){info.innerHTML='<p>Producto no encontrado. <a href="catalogo.html">Volver al catálogo</a></p>';return;}
+  breadcrumb.innerHTML=`<a href='index.html'>Inicio</a> › ${p.name}`;
+  
+  // Preparar variantes primero para poder incluir sus imágenes
+  let variants = [];
+  if(p.variants && Array.isArray(p.variants)){
+    variants = p.variants;
+  } else if(p.variants && typeof p.variants === 'string'){
+    try {
+      variants = JSON.parse(p.variants);
+    } catch(e) {
+      variants = [];
+    }
+  }
+  // Normalizar precios de variantes y calcular precio mostrado aplicando descuento del producto si existe
+  if (variants && variants.length > 0) {
+    variants = variants.map(v => {
+      const basePrice = (typeof v.price !== 'undefined' && v.price !== null) ? Number(v.price) : Number(p.price || 0);
+      const displayPrice = p.discount ? Math.round(basePrice * (1 - Number(p.discount) / 100)) : basePrice;
+      return Object.assign({}, v, { _basePrice: basePrice, _displayPrice: displayPrice });
+    });
+  }
+  
+  // Galería: combina imagen principal + imágenes de variantes + galería adicional
+  let galleryImages = [p.img]; // Siempre incluir imagen principal
+  
+  // Agregar imágenes de variantes (si existen y no están duplicadas)
+  if(variants && variants.length > 0) {
+    variants.forEach(v => {
+      if(v.image && v.image.trim() !== '' && !galleryImages.includes(v.image)) {
+        galleryImages.push(v.image);
+      }
+    });
+  }
+  
+  // Agregar galería adicional
+  if(p.gallery) {
+    let additionalImages = [];
+    if(Array.isArray(p.gallery)) {
+      additionalImages = p.gallery;
+    } else if(typeof p.gallery === 'string') {
+      try {
+        additionalImages = JSON.parse(p.gallery);
+      } catch(e) {
+        additionalImages = [];
+      }
+    }
+    if(additionalImages.length > 0) {
+      galleryImages = galleryImages.concat(additionalImages.filter(url => url && url.trim() !== '' && !galleryImages.includes(url)));
+    }
+  }
+  
+  const gallery = galleryImages;
+  const thumbs=document.getElementById('thumbs');
+  thumbs.innerHTML=gallery.map((g,i)=>`<div class='product-thumb ${i===0?'active':''}' data-img='${g}'><img src='${g}' alt='thumb' loading='lazy'></div>`).join('');
+  thumbs.querySelectorAll('.product-thumb').forEach(th=>th.onclick=()=>{document.getElementById('mainImage').src=th.dataset.img;thumbs.querySelectorAll('.product-thumb').forEach(x=>x.classList.remove('active'));th.classList.add('active');});
+  document.getElementById('mainImage').src=gallery[0];
+  const isLow=p.stock==='bajo';
+  const daysDiff=(Date.now()-new Date(p.dateAdded))/86400000; let badges='';
+  if(daysDiff<=21) badges+=`<span class='badge new'>Nuevo</span>`; if(p.discount) badges+=`<span class='badge discount'>-${p.discount}%</span>`;
+  const priceOriginal=p.discount?`<span class='price-old'>${money(p.price)}</span>`:'';
+  const finalPrice=p.discount?Math.round(p.price*(1-p.discount/100)):p.price;
+  
+  // Las variantes ya fueron preparadas arriba (antes de la galería)
+  
+  let variantsHTML = '';
+  if(variants.length > 0){
+    variantsHTML = `
+      <div class='variants-section'>
+        <label class='variants-label'>Modelos:</label>
+        <div class='variants-grid' id='variantsGrid'>${variants.map((v,i)=>`<button class='variant-btn ${i===0?'active':''}' data-index='${i}' data-price='${v._displayPrice}'>${v.name}</button>`).join('')}</div>
+        <div id="customNoteWrap" style="display:none;margin-top:10px">
+          <label class='variants-label' style="margin-bottom:6px">Personaliza tu calendario</label>
+          <input id="customNoteInput" type="text" placeholder="Escribe nombre/texto para personalizar (máx 15 letras)" maxlength="15" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:.95rem">
+          <small style="color:#666">Este texto se enviará con tu pedido.</small>
+        </div>
+      </div>
+    `;
+  }
+  
+  info.innerHTML=`<h1 class='product-title'>${p.name}</h1>
+  <div class='badges-line'>${badges}</div>
+  <div class='price-block'>${priceOriginal}<span class='price-final' id='priceDisplay'>${money(variants.length>0 ? (variants[0]._displayPrice || variants[0].price) : finalPrice)}</span></div>
+  ${variantsHTML}
+  <div class='short-desc'>${p.name.includes('Calendario')?'Calendario detallado con todos los circuitos en relieve y acabado premium.':'Producto personalizado impreso en 3D.'}</div>
+  <div class='stock-msg ${isLow?'stock-low':''}'>${isLow?'¡Quedan pocas unidades!':'Stock disponible'}</div>
+  <div class='qty-box'><button id='qtyMinus'>-</button><span id='qtyValue'>1</span><button id='qtyPlus'>+</button></div>
+  <div class='action-buttons'>
+    <button class='btn-primary' id='addCartBtn'>Añadir al carrito</button>
+    <button class='btn-outline' id='buyNowBtn'>Comprar ahora</button>
+  </div>
+  <div class='shipping-box'>🚚 <div><strong>Tiempos estimados:</strong><br>1-3 días (Santiago y Regiones).</div></div>
+  ${isLow?'<div class="alert-low">¡Quedan pocas unidades para este pedido!</div>':''}
+  <div class='long-desc'>${p.name.includes('Calendario')?`El Calendario F1 2026 ofrece una visión detallada de todas las fechas y ubicaciones de los Grandes Premios. Diseñado para aficionados avanzados, facilita la planificación estratégica y seguimiento de cada evento.\n\nImpreso en alta calidad con precisión y acabados mejorados.`:'Fabricado bajo pedido con materiales de alta calidad.'}</div>`;
+  // Manejar selección de variantes
+  let selectedVariant = variants.length > 0 ? variants[0] : null;
+  let currentPrice = variants.length > 0 ? (variants[0]._displayPrice || variants[0].price) : finalPrice;
+  
+  if(variants.length > 0){
+    const variantButtons = document.querySelectorAll('.variant-btn');
+    variantButtons.forEach(btn => {
+      btn.onclick = function(){
+        variantButtons.forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        const index = parseInt(this.dataset.index);
+        selectedVariant = variants[index];
+        // Usar precio mostrado (aplica descuento del producto si corresponde)
+        currentPrice = (typeof selectedVariant._displayPrice !== 'undefined') ? selectedVariant._displayPrice : (selectedVariant.price || finalPrice);
+        document.getElementById('priceDisplay').textContent = money(currentPrice);
+
+        // Cambiar imagen principal si la variante tiene imagen
+        const mainImg = document.getElementById('mainImage');
+        if (selectedVariant.image && selectedVariant.image.trim() !== '') {
+          mainImg.src = selectedVariant.image;
+          // Actualizar miniaturas activas
+          const thumbs = document.querySelectorAll('.product-thumb');
+          thumbs.forEach(th => th.classList.remove('active'));
+          // Buscar si existe thumbnail con esta imagen, si no, usar la primera
+          const matchingThumb = Array.from(thumbs).find(th => th.dataset.img === selectedVariant.image);
+          if (matchingThumb) {
+            matchingThumb.classList.add('active');
+          } else if (thumbs.length > 0) {
+            thumbs[0].classList.add('active');
+          }
+        } else if (gallery && gallery.length > 0) {
+          // Si la variante no tiene imagen, volver a la primera imagen de la galería
+          mainImg.src = gallery[0];
+          const thumbs = document.querySelectorAll('.product-thumb');
+          thumbs.forEach(th => th.classList.remove('active'));
+          if (thumbs.length > 0) thumbs[0].classList.add('active');
+        }
+
+        // Mostrar/ocultar campo de personalización si la variante es personalizada
+        const wrap = document.getElementById('customNoteWrap');
+        if (wrap) {
+          const variantName = (selectedVariant?.name || '').toLowerCase();
+          // Solo mostrar si contiene "personalizado" pero NO contiene "sin"
+          const isPersonalizada = variantName.includes('personalizado') && !variantName.includes('sin');
+          wrap.style.display = isPersonalizada ? 'block' : 'none';
+        }
+      };
+    });
+
+    // Estado inicial del campo personalizado (primera variante)
+    const wrap = document.getElementById('customNoteWrap');
+    if (wrap) {
+      const variantName = (selectedVariant?.name || '').toLowerCase();
+      // Solo mostrar si contiene "personalizado" pero NO contiene "sin"
+      const isPersonalizada = variantName.includes('personalizado') && !variantName.includes('sin');
+      wrap.style.display = isPersonalizada ? 'block' : 'none';
+    }
+  }
+  
+  // Cantidad
+  let qty=1;const val=document.getElementById('qtyValue');
+  document.getElementById('qtyMinus').onclick=()=>{if(qty>1){qty--;val.textContent=qty;}};
+  document.getElementById('qtyPlus').onclick=()=>{qty++;val.textContent=qty;};
+  // Añadir múltiples unidades de una sola vez sin spamear toasts
+  function addBulk(id, cantidad, nombre){
+    const itemKey = selectedVariant ? `${id}-${selectedVariant.name}` : id;
+    let it = cart.find(x=>x.id===itemKey);
+    const customNoteVal = (document.getElementById('customNoteInput')?.value || '').trim();
+    if(it) {
+      it.qty += cantidad;
+      if (customNoteVal) it.customNote = customNoteVal;
+    } else {
+      cart.push({
+        id: itemKey,
+        originalId: id,
+        qty: cantidad,
+        variant: selectedVariant ? selectedVariant.name : null,
+        price: currentPrice,
+        customNote: customNoteVal || null
+      });
+    }
+    save(); badge();
+    const variantText = selectedVariant ? ` (${selectedVariant.name})` : '';
+    if(typeof showToast === 'function') {
+      showToast(`¡${nombre}${variantText} agregado${cantidad>1?` x${cantidad}`:''} al carrito!`, 'success');
+    }
+    openCart();
+    render(itemKey, nombre + variantText);
+  }
+  document.getElementById('addCartBtn').onclick=()=>addBulk(p.id, qty, p.name);
+  document.getElementById('buyNowBtn').onclick=()=>{
+    // Agregar productos seleccionados y redirigir a página de checkout dedicada
+    const itemKey = selectedVariant ? `${p.id}-${selectedVariant.name}` : p.id;
+    let it = cart.find(x=>x.id===itemKey);
+    const customNoteVal = (document.getElementById('customNoteInput')?.value || '').trim();
+    if(it) {
+      it.qty += qty;
+      if (customNoteVal) it.customNote = customNoteVal;
+    } else {
+      cart.push({
+        id: itemKey,
+        originalId: p.id,
+        qty,
+        variant: selectedVariant ? selectedVariant.name : null,
+        price: currentPrice,
+        customNote: customNoteVal || null
+      });
+    }
+    save(); badge();
+    window.location.href = 'checkout.html';
+  };
+}
+</script>
+<!-- Cargar productos desde Supabase para asegurar datos frescos (incluye gallery) -->
+<script type="module">
+  // Reutiliza el cliente central para evitar múltiples GoTrueClient
+  const { supabase } = await import('./supabase-orders.js');
+
+  async function cargarProductosDesdeSupabase() {
+    try {
+      const { data, error } = await supabase.from('productos').select('*');
+      if (error) throw error;
+      window.PRODUCTS = data || window.PRODUCTS || [];
+      try { localStorage.setItem('PRODUCTS', JSON.stringify(window.PRODUCTS)); } catch {}
+      document.dispatchEvent(new Event('productsReady'));
+    } catch (err) {
+      console.warn('[producto.html] No se pudieron cargar productos desde Supabase:', err?.message || err);
+      // fallback: usar lo que ya haya en window.PRODUCTS/localStorage
+      document.dispatchEvent(new Event('productsReady'));
+    }
+  }
+
+  // Ejecutar carga (no bloqueante, renderizará al llegar)
+  cargarProductosDesdeSupabase();
+</script>
+
+<!-- Productos relacionados -->
+<section class="related-section">
+  <h2>Los clientes que compraron esto también compraron</h2>
+  <div class="related-grid" id="relatedProducts"></div>
+</section>
+
+<!-- Vistos recientemente -->
+<section class="related-section">
+  <h2>Visto recientemente</h2>
+  <div class="related-grid" id="recentlyViewed"></div>
+</section>
+<!-- Footer -->
+<footer class="footer">
+  <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 40px; margin-bottom: 30px; align-items: start;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <img src="img/Logo_Mision3d.jpg" alt="Misión 3D" class="footer-logo remove-white" style="width: 80px; flex-shrink: 0;" />
+        <p style="color: #888; font-size: 0.9rem; line-height: 1.6; margin: 0;">
+          Impresión 3D personalizada<br>
+          Transforma tus ideas en realidad
+        </p>
+      </div>
+      
+      <div>
+        <h4 style="margin: 0 0 15px 0; color: #0052cc; font-size: 1rem;">Contacto</h4>
+        <p style="margin: 8px 0; font-size: 0.9rem; color: #666;">
+          📧 <a href="mailto:mision3d.cl@gmail.com" style="color: #666; text-decoration: none; transition: color 0.2s;">mision3d.cl@gmail.com</a>
+        </p>
+        <p style="margin: 8px 0; font-size: 0.9rem; color: #666;">
+          📍 La Florida<br>
+          <span style="margin-left: 20px;">Santiago, Chile</span>
+        </p>
+        <p style="margin: 8px 0; font-size: 0.9rem; color: #666;">
+          🕐 Lunes a viernes, 9:00 - 18:00 hrs
+        </p>
+      </div>
+      
+      <div>
+        <h4 style="margin: 0 0 15px 0; color: #0052cc; font-size: 1rem;">Información Legal</h4>
+        <p style="margin: 8px 0; font-size: 0.9rem; color: #666;">
+          Mision3D SpA
+        </p>
+        <p style="margin: 20px 0 0 0;">
+          <a href="privacidad.html" style="color: #0052cc; text-decoration: none; margin-right: 15px; transition: color 0.2s;">Privacidad</a>
+          <a href="terminos.html" style="color: #0052cc; text-decoration: none; transition: color 0.2s;">Términos</a>
+        </p>
+      </div>
+    </div>
+    
+    <div style="text-align: center; padding: 20px 0; border-top: 1px solid #333; margin-top: 20px;">
+      <p style="margin: 0; font-size: 0.85rem; color: #888;">&copy; 2025 Misión 3D - Todos los derechos reservados</p>
+    </div>
+  </div>
+</footer> 
+
+<script>
+
+  
+// ===== GUARDAR PRODUCTO EN HISTORIAL DE VISTOS =====
+function saveToRecentlyViewed(productId) {
+  try {
+    let recent = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+    // Eliminar duplicados y agregar al inicio
+    recent = recent.filter(id => id !== productId);
+    recent.unshift(productId);
+    // Mantener solo los últimos 6
+    recent = recent.slice(0, 6);
+    localStorage.setItem('recentlyViewed', JSON.stringify(recent));
+  } catch (e) {
+    console.error('Error guardando historial:', e);
+  }
+}
+
+// ===== RENDERIZAR PRODUCTOS RELACIONADOS =====
+function renderRelatedProducts(currentProduct) {
+  const container = document.getElementById('relatedProducts');
+  if (!container || !window.PRODUCTS) return;
+  
+  // Filtrar productos de la misma categoría (excluyendo el actual)
+  let related = window.PRODUCTS.filter(p => 
+    p.category === currentProduct.category && p.id !== currentProduct.id
+  );
+  
+  // Si no hay suficientes, agregar productos aleatorios
+  if (related.length < 4) {
+    const others = window.PRODUCTS.filter(p => p.id !== currentProduct.id && !related.includes(p));
+    related = [...related, ...others.slice(0, 4 - related.length)];
+  }
+  
+  // Tomar solo 4 productos
+  related = related.slice(0, 4);
+  
+  if (related.length === 0) {
+    container.innerHTML = '<p style="color:#888;text-align:center">No hay productos relacionados disponibles</p>';
+    return;
+  }
+  
+  container.innerHTML = related.map(p => `
+    <div class="related-card" data-product-id="${p.id}">
+      <img src="${p.img || 'img/placeholder.png'}" alt="${p.name}" loading="lazy">
+      <h3>${p.name}</h3>
+      <span class="price">$${(p.price || 0).toLocaleString('es-CL')}</span>
+      <button class="btn-add" data-id="${p.id}">
+        Añadir a la cesta
+      </button>
+    </div>
+  `).join('');
+  
+  // Agregar event listeners después de renderizar
+  container.querySelectorAll('.related-card').forEach(card => {
+    const productId = card.dataset.productId;
+    const btn = card.querySelector('.btn-add');
+    
+    // Click en la card para ir al producto
+    card.addEventListener('click', (e) => {
+      if (!e.target.closest('.btn-add')) {
+        window.location.href = `producto.html?id=${productId}`;
+      }
+    });
+    
+    // Click en el botón para agregar al carrito
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (typeof window.add === 'function') {
+        window.add(productId);
+      } else {
+        console.error('Función add() no disponible');
+      }
+    });
+  });
+}
+
+// ===== RENDERIZAR VISTOS RECIENTEMENTE =====
+function renderRecentlyViewed(currentProductId) {
+  const container = document.getElementById('recentlyViewed');
+  if (!container || !window.PRODUCTS) return;
+  
+  try {
+    let recent = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+    // Filtrar el producto actual
+    recent = recent.filter(id => id !== currentProductId);
+    
+    const recentProducts = recent
+      .map(id => window.PRODUCTS.find(p => p.id === id))
+      .filter(p => p) // Eliminar productos que ya no existen
+      .slice(0, 4);
+    
+    if (recentProducts.length === 0) {
+      container.parentElement.style.display = 'none';
+      return;
+    }
+    
+    container.innerHTML = recentProducts.map(p => `
+      <div class="related-card" data-product-id="${p.id}">
+        <img src="${p.img || 'img/placeholder.png'}" alt="${p.name}" loading="lazy">
+        <h3>${p.name}</h3>
+        <span class="price">$${(p.price || 0).toLocaleString('es-CL')}</span>
+        <button class="btn-add" data-id="${p.id}">
+          Añadir a la cesta
+        </button>
+      </div>
+    `).join('');
+    
+    // Agregar event listeners después de renderizar
+    container.querySelectorAll('.related-card').forEach(card => {
+      const productId = card.dataset.productId;
+      const btn = card.querySelector('.btn-add');
+      
+      // Click en la card para ir al producto
+      card.addEventListener('click', (e) => {
+        if (!e.target.closest('.btn-add')) {
+          window.location.href = `producto.html?id=${productId}`;
+        }
+      });
+      
+      // Click en el botón para agregar al carrito
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (typeof window.add === 'function') {
+          window.add(productId);
+        } else {
+          console.error('Función add() no disponible');
+        }
+      });
+    });
+  } catch (e) {
+    console.error('Error renderizando vistos recientemente:', e);
+    container.parentElement.style.display = 'none';
+  }
+}
+
+// Llamar a las funciones cuando se cargue el producto
+document.addEventListener('DOMContentLoaded', () => {
+  // Esperar a que PRODUCTS esté disponible
+  const checkProducts = setInterval(() => {
+    if (window.PRODUCTS && window.PRODUCTS.length > 0) {
+      clearInterval(checkProducts);
+      const params = new URLSearchParams(window.location.search);
+      const productId = params.get('id');
+      const currentProduct = window.PRODUCTS.find(p => p.id === productId);
+      
+      if (currentProduct) {
+        saveToRecentlyViewed(productId);
+        renderRelatedProducts(currentProduct);
+        renderRecentlyViewed(productId);
+      }
+    }
+  }, 100);
+  
+  // Timeout de seguridad
+  setTimeout(() => clearInterval(checkProducts), 5000);
+});
+</script>
+
+<script src="wishlist.js"></script>
+<script src="ux-enhancements.js"></script>
+<script src="mobile-menu.js"></script>
+<!-- Scripts página producto -->
+</body></html>

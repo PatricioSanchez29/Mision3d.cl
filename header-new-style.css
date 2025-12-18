@@ -1,0 +1,201 @@
+/* ===== NUEVO DISEÑO HEADER (estilo TodoToner) ===== */
+.menu-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px 12px;
+  color: #1f2937;
+  transition: color 0.2s;
+}
+
+.menu-btn:hover {
+  color: #0052cc;
+}
+
+.menu-btn .hamburger-icon {
+  width: 20px;
+  height: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.menu-btn .hamburger-icon span {
+  display: block;
+  height: 2px;
+  width: 100%;
+  background: currentColor;
+  border-radius: 2px;
+  transition: all 0.3s;
+}
+
+.menu-btn.active .hamburger-icon span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.menu-btn.active .hamburger-icon span:nth-child(2) {
+  opacity: 0;
+}
+
+.menu-btn.active .hamburger-icon span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+.menu-text {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+
+.header-icon-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px 12px;
+  text-decoration: none;
+  color: #1f2937;
+  transition: color 0.2s;
+  position: relative;
+}
+
+.header-icon-btn:hover {
+  color: #0052cc;
+}
+
+.header-icon-btn .icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.header-icon-btn .label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.header-icon-btn .count-badge {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  background: #dc2626;
+  color: white;
+  border-radius: 50%;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 0 4px;
+}
+
+.right-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.user-area {
+  display: flex;
+  align-items: center;
+}
+
+/* ===== Menú de usuario (dropdown) ===== */
+.user-menu { position: relative; }
+.user-menu .user-btn { cursor: pointer; }
+.user-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  min-width: 220px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.12);
+  padding: 8px;
+  display: none;
+  z-index: 1000;
+}
+.user-dropdown.open { display: block; }
+.user-dd-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  color: #111827;
+  text-decoration: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.user-dd-item:hover { background: #f3f4f6; }
+.user-dd-item.logout { color: #dc2626; }
+
+/* Modo oscuro */
+body.dark .user-dropdown { background: #111827; border-color: #374151; }
+body.dark .user-dd-item { color: #e5e7eb; }
+body.dark .user-dd-item:hover { background: #1f2937; }
+
+/* Ocultar nav y search en móvil si quieres mantener el drawer */
+@media (max-width: 768px) {
+  .desktop-nav {
+    display: none;
+  }
+  
+  .desktop-search {
+    display: none;
+  }
+}
+
+/* Ajustes para modo oscuro */
+body.dark .menu-btn,
+body.dark .header-icon-btn {
+  color: #e2e8f0;
+}
+
+body.dark .menu-btn:hover,
+body.dark .header-icon-btn:hover {
+  color: #60a5fa;
+}
+
+/* Actualizar renderUser para mostrar badge estilo nuevo */
+.user-area .user-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  padding: 8px 12px;
+  color: #1f2937;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.user-area .user-badge button {
+  background: transparent;
+  border: none;
+  color: #dc2626;
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 600;
+  text-decoration: underline;
+  margin-top: 2px;
+}
+
+body.dark .user-area .user-badge {
+  color: #e2e8f0;
+}

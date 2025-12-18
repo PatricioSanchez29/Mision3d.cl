@@ -1,0 +1,635 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <meta name="description" content="Impresión 3D personalizada en Chile. Traemos tus ideas al mundo real. Calidad premium, envío rápido y atención personalizada.">
+  <meta name="keywords" content="impresión 3D, personalizado, Chile, tienda, cotización, diseño, rápido, calidad">
+  <meta property="og:title" content="Misión 3D - Impresión 3D Personalizada"/>
+  <meta property="og:description" content="Traemos tus ideas al mundo real. Calidad premium, envío rápido y atención personalizada en impresión 3D en Chile."/>
+  <meta property="og:image" content="https://mision3d.cl/img/Logo_Mision3d.jpg"/>
+  <meta property="og:url" content="https://mision3d.cl/"/>
+  <meta property="og:site_name" content="Mision3D"/>
+  <meta property="og:type" content="website"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="Misión 3D - Impresión 3D Personalizada"/>
+  <meta name="twitter:description" content="Traemos tus ideas al mundo real. Calidad premium, envío rápido y atención personalizada en impresión 3D en Chile."/>
+  <meta name="twitter:image" content="https://mision3d.cl/img/Logo_Mision3d.jpg"/>
+  <link rel="canonical" href="https://mision3d.cl/"/>
+  <meta name="robots" content="index, follow"/>
+  <title>Mision3D - Tienda</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/jpeg" href="img/Logo_Mision3d.jpg">
+  <link rel="apple-touch-icon" href="img/Logo_Mision3d.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="header-new-style.css"/>
+  <script>
+    // Configuración del backend API (usa dominio propio de Render)
+    window.API_BASE_URL = 'https://api.mision3d.cl';
+  </script>
+  <script type="module" src="auth-header.js"></script>
+  <script>window.GA_MEASUREMENT_ID = 'G-XXXXXXXXXX';</script>
+  <script src="consent.js"></script>
+  <script type="application/ld+json">
+
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Mision3D",
+  "url": "https://mision3d.cl",
+  "logo": "https://mision3d.cl/img/logo.png",
+  "sameAs": [
+    "https://www.instagram.com/mision3d.cl",
+    "https://www.tiktok.com/@mision3d.cl"
+  ]
+}
+</script>
+  
+  <meta name="theme-color" content="#ffffff">
+</head>
+<body>
+  <header class="header">
+    <!-- Botón Hamburguesa (solo móvil) -->
+    <button class="hamburger-btn" id="hamburgerBtn" aria-label="Abrir menú">
+      <div class="hamburger-icon">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </button>
+
+    <h1 class="logo" style="margin:0;display:flex;align-items:center">
+      <a href="index.html" style="display:inline-flex;align-items:center;text-decoration:none">
+  <img src="img/Logo_Mision3d.jpg" alt="Misión 3D" class="logo-img" loading="lazy" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-text',textContent:'Misión 3D'}));" />
+      </a>
+    </h1>
+    <nav class="nav">
+      <a href="index.html" class="active">Inicio</a>
+      <a href="catalogo.html" id="navCatalog">Catálogo</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
+    <div class="search-header">
+      <div class="advanced-search-bar">
+        <select id="headerCategorySelect" class="category-select">
+          <option value="all">Todas las categorías</option>
+        </select>
+        <input type="text" id="searchInput" placeholder="¿Qué estás buscando?" class="search-input" autocomplete="off">
+        <button type="button" id="headerSearchBtn" class="search-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+        </button>
+      </div>
+      <div id="searchSuggestions" class="search-suggestions"></div>
+      <div id="headerTrendChips" class="trend-chips" aria-label="Búsquedas populares"></div>
+    </div>
+    <div class="right-actions" style="display:flex;align-items:center;gap:10px">
+      <div id="userArea" class="user-area">
+        <div class="dropdown" style="position:relative;">
+          <button class="btn small outline" id="loginDropdownBtn" style="display:flex;align-items:center;gap:6px;">
+            <svg width="22" height="22" fill="#5b3fa2" viewBox="0 0 24 24"><path d="M12 12c2.7 0 8 1.34 8 4v2H4v-2c0-2.66 5.3-4 8-4zm0-2a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>
+            <span style="font-weight:600;letter-spacing:1px;">ACCESO</span>
+          </button>
+          <div class="dropdown-content" id="loginDropdownContent" style="display:none;position:absolute;right:0;z-index:10;background:#fff;border-radius:8px;box-shadow:0 2px 8px #0002;padding:8px 0;min-width:140px;">
+            <!-- auth-header.js inyectará contenido según sesión -->
+          </div>
+        </div>
+  <script>
+    // Dropdown simple para acceso
+    document.addEventListener('DOMContentLoaded', function() {
+      const btn = document.getElementById('loginDropdownBtn');
+      const content = document.getElementById('loginDropdownContent');
+      if(btn && content) {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          content.style.display = content.style.display === 'block' ? 'none' : 'block';
+        });
+        document.addEventListener('click', function() {
+          content.style.display = 'none';
+        });
+      }
+    });
+  </script>
+      </div>
+      <button class="cart-btn" id="openCart" aria-label="Abrir carrito">🛒 <span id="cartCount">0</span></button>
+    </div>
+  </header>
+  <div class="announcement-bar" style="background: linear-gradient(90deg, #047857 0%, #991b1b 50%, #047857 100%);"><div class="ann-track"><span>🎄 NAVIDAD 2025 • Envíos garantizados antes del 24 de diciembre (pedidos hasta el 18/12) • 🎁 Regalos personalizados 3D • ⭐ Envío express disponible • 🎅 Santiago 1-3 días • Regiones 3-5 días • 🎄 NAVIDAD 2025 • Envíos garantizados antes del 24 de diciembre (pedidos hasta el 18/12) • 🎁 Regalos personalizados 3D • ⭐ Envío express disponible • 🎅 Santiago 1-3 días • Regiones 3-5 días • </span></div></div>
+
+  <!-- Mini resumen carrito -->
+  <section id="miniCart" style="max-width:1200px;margin:10px auto 0;padding:0 20px;display:none">
+    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:12px 16px;display:flex;flex-direction:column;gap:10px;box-shadow:0 2px 4px rgba(0,0,0,.05)">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+        <strong style="font-size:.9rem;letter-spacing:.5px">Tu Carrito</strong>
+        <button id="miniCartToggle" style="background:#4f46e5;color:#fff;border:none;padding:4px 10px;border-radius:16px;font-size:.65rem;cursor:pointer">Ver todo</button>
+      </div>
+      <div id="miniCartItems" style="display:flex;flex-direction:column;gap:8px;max-height:170px;overflow:auto"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:.75rem;margin-top:4px">
+        <span id="miniCartCount" style="color:#555"></span>
+        <div style="display:flex;align-items:center;gap:10px"><strong id="miniCartTotal" style="font-size:.85rem">$0</strong><button id="miniCartCheckout" style="background:#e6462f;color:#fff;border:none;padding:6px 12px;border-radius:20px;font-size:.65rem;cursor:pointer">Checkout</button></div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- Hero -->
+  <section class="hero" id="hero">
+    <div class="hero-wrapper">    
+      <img src="img/impresion.png" alt="" aria-hidden="true" class="hero-decor" loading="lazy">
+        <div class="hero-inner">
+          <div class="hero-text">
+            <div class="hero-bf" aria-hidden="false" style="margin-bottom:10px;display:flex;justify-content:center;position:relative">
+              <div class="bf-ribbon" aria-hidden="true" style="background: linear-gradient(135deg, #047857 0%, #991b1b 100%);border-color:#047857;">🎄 NAVIDAD 2025</div>
+              <span class="hero-bf-badge" role="note" style="background: linear-gradient(135deg, #047857 0%, #991b1b 100%);"><span class="bf-emoji">🎁</span> Regalos personalizados 3D — Envíos antes del <strong>24 de diciembre</strong></span>
+            </div>
+            <h2 class="hero-title">Impresión 3D Personalizada</h2>
+            <p class="hero-subtitle">El regalo perfecto hecho realidad — Enviamos a todo Chile 🎅</p>
+            <div class="hero-badges">
+              <span class="hero-badge">🎄 Regalo único</span>
+              <span class="hero-badge">⭐ Envío express</span>
+              <span class="hero-badge">🎁 100% Personalizable</span>
+            </div>
+            <div class="hero-actions">
+              <a class="hero-btn btn primary" href="catalogo.html">🎁 Ver regalos navideños</a>
+              <a class="hero-btn btn outline" href="#contacto">Cotizar regalo personalizado</a>
+              <a class="hero-btn btn" style="background: linear-gradient(135deg, #047857 0%, #991b1b 100%);color:#fff;border:none;" href="catalogo.html?category=Navidad">🎄 Ofertas de Navidad</a>
+            </div>
+            </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Productos (Catálogo Destacado) -->
+  <section id="productos" class="productos featured-section">
+    <div class="featured-inner" style="max-width:1200px;margin:0 auto;padding:60px 20px">
+      <h3 class="section-title" style="text-align:center">🎁 Regalos Navideños Personalizados</h3>
+      <p class="section-subtitle" style="text-align:center">Ideas únicas impresas en 3D para sorprender esta Navidad 🎄</p>
+      <div id="homeProductsGrid" class="featured-grid" style="margin-top:24px;display:grid;gap:20px"></div>
+      <div style="text-align:center;margin-top:28px">
+        <a href="catalogo.html" class="btn primary" style="padding:12px 22px;border-radius:14px">Ver todo el catálogo</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Beneficios -->
+  <section class="beneficios" id="beneficios">
+    <div class="beneficios-header">
+      <h3 class="section-title">🎄 Tu regalo navideño perfecto</h3>
+      <p class="section-subtitle">Entrega antes del 24 de diciembre • Calidad premium • 100% personalizado</p>
+    </div>
+    <div class="beneficios-grid">
+      <div class="item">
+        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 8H4V6C4 4.9 4.9 4 6 4H18C19.1 4 20 4.9 20 6V8Z" fill="#6366f1" opacity="0.3"/>
+          <path d="M20 8V18C20 19.1 19.1 20 18 20H6C4.9 20 4 19.1 4 18V8M1 8H23M12 12V16M9 20L7 23M15 20L17 23" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <h4>Envío a todo Chile</h4>
+        <p>Despachos rápidos y seguros a todo el país</p>
+      </div>
+      <div class="item">
+        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" fill="#10b981" opacity="0.3"/>
+          <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="8" cy="10" r="1" fill="#10b981"/>
+          <circle cx="12" cy="10" r="1" fill="#10b981"/>
+          <circle cx="16" cy="10" r="1" fill="#10b981"/>
+        </svg>
+        <h4>Contacto directo</h4>
+        <p>Atención personalizada vía WhatsApp</p>
+      </div>
+      <div class="item">
+        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="3" width="16" height="18" rx="2" fill="#f59e0b" opacity="0.3"/>
+          <path d="M12 6V10M12 14H12.01M8 18H16C17.1046 18 18 17.1046 18 16V8C18 6.89543 17.1046 6 16 6H8C6.89543 6 6 6.89543 6 8V16C6 17.1046 6.89543 18 8 18Z" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="12" cy="14" r="0.5" fill="#f59e0b"/>
+        </svg>
+        <h4>Soporte en línea</h4>
+        <p>Resolvemos tus dudas en tiempo real</p>
+      </div>
+      <div class="item">
+        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" fill="#8b5cf6" opacity="0.3"/>
+          <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M14 2V8H20" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M12 18V12M9 15L12 12L15 15" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <h4>Calidad Premium</h4>
+        <p>Impresión 3D profesional garantizada</p>
+      </div>
+    </div>
+  </section>
+  <!-- Nosotros -->
+  <section id="nosotros" class="nosotros"><h3>Sobre Mision3D</h3><p>Emprendimiento chileno de impresión 3D personalizada. Creamos desde piezas funcionales hasta figuras coleccionables y enviamos a todo Chile.</p></section>
+
+  <!-- Contacto -->
+  <section id="contacto" class="contacto"><h3>Contáctanos</h3><p>Haz tus pedidos por WhatsApp o Instagram.</p><a href="https://wa.me/56950503585" class="btn whatsapp">WhatsApp</a><a href="https://instagram.com/mision3d.cl" class="btn instagram">Instagram</a></section>
+
+  <!-- Preguntas Frecuentes -->
+  <section id="faq" class="faq-section">
+  <div class="faq-bg"><img src="img/impresion.png" alt="" aria-hidden="true" loading="lazy" /></div>
+    <div class="faq-inner">
+      <h2>Preguntas Frecuentes</h2>
+      <div class="faq-category">Importante</div>
+      <ul class="faq-list" id="faqList">
+        <li class="faq-item">
+          <div class="faq-q"><span class="icon">🕒</span><span>¿Cuánto demora mi pedido?</span><span class="faq-toggle">▾</span></div>
+          <div class="faq-a"><p>Depende de la complejidad y cantidad. Piezas simples: 1 a 3 días hábiles. Proyectos personalizados o grandes: 5 a 10 días. Siempre te mantenemos informado del avance.</p></div>
+        </li>
+        <li class="faq-item">
+          <div class="faq-q"><span class="icon">🚚</span><span>¿Hacen envíos? ¿Cuánto cuesta?</span><span class="faq-toggle">▾</span></div>
+          <div class="faq-a"><p>Realizamos envíos a todo Chile vía couriers confiables. En Santiago ofrecemos entrega a domicilio fija y también retiro en taller sin costo. El valor regional depende del peso y destino.</p></div>
+        </li>
+        <li class="faq-item">
+          <div class="faq-q"><span class="icon">🎨</span><span>¿Puedo pedir algo personalizado?</span><span class="faq-toggle">▾</span></div>
+          <div class="faq-a"><p>Sí. Puedes enviarnos tu idea, referencia o modelo. Si necesitas diseño 3D desde cero, evaluamos el trabajo adicional y te enviamos una cotización antes de imprimir.</p></div>
+        </li>
+        <li class="faq-item">
+            <div class="faq-q"><span class="icon">🧼</span><span>¿Cómo cuido mi impresión 3D?</span><span class="faq-toggle">▾</span></div>
+            <div class="faq-a"><p>Mantén lejos de calor extremo (>60°C si es PLA). Límpiala con un paño seco o levemente húmedo sin solventes. Evita golpes o presión en piezas delgadas.</p></div>
+        </li>
+        <li class="faq-item">
+          <div class="faq-q"><span class="icon">↩️</span><span>¿Puedo devolver un producto?</span><span class="faq-toggle">▾</span></div>
+          <div class="faq-a"><p>Productos personalizados no tienen devolución salvo falla de fabricación. Si hubo un error nuestro, re-imprimimos o devolvemos el dinero.</p></div>
+        </li>
+        <li class="faq-item">
+          <div class="faq-q"><span class="icon">🐾</span><span>¿Hacen modelos de mascotas?</span><span class="faq-toggle">▾</span></div>
+          <div class="faq-a"><p>¡Sí! Con fotos de buena calidad podemos crear una figura estilizada. También ofrecemos pintura básica con costo adicional.</p></div>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 40px; margin-bottom: 30px; align-items: start;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+  <img src="img/Logo_Mision3d.jpg" alt="Misión 3D" class="footer-logo remove-white" style="width: 80px; flex-shrink: 0;" loading="lazy" />
+        <p style="color: #888; font-size: 0.9rem; line-height: 1.6; margin: 0;">
+          Impresión 3D personalizada<br>
+          Transforma tus ideas en realidad
+        </p>
+      </div>        <div>
+          <h4 style="margin: 0 0 15px 0; color: #0052cc; font-size: 1rem;">Contacto</h4>
+          <p style="margin: 8px 0; font-size: 0.9rem; color: #666;">
+            📧 <a href="mailto:mision3d.cl@gmail.com" style="color: #666; text-decoration: none; transition: color 0.2s;">mision3d.cl@gmail.com</a>
+          </p>
+          <p style="margin: 8px 0; font-size: 0.9rem; color: #666;">
+            📍 La Florida<br>
+            <span style="margin-left: 20px;">Santiago, Chile</span>
+          </p>
+          <p style="margin: 8px 0; font-size: 0.9rem; color: #666;">
+            🕐 Lunes a viernes, 9:00 - 18:00 hrs
+          </p>
+        </div>
+        
+        <div>
+          <h4 style="margin: 0 0 15px 0; color: #0052cc; font-size: 1rem;">Información Legal</h4>
+          <p style="margin: 8px 0; font-size: 0.9rem; color: #666;">
+            Mision3D SpA
+          </p>
+          <p style="margin: 20px 0 0 0;">
+            <a href="privacidad.html" style="color: #0052cc; text-decoration: none; margin-right: 15px; transition: color 0.2s;">Privacidad</a>
+            <a href="terminos.html" style="color: #0052cc; text-decoration: none; transition: color 0.2s;">Términos</a>
+          </p>
+        </div>
+      </div>
+      
+      <!-- Logos de pago y envío: reducen fricción y muestran opciones disponibles -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:18px 0;border-top:1px solid rgba(0,0,0,0.05);">
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center">
+          <span style="font-weight:700;color:#888;margin-right:8px">Pagos seguros con:</span>
+          <img src="img/Mastercard-logo.png" alt="Mastercard" style="height:24px;object-fit:contain">
+          <img src="img/Visa_Inc._logo.svg" alt="Visa" style="height:22px;object-fit:contain">
+        </div>
+      </div>
+      <div style="text-align: center; padding: 20px 0; border-top: 1px solid #333; margin-top: 20px;">
+        <p style="margin: 0; font-size: 0.85rem; color: #888;">&copy; 2025 Misión 3D - Todos los derechos reservados</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Carrito -->
+  <button id="scrollTop" class="scroll-top" aria-label="Subir" title="Subir" style="display:none">▲</button>
+  <!-- Carrito y modal (mismo markup que en index) -->
+<aside id="cartDrawer" class="cart">
+  <div class="cart-header"><h3>Tu carrito</h3><button id="closeCart">✕</button></div>
+  <div id="cartAddedMsg" class="cart-added-msg"></div>
+  <div id="cartItems" class="cart-items"></div>
+  <div class="cart-footer">
+    <div class="totals"><span>Total:</span><strong id="cartTotal">$0</strong></div>
+    <button id="checkout" class="btn primary">Finalizar compra</button>
+    <button id="clearCart" class="btn outline">Vaciar</button>
+  </div>
+</aside>
+<div id="overlay" class="overlay"></div>
+<div id="checkoutModal" class="modal">
+  <div class="modal-content">
+    <h3>Entrega</h3>
+    <form id="checkoutForm" class="checkout-form">
+      <div class="form-row">
+        <label>Método de envío:<br>
+          <select id="inputEnvio">
+            <option value="retiro">Retiro en taller (sin costo)</option>
+            <option value="domicilio">Envío a domicilio (Santiago, $2.990)</option>
+          </select>
+        </label>
+        <label>Nombre:<br><input id="inputName" autocomplete="name"></label>
+        <label>Apellidos:<br><input id="inputApellido" autocomplete="family-name"></label>
+      </div>
+      <div class="form-row">
+        <label>RUT (Obligatorio):<br><input id="inputRut" autocomplete="off"></label>
+      </div>
+      <div class="form-row">
+        <label>Dirección:<br><input id="inputDireccion" autocomplete="street-address"></label>
+      </div>
+      <div class="form-row">
+        <label>Agregar Nota (Personalización producto):<br><input id="inputNotes" autocomplete="off"></label>
+      </div>
+      <div class="form-row">
+        <label>Código postal (opcional):<br><input id="inputPostal" autocomplete="postal-code"></label>
+      </div>
+      <div class="form-row">
+        <label>Región:<br>
+          <select id="inputRegion">
+            <option value="">Selecciona región</option>
+          </select>
+        </label>
+        <label>Comuna:<br>
+          <select id="inputComuna">
+            <option value="">Selecciona comuna</option>
+          </select>
+        </label>
+      </div>
+      <div class="form-row">
+        <label>Teléfono:<br><input id="inputTelefono" autocomplete="tel"></label>
+      </div>
+      <div class="modal-actions">
+        <button type="button" id="confirmCheckout" class="btn primary">Confirmar</button>
+        <button type="button" id="cancelCheckout" class="btn outline">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+  <!-- (Se ha migrado el login a login.html) -->
+
+  <!-- Toast de notificación -->
+  <div id="toast" class="toast">¡Producto agregado al carrito!</div>
+  <script src="script.js?v=20251106-2" defer></script>
+  <script>
+    // FAQ toggle
+    document.addEventListener('DOMContentLoaded',()=>{
+      const faqList=document.getElementById('faqList');
+      if(!faqList) return;
+      faqList.querySelectorAll('.faq-item').forEach(item=>{
+        const q=item.querySelector('.faq-q');
+        q.addEventListener('click',()=>{
+          const open=item.classList.toggle('open');
+          if(open){
+            // cerrar otros
+            faqList.querySelectorAll('.faq-item').forEach(o=>{if(o!==item) o.classList.remove('open')});
+          }
+        });
+      });
+    });
+
+    // Procesar logo footer para hacer fondo blanco transparente (runtime, sin editar archivo original)
+    document.addEventListener('DOMContentLoaded',()=>{
+      const logo = document.querySelector('.footer-logo');
+      if(!logo) return;
+      function makeTransparent(){
+        try {
+          const w = logo.naturalWidth; const h = logo.naturalHeight;
+          if(!w || !h) return; // imagen no lista
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(logo,0,0);
+          const imgData = ctx.getImageData(0,0,w,h);
+            const d = imgData.data;
+            for(let i=0;i<d.length;i+=4){
+              const r=d[i],g=d[i+1],b=d[i+2];
+              // píxeles muy claros -> transparente
+              if(r>240 && g>240 && b>240){ d[i+3]=0; }
+            }
+          ctx.putImageData(imgData,0,0);
+          logo.src = canvas.toDataURL('image/png');
+          logo.classList.remove('remove-white'); // ya no necesitamos filtro
+        } catch(err){ /* silencioso */ }
+      }
+      if(logo.complete) makeTransparent(); else logo.onload = makeTransparent;
+    });
+  </script>
+
+<!-- Firebase RTDB (módulos) -->
+<!-- Supabase: Productos y Pedidos (con modo local sin Supabase) -->
+<script type="module">
+  const isLocal = /localhost|127\.0\.0\.1/.test(location.hostname);
+  const forceRemote = Boolean(window.FORCE_REMOTE_PRODUCTS);
+
+  // Helper para fusionar arrays de productos sin perder IDs existentes
+  const mergeProducts = (arr) => {
+    if (!Array.isArray(arr)) return;
+    if (Array.isArray(window.PRODUCTS) && window.PRODUCTS.length > 0) {
+      const map = new Map(window.PRODUCTS.map(p => [String(p.id), p]));
+      for (const sp of arr) {
+        const key = String(sp.id);
+        if (map.has(key)) {
+          const ex = map.get(key);
+          ex.name = sp.name ?? ex.name;
+          ex.price = typeof sp.price === 'number' ? sp.price : ex.price;
+          ex.img = sp.img || ex.img;
+          ex.description = sp.description || ex.description;
+          ex.category = sp.category || ex.category;
+          ex.gallery = sp.gallery || ex.gallery;
+          // Mantener/actualizar variantes al fusionar
+          ex.variants = (typeof sp.variants !== 'undefined') ? sp.variants : ex.variants;
+        } else {
+          window.PRODUCTS.push(sp);
+        }
+      }
+    } else {
+      window.PRODUCTS = arr;
+    }
+  };
+
+  // Si estamos en local y no se fuerza el remoto, usa localStorage/PRODUCTS existentes y evita pegarle a Supabase
+  if (isLocal && !forceRemote) {
+    try {
+      const ls = JSON.parse(localStorage.getItem('PRODUCTS')||'[]');
+      if (Array.isArray(ls) && ls.length > 0) {
+        mergeProducts(ls);
+          console.log('[index] Usando PRODUCTS desde localStorage (modo local)');
+          document.dispatchEvent(new Event('productsReady'));
+          window.dispatchEvent(new CustomEvent('productsLoaded'));
+          // Mostrar primero productos con descuento, si existen
+          const featuredFromLocal = (window.PRODUCTS||[]).filter(p => Number(p.discount||0) > 0);
+          renderHomeProducts((featuredFromLocal.length ? featuredFromLocal : (window.PRODUCTS||[])).slice(0,5));
+        if (typeof window.renderCatalog === 'function') renderCatalog('');
+        // Evitar continuar al remoto
+        throw new Error('skip-remote-in-local');
+      }
+    } catch {}
+  }
+
+  // Remoto (producción o local forzado) - reutiliza el cliente central para evitar múltiples GoTrueClient
+  const { supabase } = await import('./supabase-orders.js');
+
+  // Cargar productos desde Supabase y renderizar catálogo
+  async function cargarProductosDesdeSupabase() {
+    try {
+      const { data, error } = await supabase.from('productos').select('*');
+      if (error) throw error;
+      const arr = Array.isArray(data) ? data : [];
+      mergeProducts(arr);
+      try { localStorage.setItem('PRODUCTS', JSON.stringify(window.PRODUCTS||[])); } catch {}
+      document.dispatchEvent(new Event('productsReady'));
+      window.dispatchEvent(new CustomEvent('productsLoaded'));
+      // Mostrar primero productos con descuento, si existen
+      const featured = (window.PRODUCTS||[]).filter(p => Number(p.discount||0) > 0);
+      renderHomeProducts((featured.length ? featured : (window.PRODUCTS||[])).slice(0, 5));
+      if (typeof window.renderCatalog === 'function') renderCatalog('');
+    } catch (err) {
+      console.warn('[index] No se pudieron cargar productos desde Supabase:', err?.message || err);
+      document.dispatchEvent(new Event('productsReady'));
+      window.dispatchEvent(new CustomEvent('productsLoaded'));
+      const featuredFallback = (window.PRODUCTS||[]).filter(p => Number(p.discount||0) > 0);
+      renderHomeProducts((featuredFallback.length ? featuredFallback : (window.PRODUCTS||[])).slice(0, 5));
+      if (typeof window.renderCatalog === 'function') renderCatalog('');
+    }
+  }
+
+  function renderHomeProducts(products) {
+    const grid = document.getElementById('homeProductsGrid');
+    if (!grid) return;
+    if (!products || products.length === 0) {
+      grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#888">No hay productos disponibles</p>';
+      return;
+    }
+    grid.innerHTML = products.map(p => {
+      const desc = p.name.includes('Calendario') ? 'Calendario 3D con circuitos' :
+                   p.name.includes('Beyblade') ? 'Personalizable con tu nombre' :
+                   p.name.includes('Mascota') ? 'Tu mascota en 3D' :
+                   p.name.includes('Pokebola') ? 'Pokebola coleccionable' : 
+                   'Personalizado con tu logo';
+      const d = Number(p.discount || 0);
+      const hasDiscount = Number.isFinite(d) && d > 0;
+      const badgeHtml = hasDiscount ? (d > 0 && d <= 25 ? `<span class="badge badge--bf">BF -${d}%</span>` : `<span class="badge badge--sale">-${d}%</span>`) : '';
+      const isOut = String(p.stock || '').toLowerCase() === 'agotado';
+      const stockBadge = isOut ? `<span class="badge badge--out">Agotado</span>` : '';
+      const basePrice = Number(p.price || 0);
+      const finalPrice = hasDiscount ? Math.round(basePrice * (1 - d/100)) : basePrice;
+      const priceHtml = hasDiscount
+        ? `<span class="old">${(window.money? window.money(basePrice) : `$${basePrice.toLocaleString('es-CL')}`)}</span><span class="new">${(window.money? window.money(finalPrice) : `$${finalPrice.toLocaleString('es-CL')}`)}</span>`
+        : `<span class="new">${(window.money? window.money(basePrice) : (basePrice? `$${basePrice.toLocaleString('es-CL')}` : 'Consultar'))}</span>`;
+      return `
+        <div class="card">
+          <a href="producto.html?id=${p.id}" class="prod-link">
+            <img src="${p.img || 'img/placeholder.png'}" alt="${p.name}" data-product-id="${p.id}" loading="lazy">
+          </a>
+          <h4>
+            <a href="producto.html?id=${p.id}" class="prod-link">${p.name}</a>
+          </h4>
+          <p>${desc}</p>
+          ${badgeHtml}
+          ${stockBadge}
+          <strong class="price">${priceHtml}</strong>
+          ${isOut ? `<button class="add disabled" disabled>Agotado</button>` : `<button class="add" data-id="${p.id}">Agregar</button>`}
+        </div>
+      `;
+    }).join('');
+    grid.querySelectorAll('.add').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (typeof window.add === 'function') {
+          window.add(btn.dataset.id);
+        }
+      });
+    });
+    // Adjuntar carrusel hover en las imágenes de inicio
+    try {
+      // getGalleryImages y attachHoverCarousel están en script.js; si no están, no rompe
+      grid.querySelectorAll('img[data-product-id]').forEach(img => {
+        const pid = img.getAttribute('data-product-id');
+        const prod = (window.PRODUCTS || []).find(p => String(p.id) === String(pid));
+        if (typeof attachHoverCarousel === 'function') {
+          attachHoverCarousel(img, prod);
+        }
+      });
+    } catch (e) { /* silencioso */ }
+  }
+
+  // Llama al cargar inicio
+  cargarProductosDesdeSupabase();
+
+  // Guardar pedido en Supabase desde checkout.html (si esa página está abierta)
+  document.addEventListener("DOMContentLoaded", () => {
+    const btnConfirm = document.getElementById("btnConfirmOrder");
+    if (!btnConfirm) return;
+    btnConfirm.addEventListener("click", async () => {
+      const pedido = {
+        email:       document.getElementById("inputEmail")?.value?.trim() || "",
+        nombre:      document.getElementById("inputName")?.value?.trim() || "",
+        apellidos:   document.getElementById("inputApellido")?.value?.trim() || "",
+        full_name:   `${document.getElementById("inputName")?.value?.trim() || ''}${document.getElementById("inputApellido")?.value ? (' ' + document.getElementById("inputApellido").value.trim()) : ''}`,
+        rut:         document.getElementById("inputRut")?.value?.trim() || "",
+        direccion:   document.getElementById("inputDireccion")?.value?.trim() || "",
+        region:      document.getElementById("inputRegion")?.value || "",
+        comuna:      document.getElementById("inputComuna")?.value || "",
+        telefono:    document.getElementById("inputTelefono")?.value?.trim() || "",
+        postal:      document.getElementById("inputPostal")?.value?.trim() || "",
+        notas:       document.getElementById("inputNotes")?.value?.trim() || "",
+        envio:       (document.querySelector('input[name="shipMethod"]:checked')?.value) || (document.getElementById("inputEnvio")?.value) || "",
+        pago:        (document.querySelector('input[name="payMethod"]:checked')?.value) || "",
+        items:       (() => { try { return JSON.parse(localStorage.getItem("cart") || "[]"); } catch { return []; } })(),
+        totalCLP:    (() => {
+                        const items = JSON.parse(localStorage.getItem("cart") || "[]");
+                        return items.reduce((s, it) => s + (it.price * (it.qty || 1)), 0);
+                      })(),
+        estado:      "pendiente",
+        createdAt:   new Date().toISOString()
+      };
+      try {
+        const { error } = await supabase.from('pedidos').insert([pedido]);
+        if (error) throw error;
+        alert("✅ Pedido registrado. Te contactaremos por correo/WhatsApp.");
+        localStorage.removeItem("cart");
+        window.location.href = "index.html";
+      } catch (e) {
+        console.error(e);
+        alert("❌ Hubo un problema registrando el pedido. Intenta nuevamente.");
+      }
+    });
+  });
+</script>
+
+  <script src="ux-enhancements.js" defer></script>
+  <script src="mobile-menu.js" defer></script>
+  <!-- Quick View (modal de variantes) -->
+  <script src="quick-view.js" defer></script>
+  <!-- Wishlist (favoritos) también en home -->
+  <script src="wishlist.js" defer></script>
+<!-- Scripts página producto -->
+<script>
+  // Scroll to top button behavior
+  (function(){
+    const btn = document.getElementById('scrollTop');
+    if(!btn) return;
+    function onScroll(){
+      if(window.scrollY > 240) { btn.style.display = 'flex'; }
+      else { btn.style.display = 'none'; }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    btn.addEventListener('click', ()=>{ window.scrollTo({top:0,behavior:'smooth'}); });
+    // initial check
+    onScroll();
+  })();
+</script>
+  <script src="debug-hero-touch.js" defer></script>
+</body></html>

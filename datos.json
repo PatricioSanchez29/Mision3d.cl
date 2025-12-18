@@ -1,0 +1,72 @@
+
+  {
+    "productos": {
+      "f1": {
+        "name": "Calendario Formula 1",
+        "price": 12990,
+        "img": "img/calendario-f1.png",
+        "stars": 5,
+        "reviews": 3,
+        "stock": "disponible",
+        "category": "Calendarios",
+        "dateAdded": "2025-08-25",
+        "discount": 0,
+        "variants": [
+          {"name": "Tamaño Grande", "price": 15990},
+          {"name": "Tamaño Mediano", "price": 12990},
+          {"name": "Tamaño Pequeño", "price": 9990}
+        ]
+      },
+      "bey": {
+        "name": "Caja Beyblade",
+        "price": 12990,
+        "img": "img/caja-beyblade.png",
+        "stars": 5,
+        "reviews": 5,
+        "stock": "disponible",
+        "category": "Cajas",
+        "dateAdded": "2025-09-05",
+        "discount": 0
+      },
+      "pet": {
+        "name": "Figura Mascota",
+        "price": 24990,
+        "img": "img/mascota.png",
+        "stars": 5,
+        "reviews": 2,
+        "stock": "disponible",
+        "category": "Figuras",
+        "dateAdded": "2025-09-10",
+        "discount": 0,
+        "variants": [
+          {"name": "Con base iluminada", "price": 29990},
+          {"name": "Sin base", "price": 24990},
+          {"name": "Con caja premium", "price": 27990}
+        ]
+      },
+      "poke": {
+        "name": "Pokebola",
+        "price": 6990,
+        "img": "img/pokebola.png",
+        "stars": 5,
+        "reviews": 2,
+        "stock": "bajo",
+        "category": "Coleccionables",
+        "dateAdded": "2025-07-30",
+        "discount": 0
+      },
+      "key": {
+        "name": "Llavero",
+        "price": 4990,
+        "img": "img/llavero.png",
+        "stars": 5,
+        "reviews": 1,
+        "stock": "disponible",
+        "category": "Accesorios",
+        "dateAdded": "2025-09-12",
+        "discount": 15
+      }
+    },
+    "pedidos": {}
+  }
+

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Demo: Sistema de Galería Múltiple</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 900px; margin: 40px auto; padding: 20px; background: #f7f7f7; }
+    .demo-section { background: white; padding: 30px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    h1 { color: #e6462f; }
+    h2 { color: #333; border-bottom: 2px solid #e6462f; padding-bottom: 10px; }
+    .gallery-manager { border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin: 20px 0; background: #fafafa; }
+    .gallery-item { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+    .gallery-item input { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 6px; }
+    .gallery-item img { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; border: 2px solid #ddd; }
+    .btn-gallery { padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; font-size: .9rem; }
+    .btn-gallery.add { background: #20bf6b; color: #fff; }
+    .btn-gallery.remove { background: #eb3b5a; color: #fff; }
+    .gallery-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .gallery-header h4 { margin: 0; font-size: 1rem; }
+    .feature { display: flex; align-items: start; gap: 12px; margin: 15px 0; }
+    .feature-icon { background: #e6462f; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
+    .code-block { background: #1e1e1e; color: #d4d4d4; padding: 20px; border-radius: 8px; overflow-x: auto; margin: 15px 0; }
+    .code-block code { font-family: 'Courier New', monospace; font-size: 14px; }
+    .warning { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 4px; }
+    .success { background: #d1e7dd; border-left: 4px solid #198754; padding: 15px; margin: 20px 0; border-radius: 4px; }
+    .step { background: #e7f3ff; padding: 15px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #0d6efd; }
+    .step-number { background: #0d6efd; color: white; width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 10px; }
+  </style>
+</head>
+<body>
+  <div class="demo-section">
+    <h1>📸 Sistema de Galería Múltiple - Mision3D</h1>
+    <p><strong>Implementación completada el 3 de noviembre de 2025</strong></p>
+    <p>Este sistema permite agregar ilimitadas imágenes a cada producto de forma dinámica y visual.</p>
+  </div>
+
+  <div class="demo-section">
+    <h2>✨ Características Principales</h2>
+    
+    <div class="feature">
+      <div class="feature-icon">1</div>
+      <div>
+        <strong>Agregar Imágenes Ilimitadas</strong>
+        <p>Usa el botón "+ Agregar imagen" para añadir tantas fotos como necesites.</p>
+      </div>
+    </div>
+
+    <div class="feature">
+      <div class="feature-icon">2</div>
+      <div>
+        <strong>Vista Previa Instantánea</strong>
+        <p>Cada imagen se muestra en miniatura mientras editas la URL.</p>
+      </div>
+    </div>
+
+    <div class="feature">
+      <div class="feature-icon">3</div>
+      <div>
+        <strong>Eliminar Individualmente</strong>
+        <p>Botón 🗑️ para quitar imágenes específicas sin afectar las demás.</p>
+      </div>
+    </div>
+
+    <div class="feature">
+      <div class="feature-icon">4</div>
+      <div>
+        <strong>Compatible con Sistema Existente</strong>
+        <p>La imagen principal sigue funcionando igual, la galería es adicional.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2>🎯 Ejemplo Visual del Sistema</h2>
+    
+    <div class="gallery-manager">
+      <div class="gallery-header">
+        <h4>📸 Galería de Imágenes Adicionales</h4>
+        <button class="btn-gallery add" onclick="alert('En el sistema real, esto agregará un nuevo campo')">+ Agregar imagen</button>
+      </div>
+      
+      <div class="gallery-item">
+        <input type="text" value="img/producto-frente.jpg" readonly>
+        <img src="https://via.placeholder.com/60?text=Foto+1" alt="preview">
+        <button class="btn-gallery remove">🗑️ Eliminar</button>
+      </div>
+      
+      <div class="gallery-item">
+        <input type="text" value="img/producto-atras.jpg" readonly>
+        <img src="https://via.placeholder.com/60?text=Foto+2" alt="preview">
+        <button class="btn-gallery remove">🗑️ Eliminar</button>
+      </div>
+      
+      <div class="gallery-item">
+        <input type="text" value="img/producto-detalle.jpg" readonly>
+        <img src="https://via.placeholder.com/60?text=Foto+3" alt="preview">
+        <button class="btn-gallery remove">🗑️ Eliminar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2>🚀 Pasos de Activación</h2>
+    
+    <div class="step">
+      <span class="step-number">1</span>
+      <strong>Ejecutar Script SQL en Supabase</strong>
+      <p style="margin: 10px 0 0 40px;">Ve a Supabase → SQL Editor → Pega el contenido de <code>add-gallery-column.sql</code> → Ejecutar</p>
+    </div>
+
+    <div class="step">
+      <span class="step-number">2</span>
+      <strong>Verificar que Funciona</strong>
+      <p style="margin: 10px 0 0 40px;">Abre <code>admin.html</code> → Edita un producto → Verás la sección de galería</p>
+    </div>
+
+    <div class="step">
+      <span class="step-number">3</span>
+      <strong>Agregar Imágenes</strong>
+      <p style="margin: 10px 0 0 40px;">Haz clic en "+ Agregar imagen" → Pega la URL → Guarda el producto</p>
+    </div>
+
+    <div class="step">
+      <span class="step-number">4</span>
+      <strong>Ver Resultado</strong>
+      <p style="margin: 10px 0 0 40px;">Las imágenes aparecerán en la página del producto automáticamente</p>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2>📋 Formato de las URLs</h2>
+    
+    <div class="code-block">
+      <code>
+✅ Rutas locales (recomendado):<br>
+&nbsp;&nbsp;img/producto1.jpg<br>
+&nbsp;&nbsp;img/productos/categoria/foto.png<br><br>
+
+✅ URLs externas:<br>
+&nbsp;&nbsp;https://ejemplo.com/imagen.jpg<br>
+&nbsp;&nbsp;https://cdn.shopify.com/foto.png<br><br>
+
+❌ NO usar:<br>
+&nbsp;&nbsp;C:\carpeta\imagen.jpg (rutas locales de Windows)<br>
+&nbsp;&nbsp;archivo.jpg (sin carpeta img/)
+      </code>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2>💾 Estructura de Datos en Supabase</h2>
+    
+    <p>Así se guardan las imágenes en la base de datos:</p>
+    
+    <div class="code-block">
+      <code>
+{<br>
+&nbsp;&nbsp;"id": "espada-hollow-knight",<br>
+&nbsp;&nbsp;"name": "Espada Hollow Knight",<br>
+&nbsp;&nbsp;"price": 15000,<br>
+&nbsp;&nbsp;"img": "img/espada-principal.jpg",  ← Imagen principal (obligatoria)<br>
+&nbsp;&nbsp;"gallery": [  ← Array de imágenes adicionales<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"img/espada-detalle1.jpg",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"img/espada-detalle2.jpg",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"img/espada-escala.jpg"<br>
+&nbsp;&nbsp;]<br>
+}
+      </code>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2>🎨 Visualización en producto.html</h2>
+    
+    <div class="success">
+      <strong>✅ Ya está implementado!</strong>
+      <p>El archivo <code>producto.html</code> ya detecta automáticamente las imágenes de la galería y las muestra como miniaturas clickeables.</p>
+    </div>
+
+    <p><strong>Funcionamiento automático:</strong></p>
+    <ul>
+      <li>La imagen principal aparece primero</li>
+      <li>Luego aparecen las imágenes de la galería</li>
+      <li>Al hacer clic en una miniatura, se muestra la imagen grande</li>
+      <li>Si no hay galería, solo muestra la imagen principal (como antes)</li>
+    </ul>
+  </div>
+
+  <div class="demo-section">
+    <h2>⚠️ Notas Importantes</h2>
+    
+    <div class="warning">
+      <strong>Antes de usar el sistema:</strong>
+      <ul style="margin: 10px 0;">
+        <li>✅ Ejecuta el script SQL en Supabase (archivo <code>add-gallery-column.sql</code>)</li>
+        <li>✅ Asegúrate de que las imágenes estén en la carpeta <code>img/</code></li>
+        <li>✅ Las URLs deben ser accesibles desde el navegador</li>
+      </ul>
+    </div>
+
+    <div class="warning">
+      <strong>Limitaciones actuales:</strong>
+      <ul style="margin: 10px 0;">
+        <li>⚠️ No hay subida automática de archivos (debes subir manualmente a <code>img/</code>)</li>
+        <li>⚠️ Las URLs vacías se filtran automáticamente</li>
+        <li>⚠️ Se recomienda no usar más de 10 imágenes por producto para mantener buen rendimiento</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2>🆘 ¿Necesitas Ayuda?</h2>
+    
+    <p><strong>Problemas comunes y soluciones:</strong></p>
+    
+    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 10px 0;">
+      <strong>❓ No veo la sección de galería</strong>
+      <p>→ Ejecuta el script SQL en Supabase primero</p>
+    </div>
+
+    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 10px 0;">
+      <strong>❓ Las imágenes no se ven</strong>
+      <p>→ Verifica que las rutas sean correctas y las imágenes existan</p>
+    </div>
+
+    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 10px 0;">
+      <strong>❓ Error al guardar</strong>
+      <p>→ Abre la consola del navegador (F12) y revisa los errores</p>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2>🎉 ¡Listo para Usar!</h2>
+    <p>Una vez ejecutes el script SQL, el sistema estará completamente funcional. Solo necesitas:</p>
+    <ol>
+      <li>Ir a <code>admin.html</code></li>
+      <li>Crear o editar un producto</li>
+      <li>Usar el botón "+ Agregar imagen"</li>
+      <li>Guardar y disfrutar de tu galería múltiple</li>
+    </ol>
+  </div>
+</body>
+</html>

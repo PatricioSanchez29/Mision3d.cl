@@ -1,0 +1,475 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Inicio", "item": "https://mision3d.cl/" },
+      { "@type": "ListItem", "position": 2, "name": "Catálogo", "item": "https://mision3d.cl/catalogo.html" }
+    ]
+  }
+  </script>
+  <meta name="description" content="Catálogo de productos de impresión 3D personalizada en Chile. Descubre modelos, precios y opciones únicas en Misión 3D.">
+  <meta name="keywords" content="catálogo, impresión 3D, productos, personalizado, Chile, tienda">
+  <meta property="og:title" content="Catálogo - Misión 3D"/>
+  <meta property="og:description" content="Descubre nuestro catálogo de productos de impresión 3D personalizada en Chile."/>
+  <meta property="og:image" content="https://mision3d.cl/img/Logo_Mision3d.jpg"/>
+  <meta property="og:url" content="https://mision3d.cl/catalogo.html"/>
+  <meta property="og:type" content="website"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="Catálogo - Misión 3D"/>
+  <meta name="twitter:description" content="Descubre nuestro catálogo de productos de impresión 3D personalizada en Chile."/>
+  <meta name="twitter:image" content="https://mision3d.cl/img/Logo_Mision3d.jpg"/>
+  <link rel="canonical" href="https://mision3d.cl/catalogo.html"/>
+  <meta name="robots" content="index, follow"/>
+  <title>Catálogo - Misión 3D</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/jpeg" href="img/Logo_Mision3d.jpg">
+  <link rel="apple-touch-icon" href="img/Logo_Mision3d.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="header-new-style.css"/>
+  <script type="module" src="auth-header.js"></script>
+  <script>window.GA_MEASUREMENT_ID = window.GA_MEASUREMENT_ID || 'G-XXXXXXXXXX';</script>
+  <script src="consent.js"></script>
+  <style>
+    .discount-toggle {
+      display: flex;
+      align-items: center;
+      padding: 8px 16px;
+      background: #f0f9ff;
+      border: 1px solid #0ea5e9;
+      border-radius: 8px;
+      margin-left: 12px;
+      transition: all 0.2s ease;
+    }
+    .discount-toggle:hover {
+      background: #e0f2fe;
+      box-shadow: 0 2px 8px rgba(14, 165, 233, 0.2);
+    }
+    .discount-toggle label {
+      margin: 0;
+      user-select: none;
+    }
+    .discount-toggle input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: #0ea5e9;
+    }
+    @media (max-width: 768px) {
+      .catalog-controls-advanced .left {
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .discount-toggle {
+        margin-left: 0;
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <!-- Botón Hamburguesa (solo móvil) -->
+    <button class="hamburger-btn" id="hamburgerBtn" aria-label="Abrir menú">
+      <div class="hamburger-icon">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </button>
+
+    <h1 class="logo" style="margin:0;display:flex;align-items:center">
+      <a href="index.html" style="display:inline-flex;align-items:center;text-decoration:none">
+  <img src="img/Logo_Mision3d.jpg" alt="Misión 3D" class="logo-img" loading="lazy" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-text',textContent:'Misión 3D'}));" />
+      </a>
+    </h1>
+    <nav class="nav">
+      <a href="index.html">Inicio</a>
+      <a href="catalogo.html" class="active">Catálogo</a>
+      <a href="index.html#contacto">Contacto</a>
+    </nav>
+    <div class="search-header">
+      <div class="advanced-search-bar">
+        <select id="headerCategorySelect" class="category-select">
+          <option value="all">Todas las categorías</option>
+        </select>
+        <input type="text" id="searchInput" placeholder="¿Qué estás buscando?" class="search-input" autocomplete="off">
+        <button type="button" id="headerSearchBtn" class="search-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+        </button>
+      </div>
+      <div id="searchSuggestions" class="search-suggestions"></div>
+      <div id="headerTrendChips" class="trend-chips" aria-label="Búsquedas populares"></div>
+    </div>
+    <div class="right-actions" style="display:flex;align-items:center;gap:10px">
+      <div id="userArea" class="user-area">
+        <a href="login.html" id="loginLink" class="btn small outline">Ingresar</a>
+      </div>
+      <button class="cart-btn" id="openCart" aria-label="Abrir carrito">🛒 <span id="cartCount">0</span></button>
+    </div>
+  </header>
+  <div class="announcement-bar"><div class="ann-track"><span>Santiago despacho 1 a 3 días hábiles • Regiones envío 3 a 5 días hábiles • Pedidos personalizados: cotización gratuita • Soporte directo vía WhatsApp • Santiago despacho 1 a 3 días hábiles • Regiones envío 3 a 5 días hábiles • Pedidos personalizados: cotización gratuita • Soporte directo vía WhatsApp • Santiago despacho 1 a 3 días hábiles • Regiones envío 3 a 5 días hábiles • Pedidos personalizados: cotización gratuita • Soporte directo vía WhatsApp • Santiago despacho 1 a 3 días hábiles • Regiones envío 3 a 5 días hábiles • Pedidos personalizados: cotización gratuita • Soporte directo vía WhatsApp • </span></div></div>
+  <section class="catalog-wrap" id="productos">
+    <nav class="breadcrumbs"><a href="index.html">Inicio</a> <span class="crumb-sep">›</span> <span>Productos</span></nav>
+    <h2 class="catalog-title">Productos</h2>
+    <div id="activeCategoryChip" style="margin-bottom:12px"></div>
+    <div class="catalog-layout">
+      <aside class="catalog-sidebar">
+        <div class="filter-block" style="display:none">
+          <div class="filter-title">Precio <button class="collapse" data-target="priceFilters">−</button></div>
+          <div id="priceFilters" class="filter-content">
+            <label class="price-field">$<input type="number" id="priceMin" placeholder="Desde" min="0"></label>
+            <label class="price-field">$<input type="number" id="priceMax" placeholder="Hasta" min="0"></label>
+          </div>
+        </div>
+        <div class="filter-block" style="display:none">
+          <div class="filter-title">Categoría <button class="collapse" data-target="categoryFilters">−</button></div>
+          <div id="categoryFilters" class="filter-content">
+            <select id="categorySelectSidebar" style="width:100%"><option value="all">Todas las categorías</option></select>
+          </div>
+        </div>
+        <div class="filter-block">
+          <div class="filter-title">Disponibilidad <button class="collapse" data-target="stockFilters">−</button></div>
+          <div id="stockFilters" class="filter-content">
+            <label class="chk"><input type="radio" name="stockFilter" value="all" checked> Todos</label>
+            <label class="chk"><input type="radio" name="stockFilter" value="disponible"> En stock</label>
+            <label class="chk"><input type="radio" name="stockFilter" value="bajo"> Stock bajo</label>
+          </div>
+        </div>
+      </aside>
+      <main class="catalog-main">
+        <div class="catalog-controls-advanced">
+          <div class="left">
+            <select id="sortSelect" class="sort-select">
+              <option value="name-asc">Alfabéticamente A-Z</option>
+              <option value="name-desc">Alfabéticamente Z-A</option>
+              <option value="price-asc">Precio menor a mayor</option>
+              <option value="price-desc">Precio mayor a menor</option>
+              <option value="rating-desc" selected>Mejor valoración</option>
+              <option value="newest">Más nuevo</option>
+            </select>
+            <!-- Selector de categoría: se poblará dinámicamente al cargar PRODUCTS -->
+            <select id="categorySelect" class="sort-select" style="margin-left:8px; min-width:180px">
+              <option value="all">Todas las categorías</option>
+            </select>
+            <div class="discount-toggle">
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.9rem;">
+                <input type="checkbox" id="discountToggle" style="cursor: pointer;">
+                <span>🏷️ Solo con descuento</span>
+              </label>
+            </div>
+            <button id="openFilters" class="filters-btn" aria-haspopup="dialog" aria-controls="filtersDrawer" aria-expanded="false">
+              <span>🧰 Filtros</span>
+            </button>
+          </div>
+          <div class="right">
+            <div class="view-toggle">
+              <button id="viewGrid" class="view-btn active" title="Vista grid">▦</button>
+              <button id="viewList" class="view-btn" title="Vista lista">☰</button>
+            </div>
+          </div>
+        </div>
+        <div class="result-count" id="resultCount"></div>
+        <div class="grid catalog-grid" id="catalogGrid"></div>
+      </main>
+    </div>
+  </section>
+  
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 40px; margin-bottom: 30px; align-items: start;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+  <img src="img/Logo_Mision3d.jpg" alt="Misión 3D" class="footer-logo remove-white" style="width: 80px; flex-shrink: 0;" loading="lazy" />
+        <p style="color: #888; font-size: 0.9rem; line-height: 1.6; margin: 0;">
+          Impresión 3D personalizada<br>
+          Transforma tus ideas en realidad
+        </p>
+      </div>        <div>
+          <h4 style="margin: 0 0 15px 0; color: #0052cc; font-size: 1rem;">Contacto</h4>
+          <p style="margin: 8px 0; font-size: 0.9rem; color: #666;">
+            📧 <a href="mailto:mision3d.cl@gmail.com" style="color: #666; text-decoration: none; transition: color 0.2s;">mision3d.cl@gmail.com</a>
+          </p>
+          <p style="margin: 8px 0; font-size: 0.9rem; color: #666;">
+            📍 La Florida<br>
+            <span style="margin-left: 20px;">Santiago, Chile</span>
+          </p>
+          <p style="margin: 8px 0; font-size: 0.9rem; color: #666;">
+            🕐 Lunes a viernes, 9:00 - 18:00 hrs
+          </p>
+        </div>
+        
+        <div>
+          <h4 style="margin: 0 0 15px 0; color: #0052cc; font-size: 1rem;">Información Legal</h4>
+          <p style="margin: 8px 0; font-size: 0.9rem; color: #666;">
+            Mision3D SpA
+          </p>
+          <p style="margin: 20px 0 0 0;">
+            <a href="privacidad.html" style="color: #0052cc; text-decoration: none; margin-right: 15px; transition: color 0.2s;">Privacidad</a>
+            <a href="terminos.html" style="color: #0052cc; text-decoration: none; transition: color 0.2s;">Términos</a>
+          </p>
+        </div>
+      </div>
+      
+      <div style="text-align: center; padding: 20px 0; border-top: 1px solid #333; margin-top: 20px;">
+        <p style="margin: 0; font-size: 0.85rem; color: #888;">&copy; 2025 Misión 3D - Todos los derechos reservados</p>
+      </div>
+    </div>
+  </footer>
+  
+  <!-- Carrito y modal (mismo markup que en index) -->
+<aside id="cartDrawer" class="cart">
+  <div class="cart-header"><h3>Tu carrito</h3><button id="closeCart">✕</button></div>
+  <div id="cartAddedMsg" class="cart-added-msg"></div>
+  <div id="cartItems" class="cart-items"></div>
+  <div class="cart-footer">
+    <div class="totals"><span>Total:</span><strong id="cartTotal">$0</strong></div>
+    <button id="checkout" class="btn primary">Finalizar compra</button>
+    <button id="clearCart" class="btn outline">Vaciar</button>
+  </div>
+</aside>
+<div id="overlay" class="overlay"></div>
+<div id="checkoutModal" class="modal">
+  <div class="modal-content">
+    <h3>Entrega</h3>
+    <form id="checkoutForm" class="checkout-form">
+      <div class="form-row">
+        <label>Método de envío:<br>
+          <select id="inputEnvio">
+            <option value="retiro">Retiro en taller (sin costo)</option>
+            <option value="domicilio">Envío a domicilio (Santiago, $2.990)</option>
+          </select>
+        </label>
+        <label>Nombre:<br><input id="inputName" autocomplete="name"></label>
+        <label>Apellidos:<br><input id="inputApellido" autocomplete="family-name"></label>
+      </div>
+      <div class="form-row">
+        <label>RUT (Obligatorio):<br><input id="inputRut" autocomplete="off"></label>
+      </div>
+      <div class="form-row">
+        <label>Dirección:<br><input id="inputDireccion" autocomplete="street-address"></label>
+      </div>
+      <div class="form-row">
+        <label>Agregar Nota (Personalización producto):<br><input id="inputNotes" autocomplete="off"></label>
+      </div>
+      <div class="form-row">
+        <label>Código postal (opcional):<br><input id="inputPostal" autocomplete="postal-code"></label>
+      </div>
+      <div class="form-row">
+        <label>Región:<br>
+          <select id="inputRegion">
+            <option value="">Selecciona región</option>
+          </select>
+        </label>
+        <label>Comuna:<br>
+          <select id="inputComuna">
+            <option value="">Selecciona comuna</option>
+          </select>
+        </label>
+      </div>
+      <div class="form-row">
+        <label>Teléfono:<br><input id="inputTelefono" autocomplete="tel"></label>
+      </div>
+      <div class="modal-actions">
+        <button type="button" id="confirmCheckout" class="btn primary">Confirmar</button>
+        <button type="button" id="cancelCheckout" class="btn outline">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+  <script src="script.js?v=20251106-2"></script>
+  <script>
+    // Manejo de categorías: poblar selects (top, header y sidebar), mostrar chip activo y persistir en URL
+    function updateURLCategory(cat){
+      try{
+        const u = new URL(location.href);
+        if(cat && cat !== 'all') u.searchParams.set('category', cat);
+        else u.searchParams.delete('category');
+        history.replaceState(null, '', u.toString());
+      }catch(e){/* silencioso */}
+    }
+
+    function showActiveChip(cat){
+      const wrap = document.getElementById('activeCategoryChip');
+      if(!wrap) return;
+      if(!cat || cat === 'all') { wrap.innerHTML = ''; return; }
+      wrap.innerHTML = `<span class="category-chip">${cat} <button class="chip-clear" aria-label="Limpiar categoría">✕</button></span>`;
+      const btn = wrap.querySelector('.chip-clear');
+      if(btn) btn.onclick = ()=>{
+        window.currentCategory = 'all';
+        const allSelects = [document.getElementById('categorySelect'), document.getElementById('headerCategorySelect'), document.getElementById('categorySelectSidebar')].filter(Boolean);
+        allSelects.forEach(s=>s.value = 'all');
+        updateURLCategory('all');
+        showActiveChip('all');
+        if(typeof renderCatalog === 'function') renderCatalog(document.getElementById('searchInput')?.value||'');
+      };
+    }
+
+    function populateCategorySelects(){
+      try{
+        const selects = [document.getElementById('categorySelect'), document.getElementById('headerCategorySelect'), document.getElementById('categorySelectSidebar')].filter(Boolean);
+        if(selects.length === 0) return;
+        if(!window.PRODUCTS || !Array.isArray(window.PRODUCTS)) return;
+        const cats = Array.from(new Set(window.PRODUCTS.map(p=> (p.category||'Otros').trim() ))).filter(Boolean).sort((a,b)=>a.localeCompare(b));
+        selects.forEach(sel=>{
+          const current = sel.value || (new URL(location.href).searchParams.get('category') || 'all');
+          sel.innerHTML = '<option value="all">Todas las categorías</option>' + cats.map(c=>`<option value="${c}">${c}</option>`).join('');
+          sel.value = current;
+          sel.onchange = function(){
+            window.currentCategory = this.value || 'all';
+            // sincronizar otros selects
+            selects.forEach(s=>{ if(s!==this) s.value = this.value; });
+            updateURLCategory(window.currentCategory);
+            showActiveChip(window.currentCategory);
+            if(typeof renderCatalog === 'function') renderCatalog(document.getElementById('searchInput')?.value||'');
+          };
+        });
+
+        // Si hay una categoría en la URL, usarla como estado inicial
+        const urlCat = new URL(location.href).searchParams.get('category');
+        if(urlCat){ window.currentCategory = urlCat; selects.forEach(s=>s.value = urlCat); }
+        showActiveChip(window.currentCategory || 'all');
+      }catch(e){ console.warn('Error populating categories', e); }
+    }
+
+    document.addEventListener('productsReady', () => populateCategorySelects());
+    document.addEventListener('DOMContentLoaded', () => setTimeout(populateCategorySelects, 60));
+  </script>
+<script>
+  
+    // Inicializar componentes cuando los productos estén cargados
+    document.addEventListener('productsReady', () => {
+      // Leer parámetro de búsqueda de la URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const searchQuery = urlParams.get('search');
+      if (searchQuery) {
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+          searchInput.value = searchQuery;
+          if (typeof window.renderCatalog === 'function') {
+            window.renderCatalog(searchQuery);
+          }
+        }
+      }
+    });
+    
+    // Conectar búsqueda del header - esperar a que todo esté listo
+    document.addEventListener('DOMContentLoaded', () => {
+      const searchInput = document.getElementById('searchInput');
+      
+      if (searchInput) {
+        console.log('🔍 Event listeners de búsqueda agregados');
+        
+        // Búsqueda mientras escribe
+        searchInput.addEventListener('input', (e) => {
+          console.log('📝 Input event:', e.target.value);
+          if (typeof window.renderCatalog === 'function') {
+            window.renderCatalog(e.target.value);
+          }
+          // También mostrar sugerencias si la función existe
+          if (typeof window.showSearchSuggestions === 'function') {
+            window.showSearchSuggestions(e.target.value);
+          }
+        });
+        
+        // Búsqueda al presionar Enter
+        searchInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            console.log('⏎ Enter presionado con:', searchInput.value);
+            if (typeof window.renderCatalog === 'function') {
+              window.renderCatalog(searchInput.value);
+            }
+          }
+        });
+      } else {
+        console.warn('⚠️ searchInput no encontrado');
+      }
+    });
+</script>
+
+<script src="ux-enhancements.js"></script>
+<script src="mobile-menu.js"></script>
+<!-- Quick View (modal de variantes) -->
+<script src="quick-view.js"></script>
+<!-- Wishlist (favoritos) en catálogo -->
+<script src="wishlist.js"></script>
+<!-- Cargar productos (modo local sin Supabase) -->
+<script type="module">
+  const isLocal = /localhost|127\.0\.0\.1/.test(location.hostname);
+  const forceRemote = Boolean(window.FORCE_REMOTE_PRODUCTS);
+
+  const mergeProducts = (arr) => {
+    if (!Array.isArray(arr)) return;
+    if (Array.isArray(window.PRODUCTS) && window.PRODUCTS.length > 0) {
+      const map = new Map(window.PRODUCTS.map(p => [String(p.id), p]));
+      for (const sp of arr) {
+        const key = String(sp.id);
+        if (map.has(key)) {
+          const ex = map.get(key);
+          ex.name = sp.name ?? ex.name;
+          ex.price = typeof sp.price === 'number' ? sp.price : ex.price;
+          ex.img = sp.img || ex.img;
+          ex.description = sp.description || ex.description;
+          ex.category = sp.category || ex.category;
+          ex.gallery = sp.gallery || ex.gallery;
+          // Asegurar que las variantes se mantengan actualizadas
+          ex.variants = (typeof sp.variants !== 'undefined') ? sp.variants : ex.variants;
+        } else {
+          window.PRODUCTS.push(sp);
+        }
+      }
+    } else {
+      window.PRODUCTS = arr;
+    }
+  };
+
+  // Modo local: intentar usar localStorage y no llamar a Supabase
+  if (isLocal && !forceRemote) {
+    try {
+      const ls = JSON.parse(localStorage.getItem('PRODUCTS')||'[]');
+      if (Array.isArray(ls) && ls.length > 0) {
+        mergeProducts(ls);
+        console.log('[catalogo] Usando PRODUCTS desde localStorage (modo local)');
+        document.dispatchEvent(new Event('productsReady'));
+        window.dispatchEvent(new CustomEvent('productsLoaded'));
+        if (typeof window.renderCatalog === 'function') window.renderCatalog('');
+        throw new Error('skip-remote-in-local');
+      }
+    } catch {}
+  }
+
+  // Remoto (producción o local forzado) - reutiliza el cliente central para evitar múltiples GoTrueClient
+  const { supabase } = await import('./supabase-orders.js');
+
+  async function cargarProductosDesdeSupabase() {
+    try {
+      const { data, error } = await supabase.from('productos').select('*');
+      if (error) throw error;
+      mergeProducts(Array.isArray(data) ? data : []);
+      try { localStorage.setItem('PRODUCTS', JSON.stringify(window.PRODUCTS||[])); } catch {}
+      document.dispatchEvent(new Event('productsReady'));
+      window.dispatchEvent(new CustomEvent('productsLoaded'));
+      if (typeof window.renderCatalog === 'function') window.renderCatalog('');
+    } catch (err) {
+      console.warn('[catalogo] No se pudieron cargar productos desde Supabase:', err?.message || err);
+      document.dispatchEvent(new Event('productsReady'));
+      window.dispatchEvent(new CustomEvent('productsLoaded'));
+      if (typeof window.renderCatalog === 'function') window.renderCatalog('');
+    }
+  }
+  cargarProductosDesdeSupabase();
+</script>
+</body></html>
