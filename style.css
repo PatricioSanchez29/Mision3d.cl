@@ -102,6 +102,18 @@
 	transform: translateY(-2px);
 	box-shadow: 0 4px 12px rgba(236, 72, 153, 0.4);
 }
+.card .btn-options.disabled,
+.card .btn-options:disabled {
+	background: #ccc;
+	cursor: not-allowed;
+	opacity: 0.6;
+	transform: none;
+}
+.card .btn-options.disabled:hover,
+.card .btn-options:disabled:hover {
+	box-shadow: none;
+	transform: none;
+}
 /* ================= Hero mejorado (wow) ================= */
 :root{ --card-shadow: 0 20px 40px rgba(2,6,23,0.035); }
 
