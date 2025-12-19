@@ -59,6 +59,14 @@ function add(id){
     return;
   }
   
+  // Validar que el producto no está agotado
+  if (prod.stock === 'agotado') {
+    if (typeof showToast === 'function') {
+      showToast('Este producto está sin stock en este momento.', 'error');
+    }
+    return;
+  }
+  
   // Evaluar cantidad de variantes
   let variantsArr = [];
   if (prod.variants && Array.isArray(prod.variants)) {
@@ -1430,6 +1438,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
               <label class="chk"><input type="radio" name="stockFilterMobile" value="all" checked> Todos</label>
               <label class="chk"><input type="radio" name="stockFilterMobile" value="disponible"> En stock</label>
               <label class="chk"><input type="radio" name="stockFilterMobile" value="bajo"> Stock bajo</label>
+              <label class="chk"><input type="radio" name="stockFilterMobile" value="agotado"> Sin stock</label>
             </div>
           </div>
         </div>
