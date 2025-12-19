@@ -521,7 +521,7 @@
                    'Personalizado con tu logo';
       const d = Number(p.discount || 0);
       const hasDiscount = Number.isFinite(d) && d > 0;
-      const badgeHtml = hasDiscount ? (d > 0 && d <= 25 ? `<span class="badge badge--bf">DWTO -${d}%</span>` : `<span class="badge badge--sale">-${d}%</span>`) : '';
+      const badgeHtml = hasDiscount ? (d > 0 && d <= 25 ? `<span class="badge badge--bf">DTO -${d}%</span>` : `<span class="badge badge--sale">-${d}%</span>`) : '';
       const isOut = String(p.stock || '').toLowerCase() === 'agotado';
       const stockBadge = isOut ? `<span class="badge badge--out">Agotado</span>` : '';
       const basePrice = Number(p.price || 0);
