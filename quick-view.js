@@ -272,6 +272,30 @@
     } else {
       stockEl.innerHTML = '<span class="stock-out">❌ Agotado</span>';
     }
+    
+    // Deshabilitar botones si está agotado
+    const isOutOfStock = product.stock === 'agotado';
+    const qtyMinusBtn = modal.querySelector('.qv-quantity .qty-box button:first-child');
+    const qtyPlusBtn = modal.querySelector('.qv-quantity .qty-box button:last-child');
+    const addCartBtn = modal.querySelector('#qvAddToCart');
+    
+    if (isOutOfStock) {
+      if (qtyMinusBtn) qtyMinusBtn.disabled = true;
+      if (qtyPlusBtn) qtyPlusBtn.disabled = true;
+      if (addCartBtn) {
+        addCartBtn.disabled = true;
+        addCartBtn.style.opacity = '0.5';
+        addCartBtn.style.cursor = 'not-allowed';
+      }
+    } else {
+      if (qtyMinusBtn) qtyMinusBtn.disabled = false;
+      if (qtyPlusBtn) qtyPlusBtn.disabled = false;
+      if (addCartBtn) {
+        addCartBtn.disabled = false;
+        addCartBtn.style.opacity = '1';
+        addCartBtn.style.cursor = 'pointer';
+      }
+    }
 
     // Badges
     const badgesEl = document.getElementById('qvBadges');
@@ -469,6 +493,14 @@
    */
   function addToCartFromQuickView() {
     if (!currentProduct) return;
+    
+    // Validar si el producto está agotado
+    if (currentProduct.stock === 'agotado') {
+      if (typeof showToast === 'function') {
+        showToast('Este producto está sin stock en este momento.', 'error');
+      }
+      return;
+    }
 
     const qty = parseInt(document.getElementById('qvQty').textContent);
     const customNote = document.getElementById('qvCustomNote')?.value?.trim() || '';
