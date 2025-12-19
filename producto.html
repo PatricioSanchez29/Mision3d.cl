@@ -27,6 +27,7 @@
 .short-desc{color:#444;line-height:1.45;margin-bottom:20px}
 .stock-msg{font-size:.85rem;margin-bottom:12px}
 .stock-low{color:#d9534f;font-weight:600}
+.stock-out{color:#dc2626;font-weight:600}
 .qty-box{display:flex;align-items:center;border:1px solid #ddd;border-radius:10px;overflow:hidden;width:max-content;margin:0 0 22px}
 .qty-box button{background:#fff;border:none;padding:12px 14px;font-size:1.1rem;cursor:pointer;line-height:1}
 .qty-box span{display:inline-block;width:48px;text-align:center;font-weight:600}
@@ -393,6 +394,7 @@ function renderProductDetail(){
   thumbs.querySelectorAll('.product-thumb').forEach(th=>th.onclick=()=>{document.getElementById('mainImage').src=th.dataset.img;thumbs.querySelectorAll('.product-thumb').forEach(x=>x.classList.remove('active'));th.classList.add('active');});
   document.getElementById('mainImage').src=gallery[0];
   const isLow=p.stock==='bajo';
+  const isOutOfStock=p.stock==='agotado';
   const daysDiff=(Date.now()-new Date(p.dateAdded))/86400000; let badges='';
   if(daysDiff<=21) badges+=`<span class='badge new'>Nuevo</span>`; if(p.discount) badges+=`<span class='badge discount'>-${p.discount}%</span>`;
   const priceOriginal=p.discount?`<span class='price-old'>${money(p.price)}</span>`:'';
@@ -420,11 +422,11 @@ function renderProductDetail(){
   <div class='price-block'>${priceOriginal}<span class='price-final' id='priceDisplay'>${money(variants.length>0 ? (variants[0]._displayPrice || variants[0].price) : finalPrice)}</span></div>
   ${variantsHTML}
   <div class='short-desc'>${p.name.includes('Calendario')?'Calendario detallado con todos los circuitos en relieve y acabado premium.':'Producto personalizado impreso en 3D.'}</div>
-  <div class='stock-msg ${isLow?'stock-low':''}'>${isLow?'¡Quedan pocas unidades!':'Stock disponible'}</div>
-  <div class='qty-box'><button id='qtyMinus'>-</button><span id='qtyValue'>1</span><button id='qtyPlus'>+</button></div>
+  <div class='stock-msg ${isOutOfStock?'stock-out':isLow?'stock-low':''}'>${isOutOfStock?'Sin stock':isLow?'¡Quedan pocas unidades!':'Stock disponible'}</div>
+  <div class='qty-box'><button id='qtyMinus' ${isOutOfStock?'disabled':''}style="${isOutOfStock?'opacity:0.5;cursor:not-allowed;':''}">-</button><span id='qtyValue'>1</span><button id='qtyPlus' ${isOutOfStock?'disabled':''}style="${isOutOfStock?'opacity:0.5;cursor:not-allowed;':''}">+</button></div>
   <div class='action-buttons'>
-    <button class='btn-primary' id='addCartBtn'>Añadir al carrito</button>
-    <button class='btn-outline' id='buyNowBtn'>Comprar ahora</button>
+    <button class='btn-primary' id='addCartBtn' ${isOutOfStock?'disabled':''}style="${isOutOfStock?'opacity:0.5;cursor:not-allowed;':''}">Añadir al carrito</button>
+    <button class='btn-outline' id='buyNowBtn' ${isOutOfStock?'disabled':''}style="${isOutOfStock?'opacity:0.5;cursor:not-allowed;':''}">Comprar ahora</button>
   </div>
   <div class='shipping-box'>🚚 <div><strong>Tiempos estimados:</strong><br>1-3 días (Santiago y Regiones).</div></div>
   ${isLow?'<div class="alert-low">¡Quedan pocas unidades para este pedido!</div>':''}
@@ -518,8 +520,18 @@ function renderProductDetail(){
     openCart();
     render(itemKey, nombre + variantText);
   }
-  document.getElementById('addCartBtn').onclick=()=>addBulk(p.id, qty, p.name);
+  document.getElementById('addCartBtn').onclick=()=>{
+    if(p.stock==='agotado'){
+      if(typeof showToast==='function') showToast('Este producto está sin stock en este momento.','error');
+      return;
+    }
+    addBulk(p.id, qty, p.name);
+  };
   document.getElementById('buyNowBtn').onclick=()=>{
+    if(p.stock==='agotado'){
+      if(typeof showToast==='function') showToast('Este producto está sin stock en este momento.','error');
+      return;
+    }
     // Agregar productos seleccionados y redirigir a página de checkout dedicada
     const itemKey = selectedVariant ? `${p.id}-${selectedVariant.name}` : p.id;
     let it = cart.find(x=>x.id===itemKey);
