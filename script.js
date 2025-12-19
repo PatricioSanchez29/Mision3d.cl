@@ -449,7 +449,7 @@ function renderCatalog(filterText = ""){
 
   let productos = window.PRODUCTS.slice();
 
-  // Si la URL contiene ?bf=1 mostrar solo productos Black Friday (0 < discount <= 25)
+  // Si la URL contiene ?dto=1 mostrar solo productos con descuento (0 < discount <= 25)
   try {
     const params = new URLSearchParams(location.search);
     if (params.get('dto') === '1') {
