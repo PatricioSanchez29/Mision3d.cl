@@ -28,6 +28,8 @@ function validateRUT(rut){
 let cart = [];
 try { cart = JSON.parse(localStorage.getItem('cart')||'[]'); } catch { cart = []; }
 function save(){ localStorage.setItem('cart', JSON.stringify(cart)); }
+// Normaliza IDs para evitar discrepancias número/string
+function normalizeId(val){ return String(val ?? ''); }
 function badge(){
   const el = $('#cartCount');
   if(!el) return;
@@ -44,15 +46,16 @@ function closeCart(){
 }
 function add(id){
   // Validar que el ID existe
-  if (!id) {
+  const normalizedId = normalizeId(id);
+  if (!normalizedId) {
     console.error('ID de producto inválido');
     return;
   }
   
   // Verificar que el producto existe en PRODUCTS
-  const prod = window.PRODUCTS?.find(x=>x.id===id);
+  const prod = window.PRODUCTS?.find(x=>normalizeId(x.id)===normalizedId);
   if (!prod) {
-    console.error('Producto no encontrado:', id);
+    console.error('Producto no encontrado:', normalizedId);
     if (typeof showToast === 'function') {
       showToast('Error: Producto no encontrado', 'error');
     }
@@ -87,7 +90,7 @@ function add(id){
 
   if (variantsArr.length === 1) {
     const v = variantsArr[0] || {};
-    const itemKey = `${id}-${v.name||'var'}`;
+    const itemKey = `${normalizedId}-${v.name||'var'}`;
     let it = cart.find(x=>x.id===itemKey);
     // Calcular precio aplicando descuento si existe
     const base = Number(v.price) || Number(prod.price) || 0;
@@ -110,13 +113,13 @@ function add(id){
   }
   
   // Si no tiene variantes, agregar directamente al carrito
-  let it = cart.find(x=>x.id===id);
+  let it = cart.find(x=>x.id===normalizedId);
   if(it) it.qty++;
   else {
     const base = Number(prod.price) || 0;
     const d = Number(prod.discount || 0);
     const finalPrice = d > 0 ? Math.round(base * (1 - d/100)) : base;
-    cart.push({id, qty:1, price: finalPrice});
+    cart.push({id: normalizedId, qty:1, price: finalPrice});
   }
   save(); badge();
   
@@ -132,7 +135,7 @@ function add(id){
   // GA4: add_to_cart
   try { if (window.gaEvent && prod) window.gaEvent('add_to_cart', { currency: 'CLP', value: prod.price || 0, items: [{ item_id: prod.id, item_name: prod.name, price: prod.price, quantity: 1 }] }); } catch {}
   openCart();
-  render(id, prod?.name);
+  render(normalizedId, prod?.name);
 }
 function qty(id,d){
   const i = cart.findIndex(x=>x.id===id);
@@ -175,8 +178,8 @@ function render(highlightId, addedName){
   } else {
     cart.forEach(it=>{
       // Buscar producto por originalId si existe (productos con variantes), sino por id normal
-      const productId = it.originalId || it.id;
-      const p = window.PRODUCTS?.find(x=>x.id===productId);
+      const productId = normalizeId(it.originalId || it.id);
+      const p = window.PRODUCTS?.find(x=>normalizeId(x.id)===productId);
       if(!p) return;
       
       // Usar precio de la variante si existe, sino el precio del producto

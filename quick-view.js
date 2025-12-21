@@ -9,6 +9,8 @@
 
   let currentProduct = null;
   let currentImageIndex = 0;
+  // Normaliza IDs para evitar mismatch número/string
+  function normalizeId(val){ return String(val ?? ''); }
 
   /**
    * Inicializar Quick View
@@ -147,10 +149,12 @@
       if (card.querySelector('.quick-view-btn')) return;
 
       // Extraer ID del producto
-      const addBtn = card.querySelector('button[onclick*="add"]');
+      // Soportar botones sin inline onclick (dataset id, clases add/btn-options)
+      const addBtn = card.querySelector('button[data-id], .add[data-id], .btn-options.add[data-id], button[onclick*="add"]');
       if (!addBtn) return;
 
       const productId = addBtn.dataset?.id || 
+                       addBtn.getAttribute('data-id') ||
                        addBtn.getAttribute('onclick')?.match(/add\('([^']+)'\)/)?.[1];
       
       if (!productId) return;
@@ -215,14 +219,24 @@
    * Abrir Quick View con un producto
    */
   function openQuickView(productId) {
+    // Asegurar que el modal exista aun si init no se ejecutó por algún error previo
+    try {
+      if (!document.getElementById('quickViewModal')) {
+        createQuickViewModal();
+      }
+    } catch(e) { console.warn('No se pudo crear quick view dinámicamente', e); }
+
     if (!window.PRODUCTS || !Array.isArray(window.PRODUCTS)) {
       console.warn('PRODUCTS no disponible');
       return;
     }
 
-    const product = window.PRODUCTS.find(p => p.id === productId);
+    const normalizedId = normalizeId(productId);
+    const product = window.PRODUCTS.find(p => normalizeId(p.id) === normalizedId);
     if (!product) {
       console.warn('Producto no encontrado:', productId);
+      // Fallback: ir a la ficha si no se encuentra en memoria
+      try { window.location.href = `producto.html?id=${encodeURIComponent(normalizedId)}`; } catch {}
       return;
     }
 
@@ -234,6 +248,7 @@
 
     // Mostrar modal
     const modal = document.getElementById('quickViewModal');
+    if (!modal) return;
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
 
@@ -247,6 +262,8 @@
    * Poblar contenido del Quick View
    */
   function populateQuickView(product) {
+    const modal = document.getElementById('quickViewModal');
+    if (!modal) return;
     // Título
     document.getElementById('qvTitle').textContent = product.name;
 
@@ -508,7 +525,8 @@
     // Si tiene variantes, agregar con variante seleccionada
     if (window.qvSelectedVariant) {
       // Usar el carrito global si existe para mantener sincronía con la UI
-      const itemKey = `${currentProduct.id}-${window.qvSelectedVariant.name}`;
+      const normalizedPid = normalizeId(currentProduct.id);
+      const itemKey = `${normalizedPid}-${window.qvSelectedVariant.name}`;
       try {
         if (Array.isArray(window.cart)) {
           let existingItem = window.cart.find(x => x.id === itemKey);
@@ -522,7 +540,7 @@
             const finalPrice = d > 0 ? Math.round(base * (1 - d/100)) : base;
             window.cart.push({
               id: itemKey,
-              originalId: currentProduct.id,
+              originalId: normalizedPid,
               qty: qty,
               variant: window.qvSelectedVariant.name,
               price: finalPrice,
@@ -545,7 +563,7 @@
             const base2 = Number(window.qvSelectedVariant.price) || Number(currentProduct.price) || 0;
             const d2 = Number(currentProduct.discount || 0);
             const final2 = d2 > 0 ? Math.round(base2 * (1 - d2/100)) : base2;
-            lc.push({ id: itemKey, originalId: currentProduct.id, qty, variant: window.qvSelectedVariant.name, price: final2, customNote: customNote||null });
+            lc.push({ id: itemKey, originalId: normalizedPid, qty, variant: window.qvSelectedVariant.name, price: final2, customNote: customNote||null });
           }
           localStorage.setItem('cart', JSON.stringify(lc));
         }
@@ -562,8 +580,9 @@
     
     // Sin variantes: usar la función add() global
     if (typeof window.add === 'function') {
+      const normalizedPid = normalizeId(currentProduct.id);
       for (let i = 0; i < qty; i++) {
-        window.add(currentProduct.id);
+        window.add(normalizedPid);
       }
       
       if (typeof window.showToast === 'function') {
@@ -579,7 +598,7 @@
    */
   function viewFullProduct() {
     if (!currentProduct) return;
-    window.location.href = `producto.html?id=${currentProduct.id}`;
+    window.location.href = `producto.html?id=${encodeURIComponent(normalizeId(currentProduct.id))}`;
   }
 
   /**
@@ -590,11 +609,11 @@
 
     // Usar API global de wishlist si está disponible
     if (window.wishlist?.toggle) {
-      window.wishlist.toggle(currentProduct.id);
+      window.wishlist.toggle(normalizeId(currentProduct.id));
       updateWishlistButton();
     } else if (typeof window.toggleWishlist === 'function') {
       // soporte legacy si se expone como función suelta
-      window.toggleWishlist(currentProduct.id);
+      window.toggleWishlist(normalizeId(currentProduct.id));
       updateWishlistButton();
     }
   }
@@ -606,9 +625,10 @@
     if (!currentProduct) return;
 
     const btn = document.getElementById('qvWishlist');
+    const normalizedPid = normalizeId(currentProduct.id);
     const isInWishlist = (window.wishlist?.isInWishlist)
-      ? window.wishlist.isInWishlist(currentProduct.id)
-      : (typeof window.isInWishlist === 'function' ? window.isInWishlist(currentProduct.id) : false);
+      ? window.wishlist.isInWishlist(normalizedPid)
+      : (typeof window.isInWishlist === 'function' ? window.isInWishlist(normalizedPid) : false);
 
     btn.innerHTML = isInWishlist ? '❤️' : '🤍';
     btn.title = isInWishlist ? 'Quitar de favoritos' : 'Agregar a favoritos';
