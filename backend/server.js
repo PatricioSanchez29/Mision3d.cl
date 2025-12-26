@@ -860,7 +860,7 @@ app.post("/flow/confirm", webhookLimiter, async (req, res) => {
           console.log('📧 Email de confirmación enviado a', emailTo);
 
           // Enviar email también al administrador
-          const adminEmail = 'mision3d.cl@gmail.com';
+          const adminEmail = process.env.ADMIN_EMAIL || 'mision3d.cl@gmail.com';
           const adminHtml = `
             <h2>🛍️ Nueva Compra - Misión 3D</h2>
             <p><strong>Cliente:</strong> ${nombreVal || 'No especificado'} ${apellidosVal || ''}</p>
