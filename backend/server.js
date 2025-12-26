@@ -858,6 +858,55 @@ app.post("/flow/confirm", webhookLimiter, async (req, res) => {
             text: `Pago confirmado. Orden: ${commerceOrder}. Total: $${fmt(total)}`,
           });
           console.log('📧 Email de confirmación enviado a', emailTo);
+
+          // Enviar email también al administrador
+          const adminEmail = 'mision3d.cl@gmail.com';
+          const adminHtml = `
+            <h2>🛍️ Nueva Compra - Misión 3D</h2>
+            <p><strong>Cliente:</strong> ${nombreVal || 'No especificado'} ${apellidosVal || ''}</p>
+            <p><strong>Email:</strong> ${emailTo}</p>
+            <p><strong>Orden:</strong> ${commerceOrder}</p>
+            <table style="border-collapse:collapse;width:100%;max-width:520px">
+              <thead>
+                <tr>
+                  <th style="text-align:left;padding:8px;border-bottom:2px solid #111">Producto</th>
+                  <th style="text-align:right;padding:8px;border-bottom:2px solid #111">Cant.</th>
+                  <th style="text-align:right;padding:8px;border-bottom:2px solid #111">Precio</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${itemsHtml || ''}
+              </tbody>
+            </table>
+            <div style="margin-top:12px">
+              ${
+                subtotal !== null
+                  ? `<div><strong>Subtotal:</strong> $${fmt(subtotal)}</div>`
+                  : ''
+              }
+              ${
+                discount
+                  ? `<div><strong>Descuento:</strong> -$${fmt(discount)}</div>`
+                  : ''
+              }
+              ${
+                shipping !== null
+                  ? `<div><strong>Envío:</strong> $${fmt(shipping)}</div>`
+                  : ''
+              }
+              <div style="margin-top:8px;font-size:1.1em"><strong>Total pagado:</strong> $${fmt(
+                total
+              )}</div>
+            </div>
+            ${retiroInfo.html}
+          `;
+          await sendEmail({
+            to: adminEmail,
+            subject: `[NUEVA COMPRA] ${commerceOrder} - $${fmt(total)}`,
+            html: adminHtml,
+            text: `Nueva compra de ${nombreVal || 'cliente'} por $${fmt(total)}. Orden: ${commerceOrder}`,
+          });
+          console.log('📧 Email de notificación enviado a admin:', adminEmail);
         } else {
           console.warn('⚠️ [Flow Confirm] No se encontró email del comprador para token', token);
         }
