@@ -219,7 +219,7 @@
           <div style="font-weight:600;font-size:.88rem;line-height:1.3">Envío Comunas de Santiago</div>
           <div style="font-size:.7rem;color:#555;margin-top:4px">Disponible al seleccionar Región Metropolitana de Santiago.</div>
         </div>
-        <div style="font-size:.8rem;font-weight:700;color:#222;white-space:nowrap">$2.990</div>
+        <div style="font-size:.8rem;font-weight:700;color:#222;white-space:nowrap">$3.500</div>
       </label>
       <!-- Nuevo: Retiro en tienda/la Florida (gratis) -->
       <label class="ship-option" id="shipRetiroCard" style="display:flex;gap:14px;border:1px solid #d5d5d5;padding:14px 16px;border-radius:12px;cursor:pointer;align-items:flex-start;position:relative">
@@ -772,11 +772,11 @@ function renderCheckoutSummary(){
   let shipping = 0;
   if (selectedShipMethod) {
     if (selectedShipMethod.value === 'santiago') {
-      // Envío a Santiago: $2.990
-      shipping = 2990;
+      // Envío a Santiago: $3.500
+      shipping = 3500;
     } else if (selectedShipMethod.value === 'domicilio') {
       // Envío a domicilio (antiguo)
-      shipping = 2990;
+      shipping = 3500;
     } else if (selectedShipMethod.value === 'retiro') {
       shipping = 0;
     } else if (selectedShipMethod.value === 'porpagar') {
