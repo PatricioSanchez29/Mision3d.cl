@@ -869,7 +869,7 @@ async function confirmCheckout(){
   // Calcular costo de envío basado en el método seleccionado
   let costoEnvio = 0;
   if (region === 'Metropolitana de Santiago' && (envio === 'domicilio' || envio === 'santiago')) {
-    costoEnvio = 2990;
+    costoEnvio = 3500;
   }
   // Si es 'porpagar' o 'retiro', el costo es 0 (se paga aparte)
   
