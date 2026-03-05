@@ -533,7 +533,7 @@ app.post("/api/payments/flow", paymentLimiter, async (req, res) => {
       regionN.includes("santiago") &&
       (envioN === "domicilio" || envioN === "santiago")
     ) {
-      ship = 2990;
+      ship = 3500;
     } else {
       ship = 0;
     }
@@ -959,7 +959,7 @@ app.post("/api/orders/transfer", async (req, res) => {
       regionN.includes("santiago") &&
       (envioN === "domicilio" || envioN === "santiago")
     ) {
-      ship = 2990;
+      ship = 3500;
     } else {
       ship = 0;
     }
