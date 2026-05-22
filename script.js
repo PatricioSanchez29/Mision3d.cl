@@ -246,26 +246,58 @@ function render(highlightId, addedName){
 }
 
 /* ==================== Búsqueda con sugerencias ==================== */
+let searchFallbackProducts = null;
+let searchFallbackLoading = false;
+
+async function loadSearchFallbackProducts() {
+  if (Array.isArray(searchFallbackProducts)) return searchFallbackProducts;
+  if (searchFallbackLoading) return [];
+  searchFallbackLoading = true;
+  try {
+    const res = await fetch('datos.json', { cache: 'no-store' });
+    if (!res.ok) throw new Error('No se pudo cargar datos.json');
+    const json = await res.json();
+    const raw = json && json.productos ? Object.entries(json.productos) : [];
+    searchFallbackProducts = raw.map(([id, p]) => ({ id, ...p }));
+    return searchFallbackProducts;
+  } catch (err) {
+    console.warn('[search] fallback no disponible:', err?.message || err);
+    searchFallbackProducts = [];
+    return searchFallbackProducts;
+  } finally {
+    searchFallbackLoading = false;
+  }
+}
+
 function showSearchSuggestions(text) {
   const sugDiv = document.getElementById('searchSuggestions');
   if (!sugDiv) return;
-  
-  if (!window.PRODUCTS || !Array.isArray(window.PRODUCTS)) return;
-  
+
   const txt = (text||'').trim().toLowerCase();
   if (!txt) {
     sugDiv.innerHTML = '';
     sugDiv.style.display = 'none';
     return;
   }
-  
-  const matches = window.PRODUCTS.filter(p => p.name.toLowerCase().includes(txt));
+
+  const products = (Array.isArray(window.PRODUCTS) && window.PRODUCTS.length)
+    ? window.PRODUCTS
+    : (Array.isArray(searchFallbackProducts) ? searchFallbackProducts : []);
+
+  if (!products.length) {
+    sugDiv.innerHTML = '<div class="suggestion-item no-results">Cargando productos...</div>';
+    sugDiv.style.display = 'block';
+    loadSearchFallbackProducts().then(() => showSearchSuggestions(text));
+    return;
+  }
+
+  const matches = products.filter(p => String(p.name || '').toLowerCase().includes(txt));
   if (matches.length === 0) {
-    sugDiv.innerHTML = '<div style="color:#888">No se encontraron productos</div>';
+    sugDiv.innerHTML = '<div class="suggestion-item no-results">No se encontraron productos</div>';
     sugDiv.style.display = 'block';
     return;
   }
-  sugDiv.innerHTML = matches.map(p => `<div data-id="${p.id}">${p.name}</div>`).join('');
+  sugDiv.innerHTML = matches.slice(0, 8).map(p => `<div class="suggestion-item" data-id="${p.id}">${p.name}</div>`).join('');
   sugDiv.style.display = 'block';
   Array.from(sugDiv.children).forEach(div => {
     div.onclick = () => {
@@ -1506,6 +1538,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
   // Exponer confirmCheckout para uso desde checkout.html
   window.confirmCheckout = confirmCheckout;
   // Exponer renderCatalog y estado de categoría para otros scripts
+  try {
+    window.showSearchSuggestions = showSearchSuggestions;
+  } catch (e) { /* silencioso */ }
   try {
     window.renderCatalog = renderCatalog;
   } catch (e) { /* silencioso */ }

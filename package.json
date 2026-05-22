@@ -2,12 +2,12 @@
   "name": "mision3d_cart_v2",
   "version": "1.0.0",
   "description": "Backend de pagos Flow para Mision3D",
-  "main": "server.js",
+  "main": "backend/server.js",
   "type": "module",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch server.js",
-    "test:security": "node test-webhook-security.js"
+    "start": "node backend/server.js",
+    "dev": "node --watch backend/server.js",
+    "test:security": "node backend/test-webhook-security.js"
   },
   "author": "Mision3D",
   "license": "ISC",

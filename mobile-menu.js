@@ -68,6 +68,52 @@
     
     // Actualizar estado del usuario
     updateUserLink();
+
+    // Mantener controles del header dentro del viewport en mobile
+    fixMobileHeaderLayout();
+    window.addEventListener('resize', fixMobileHeaderLayout);
+  }
+
+  function fixMobileHeaderLayout() {
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+    const cartBtn = document.getElementById('openCart');
+    const hamburgerBtn = document.getElementById('hamburgerBtn');
+
+    if (!isMobile) {
+      if (cartBtn) cartBtn.removeAttribute('style');
+      if (hamburgerBtn) {
+        hamburgerBtn.style.left = '';
+        hamburgerBtn.style.right = '';
+        hamburgerBtn.style.top = '';
+        hamburgerBtn.style.transform = '';
+      }
+      return;
+    }
+
+    if (hamburgerBtn) {
+      hamburgerBtn.style.position = 'absolute';
+      hamburgerBtn.style.left = '14px';
+      hamburgerBtn.style.right = 'auto';
+      hamburgerBtn.style.top = '16px';
+      hamburgerBtn.style.transform = 'none';
+    }
+
+    if (cartBtn) {
+      cartBtn.style.position = 'fixed';
+      cartBtn.style.top = '16px';
+      cartBtn.style.right = '14px';
+      cartBtn.style.left = 'auto';
+      cartBtn.style.transform = 'none';
+      cartBtn.style.width = '54px';
+      cartBtn.style.minWidth = '54px';
+      cartBtn.style.maxWidth = '54px';
+      cartBtn.style.height = '40px';
+      cartBtn.style.padding = '0';
+      cartBtn.style.display = 'inline-flex';
+      cartBtn.style.alignItems = 'center';
+      cartBtn.style.justifyContent = 'center';
+      cartBtn.style.zIndex = '15020';
+    }
   }
 
   /**
