@@ -159,7 +159,7 @@
           <div class="hero-product-collage">
             <img src="img/hero-new.png" alt="" class="hero-product hero-product-main" loading="eager">
             <img src="img/calendario-f1.png" alt="" class="hero-product hero-product-top" loading="lazy">
-            <img src="img/caja-beyblade.png" alt="" class="hero-product hero-product-bottom" loading="lazy">
+            <img src="img/cr7.img.webp" alt="" class="hero-product hero-product-bottom" loading="lazy">
           </div>
           <!-- Tarjetas de info eliminadas según solicitud: "Pedidos a medida" y "Entrega" -->
         </div>
@@ -516,11 +516,11 @@
       return;
     }
     grid.innerHTML = products.map(p => {
-      const desc = p.name.includes('Calendario') ? 'Calendario 3D con circuitos' :
+      const desc = p.name.includes('Calendario') ? '' :
                    p.name.includes('Beyblade') ? 'Personalizable con tu nombre' :
                    p.name.includes('Mascota') ? 'Tu mascota en 3D' :
                    p.name.includes('Pokebola') ? 'Pokebola coleccionable' : 
-                   'Personalizado con tu logo';
+                   '';
       const d = Number(p.discount || 0);
       const hasDiscount = Number.isFinite(d) && d > 0;
       const badgeHtml = hasDiscount ? (d > 0 && d <= 25 ? `<span class="badge badge--bf">DTO -${d}%</span>` : `<span class="badge badge--sale">-${d}%</span>`) : '';
@@ -539,7 +539,7 @@
           <h4>
             <a href="producto.html?id=${p.id}" class="prod-link">${p.name}</a>
           </h4>
-          <p>${desc}</p>
+          ${desc ? `<p>${desc}</p>` : ''}
           ${badgeHtml}
           ${stockBadge}
           <strong class="price">${priceHtml}</strong>

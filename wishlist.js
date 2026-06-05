@@ -190,11 +190,11 @@ function renderWishlistPage() {
     .filter(p => p); // Filtrar productos que ya no existen
   
   container.innerHTML = wishlistProducts.map(p => {
-    const desc = p.name.includes('Calendario') ? 'Calendario 3D con circuitos' :
+    const desc = p.name.includes('Calendario') ? '' :
                  p.name.includes('Beyblade') ? 'Personalizable con tu nombre' :
                  p.name.includes('Mascota') ? 'Tu mascota en 3D' :
                  p.name.includes('Pokebola') ? 'Pokebola coleccionable' : 
-                 'Personalizado con tu logo';
+                 '';
     
     const price = p.price ? `$${p.price.toLocaleString('es-CL')}` : 'Consultar';
     const oldPrice = p.discount && p.discount > 0 ? `$${p.price.toLocaleString('es-CL')}` : '';
@@ -212,7 +212,7 @@ function renderWishlistPage() {
         <h4>
           <a href="producto.html?id=${p.id}" class="prod-link">${p.name}</a>
         </h4>
-        <p class="desc">${desc}</p>
+        ${desc ? `<p class="desc">${desc}</p>` : ''}
         ${oldPrice ? `<span class="price-old">${oldPrice}</span>` : ''}
         <strong class="price">${finalPrice}</strong>
         ${p.discount > 0 ? `<span class="badge discount">-${p.discount}%</span>` : ''}

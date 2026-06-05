@@ -547,10 +547,10 @@ function renderCatalog(filterText = ""){
     const card = document.createElement('div');
     card.className = 'card';
     const desc =
-      p.name.includes('Calendario') ? 'Calendario 3D con circuitos' :
+      p.name.includes('Calendario') ? '' :
       p.name.includes('Beyblade')   ? 'Personalizable con tu nombre' :
       p.name.includes('Mascota')    ? 'Tu mascota en 3D' :
-      p.name.includes('Pokebola')   ? 'Pokebola coleccionable' : 'Personalizado con tu logo';
+      p.name.includes('Pokebola')   ? 'Pokebola coleccionable' : '';
 
     const energia = '<span class="label">Mision3D</span>';
     const isOut = String(p.stock || '').toLowerCase() === 'agotado';
@@ -598,7 +598,7 @@ function renderCatalog(filterText = ""){
         <div class="name" style="font-size:1.15rem;font-weight:600">${p.name}</div>
         <div style="display:flex;flex-direction:column;gap:4px">
           <div class="price" style="margin:0">${priceOriginal}${money(finalPrice)}</div>
-          <div class="desc" style="margin:0">${desc}</div>
+          ${desc ? `<div class="desc" style="margin:0">${desc}</div>` : ''}
           ${energia} ${stockTxt}
           <div></div>
         </div>
@@ -612,7 +612,7 @@ function renderCatalog(filterText = ""){
         <div class="badge-wrap">${badges}${galleryIndicator}</div>
         <div class="price">${priceOriginal}${money(finalPrice)}</div>
         <div class="name" data-link>${p.name}</div>
-        <div class="desc">${desc}</div>
+        ${desc ? `<div class="desc">${desc}</div>` : ''}
         ${energia}
         ${stockTxt}
         
@@ -686,7 +686,7 @@ const REVIEWS = [
   {name:'Valeska', img:'img/impresion.png',    text:'Llegó bien\nSúper bonito',        stars:5},
   {name:'Cholito', img:'img/llavero.png',      text:'A cholito lo recordaré por siempre', stars:5},
   {name:'Sofía',   img:'img/pokebola.png',     text:'😍 😍 😍 amé',                     stars:5},
-  {name:'Antonia', img:'img/caja-beyblade.png',text:'Muy lindo 😍',                    stars:5},
+  {name:'Antonia', img:'img/cr7.img.webp',text:'Muy lindo 😍',                    stars:5},
   {name:'Teresa',  img:'img/calendario-f1.png',text:'❤',                               stars:5},
 ];
 function renderReviews(){
