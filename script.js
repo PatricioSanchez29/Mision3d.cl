@@ -197,7 +197,7 @@ function render(highlightId, addedName){
         setTimeout(()=>e.classList.remove('highlight'),1200);
       }
       e.innerHTML = `
-        <img src="${p.img}" alt="">
+        <img src="${p.img || 'img/hero-new.png'}" alt="" loading="lazy" onerror="this.src='img/hero-new.png'">
         <div>
           <div>${displayName}</div>
           ${it.customNote ? `<div style="font-size:.8rem;color:#555;margin-top:2px">Personalización: ${it.customNote.replace(/</g,'&lt;')}</div>` : ''}
@@ -331,6 +331,7 @@ try {
           name: p.name || 'Producto',
           price: Number(p.price) || 0,
           img: p.img || 'img/placeholder.png',
+          descripcion: p.descripcion || p.description || p.desc || '',
           stars: Number(p.stars ?? 5),
           reviews: Number(p.reviews ?? 0),
           stock: p.stock || 'disponible',

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mockup ficha producto | Misión 3D</title>
+  <style>
+    :root{
+      --bg:#f4efe8;
+      --panel:#ffffff;
+      --text:#1f2937;
+      --muted:#6b7280;
+      --accent:#e6462f;
+      --accent2:#ffefe9;
+      --border:#eaded3;
+      --shadow:0 18px 50px rgba(15,23,42,.10);
+      --green:#1a531a;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Arial, Helvetica, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(230,70,47,.10), transparent 28%),
+        radial-gradient(circle at top right, rgba(20,184,166,.10), transparent 24%),
+        linear-gradient(180deg, #fff, var(--bg));
+    }
+    .wrap{max-width:1200px;margin:0 auto;padding:28px 18px 40px}
+    .title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+    .title h1{margin:0;font-size:1.4rem}
+    .title p{margin:0;color:var(--muted)}
+    .sheet{
+      display:grid;
+      grid-template-columns:1.1fr .9fr;
+      gap:28px;
+      align-items:start;
+    }
+    .gallery,.info{
+      background:var(--panel);
+      border:1px solid rgba(234,222,211,.9);
+      border-radius:24px;
+      box-shadow:var(--shadow);
+    }
+    .gallery{padding:18px}
+    .main-image{
+      aspect-ratio:1/1;
+      border-radius:20px;
+      overflow:hidden;
+      background:linear-gradient(145deg,#171717,#2b2b2b);
+      display:flex;align-items:center;justify-content:center;
+      position:relative;
+    }
+    .main-image::after{
+      content:'Vista principal';
+      position:absolute;left:16px;top:16px;
+      padding:8px 12px;border-radius:999px;
+      background:rgba(255,255,255,.14);
+      color:#fff;font-size:.8rem;font-weight:700;
+      backdrop-filter:blur(10px);
+    }
+    .product-figure{
+      width:min(72%, 340px);
+      aspect-ratio:1/.72;
+      border-radius:26px;
+      background:linear-gradient(180deg,#f7b26b,#e6462f);
+      box-shadow:0 28px 60px rgba(0,0,0,.24);
+      position:relative;
+      transform:skewX(-8deg);
+    }
+    .product-figure::before{
+      content:'';position:absolute;inset:18px;border:2px solid rgba(255,255,255,.35);
+      border-radius:18px;
+    }
+    .product-figure::after{
+      content:'Mundial 2026';
+      position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) skewX(8deg);
+      color:#fff;font-size:1.7rem;font-weight:900;letter-spacing:.04em;text-align:center;
+      text-shadow:0 8px 18px rgba(0,0,0,.20);
+    }
+    .thumbs{display:flex;gap:10px;margin-top:12px;overflow:auto;padding-bottom:2px}
+    .thumb{min-width:82px;height:82px;border-radius:16px;border:2px solid var(--border);background:#f9fafb;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-weight:700}
+    .info{padding:22px}
+    .badge-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+    .badge{font-size:.75rem;font-weight:800;letter-spacing:.02em;padding:8px 10px;border-radius:999px;background:var(--accent2);color:var(--accent)}
+    .badge.green{background:#eef9ef;color:#1f7a1f}
+    .price-box{display:flex;align-items:baseline;gap:12px;padding:16px 18px;border:1px solid #f0ddd4;border-radius:18px;background:linear-gradient(180deg,#fff, #fffaf7);box-shadow:0 10px 24px rgba(0,0,0,.04);margin:8px 0 16px}
+    .price-old{color:#9ca3af;text-decoration:line-through;font-weight:600}
+    .price-final{font-size:2.2rem;font-weight:900;color:var(--accent);line-height:1}
+    .variants{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 16px}
+    .pill{padding:10px 14px;border-radius:999px;border:2px solid #ddd;background:#fff;font-weight:700;color:#374151}
+    .pill.active{border-color:var(--accent);background:var(--accent);color:#fff}
+    .stock{margin:4px 0 12px;padding:12px 14px;border-radius:12px;border:1px solid #e5e7eb;background:#f9fafb;color:#374151;font-size:.92rem;font-weight:600}
+    .shipping{background:linear-gradient(180deg,#f6fff6,#eef9ef);border:1px solid #b9e3b9;padding:18px 20px;border-radius:14px;line-height:1.45;color:var(--green);box-shadow:0 8px 20px rgba(16,185,129,.08);margin:14px 0}
+    .desc-card{margin-top:8px;padding:18px 20px;border:1px solid #e7e2da;border-radius:16px;background:linear-gradient(180deg,#fff, #fff8f2);box-shadow:0 10px 24px rgba(0,0,0,.04)}
+    .desc-title{display:inline-flex;align-items:center;gap:8px;margin-bottom:10px;color:#1f2937;font-size:.92rem;font-weight:900;letter-spacing:.02em;text-transform:uppercase}
+    .desc-title::before{content:'';width:10px;height:10px;border-radius:999px;background:var(--accent);box-shadow:0 0 0 4px rgba(230,70,47,.12)}
+    .desc-text{line-height:1.75;color:#374151;font-size:1rem;white-space:pre-line}
+    .actions{display:flex;flex-direction:column;gap:14px;margin:18px 0 16px;padding-top:4px}
+    .btn{border:none;border-radius:999px;padding:18px 22px;font-size:1rem;font-weight:800;cursor:pointer}
+    .btn.primary{color:#fff;background:linear-gradient(180deg,#ff5d3d,#e6462f);box-shadow:0 12px 22px rgba(230,70,47,.22)}
+    .btn.outline{color:var(--accent);background:#fff;border:2px solid var(--accent)}
+    .trust-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px}
+    .trust{padding:14px;border-radius:16px;background:#fff;border:1px solid var(--border);display:flex;gap:10px;align-items:center}
+    .trust b{display:block;font-size:.92rem}
+    .trust span{display:block;color:var(--muted);font-size:.82rem;line-height:1.3}
+    .dot{width:12px;height:12px;border-radius:999px;background:var(--accent);box-shadow:0 0 0 4px rgba(230,70,47,.12);flex:0 0 auto}
+    @media (max-width:980px){.sheet{grid-template-columns:1fr}.trust-row{grid-template-columns:1fr}.title{align-items:flex-start;flex-direction:column}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="title">
+      <div>
+        <h1>Mockup de ficha de producto</h1>
+        <p>Vista de cómo podría quedar la columna derecha con el estilo mejorado.</p>
+      </div>
+    </div>
+
+    <div class="sheet">
+      <section class="gallery">
+        <div class="main-image">
+          <div class="product-figure"></div>
+        </div>
+        <div class="thumbs">
+          <div class="thumb">Frente</div>
+          <div class="thumb">Detalle</div>
+          <div class="thumb">Tapa</div>
+          <div class="thumb">Interior</div>
+        </div>
+      </section>
+
+      <section class="info">
+        <div class="badge-row">
+          <span class="badge">Nuevo</span>
+          <span class="badge">-15%</span>
+          <span class="badge green">Stock disponible</span>
+        </div>
+
+        <div class="price-box">
+          <span class="price-old">$8.888</span>
+          <span class="price-final">$7.999</span>
+        </div>
+
+        <div class="variants">
+          <span class="pill active">Tamaño Grande</span>
+          <span class="pill">Tamaño Mediano</span>
+          <span class="pill">Tamaño Pequeño</span>
+        </div>
+
+        <div class="stock">Stock disponible</div>
+
+        <div class="actions">
+          <button class="btn primary">Añadir al carrito</button>
+          <button class="btn outline">Comprar ahora</button>
+        </div>
+
+        <div class="shipping">🚚 <strong>Tiempos estimados:</strong><br>1-3 días (Santiago y Regiones).</div>
+
+        <div class="desc-card">
+          <div class="desc-title">Descripción</div>
+          <div class="desc-text">Caja organizadora doble para cromos del Mundial 2026, diseñada para ofrecer practicidad, con cierres y un trofeo en relieve. Está dividida para facilitar la impresión y el montaje, con capacidad para un promedio de 220 cromos.</div>
+        </div>
+
+        <div class="trust-row">
+          <div class="trust"><span class="dot"></span><div><b>Impresión 3D</b><span>Acabado limpio y resistente</span></div></div>
+          <div class="trust"><span class="dot"></span><div><b>Hecho a pedido</b><span>Fabricación personalizada</span></div></div>
+          <div class="trust"><span class="dot"></span><div><b>Envío rápido</b><span>Despacho en 1 a 3 días</span></div></div>
+        </div>
+      </section>
+    </div>
+  </div>
+</body>
+</html>

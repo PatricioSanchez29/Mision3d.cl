@@ -334,7 +334,7 @@
 
     // Descripción
     const descEl = document.getElementById('qvDescription');
-    descEl.textContent = product.desc || 'Producto de impresión 3D personalizada de alta calidad.';
+    descEl.textContent = product.descripcion || product.description || product.desc || 'Producto de impresión 3D personalizada de alta calidad.';
 
     // Categoría
     const catEl = document.getElementById('qvCategory');

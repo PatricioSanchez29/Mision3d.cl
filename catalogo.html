@@ -423,6 +423,7 @@
           ex.name = sp.name ?? ex.name;
           ex.price = typeof sp.price === 'number' ? sp.price : ex.price;
           ex.img = sp.img || ex.img;
+          ex.descripcion = sp.descripcion || sp.description || sp.desc || ex.descripcion;
           ex.description = sp.description || ex.description;
           ex.category = sp.category || ex.category;
           ex.gallery = sp.gallery || ex.gallery;
