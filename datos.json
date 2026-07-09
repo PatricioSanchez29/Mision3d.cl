@@ -65,6 +65,18 @@
         "category": "Accesorios",
         "dateAdded": "2025-09-12",
         "discount": 15
+      },
+      "formula": {
+        "name": "Formula 1 Porta Lapices",
+        "price": 14990,
+        "img": "img/formula-1-porta-lapices.png",
+        "stars": 5,
+        "reviews": 0,
+        "stock": "disponible",
+        "category": "Accesorios",
+        "dateAdded": "2025-07-08",
+        "discount": 0,
+        "description": "Organizador de escritorio con diseño oficial Formula 1"
       }
     },
     "pedidos": {}
