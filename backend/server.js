@@ -15,6 +15,39 @@ import path, { dirname } from "path";
 
 import sitemapRouter from "./sitemap.js";
 
+// ===== Google Analytics Measurement Protocol helper =====
+async function sendPurchaseToGA(pedido){
+  try{
+    const measurementId = String(process.env.GA_MEASUREMENT_ID || '').trim();
+    const apiSecret = String(process.env.GA_API_SECRET || '').trim();
+    if(!measurementId || !apiSecret) return console.log('[GA] Measurement ID or API secret not configured, skipping GA event');
+    // Build payload
+    const clientId = (crypto.randomUUID && typeof crypto.randomUUID === 'function') ? crypto.randomUUID() : `srv-${Date.now()}`;
+    const items = (pedido.items || []).map(it => ({
+      item_id: String(it.id || it.product_id || it.productId || '') || undefined,
+      item_name: it.name || it.title || undefined,
+      price: Number(it.price || 0) || undefined,
+      quantity: Number(it.qty || it.quantity || 1) || 1
+    }));
+    const body = {
+      client_id: clientId,
+      user_id: String(pedido.commerce_order || pedido.id || pedido.email || ''),
+      events: [{
+        name: 'purchase',
+        params: {
+          transaction_id: String(pedido.commerce_order || pedido.id || ''),
+          value: Number(pedido.total_clp || pedido.total || 0) || 0,
+          currency: 'CLP',
+          items
+        }
+      }]
+    };
+    const url = `https://www.google-analytics.com/mp/collect?measurement_id=${encodeURIComponent(measurementId)}&api_secret=${encodeURIComponent(apiSecret)}`;
+    const resp = await axios.post(url, body, { headers: { 'Content-Type': 'application/json' }, timeout: 5000 });
+    console.log('[GA] Purchase event sent, status:', resp.status);
+  }catch(e){ console.warn('[GA] Error sending purchase event:', e?.message || e); }
+}
+
 dotenv.config();
 
 // ===== Log filter opcional =====
@@ -88,6 +121,9 @@ const allowedOrigins = [
   // Cloudflare Pages (producción)
   "https://mision3dcl.pages.dev",
   "https://mision3d-cl.pages.dev",
+  // Common local dev origins (Live Server / VSCode)
+  "http://localhost:5500",
+  "http://127.0.0.1:5500",
   ...envOrigins,
 ];
 
@@ -134,6 +170,18 @@ app.use(cors({
   },
   credentials: true
 }));
+
+// Debug: log requests to analytics endpoints (no secretos completos)
+app.use((req, res, next) => {
+  try {
+    if (req.path && req.path.startsWith('/api/analytics')) {
+      const origin = req.headers.origin || req.ip || '-';
+      const hasKey = !!req.headers['x-admin-key'];
+      console.log(`[REQ] ${req.method} ${req.path} origin=${origin} has_admin_key=${hasKey}`);
+    }
+  } catch (e) { /* no-op */ }
+  next();
+});
 
 // ===== Health Check Endpoints (Render) =====
 app.get("/health", (req, res) => {
@@ -777,6 +825,8 @@ app.post("/flow/confirm", webhookLimiter, async (req, res) => {
             console.warn('[Flow Confirm] Error insertando pedido en Supabase:', supaErr.message);
           } else {
             console.log('[Flow Confirm] Pedido guardado en Supabase');
+            // Enviar evento de compra a Google Analytics (Measurement Protocol)
+            try { sendPurchaseToGA(pedido); } catch(e){ console.warn('[GA] sendPurchaseToGA error', e?.message || e); }
           }
         }
       } catch (dbErr) {
@@ -1481,6 +1531,262 @@ app.get('/api/pedidos/by-email/:email', async (req, res) => {
   } catch (err) {
     console.error('[API] Error en /api/pedidos/by-email:', err);
     res.status(500).json({ error: 'server', detail: err?.message || String(err) });
+  }
+});
+
+// ===== Analytics: resumen de ventas (secure, usa SERVICE_ROLE_KEY en servidor) =====
+app.get('/api/analytics/summary', async (req, res) => {
+  try {
+    // Seguridad: exigir ADMIN_KEY en header x-admin-key
+    const provided = String(req.headers['x-admin-key'] || '').trim();
+    const expected = String(process.env.ADMIN_KEY || '').trim();
+    if (!expected) return res.status(401).json({ error: 'unauthorized', reason: 'ADMIN_KEY not configured' });
+    if (!provided || provided !== expected) return res.status(401).json({ error: 'unauthorized' });
+
+    // Parámetros: from, to (ISO dates). Defaults: hoy inicio -> hoy fin
+    const fromQ = req.query.from;
+    const toQ = req.query.to;
+    const from = fromQ ? new Date(fromQ) : new Date(new Date().setHours(0,0,0,0));
+    const to = toQ ? new Date(toQ) : new Date(new Date().setHours(23,59,59,999));
+
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!supabaseUrl || !supabaseKey) {
+      return res.status(500).json({ error: 'server', detail: 'Supabase credentials missing' });
+    }
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Traer pedidos en rango (filtrar por estado 'pagado' en JS para compatibilidad)
+    const { data: pedidosRaw, error: pedidosErr } = await supabase
+      .from('pedidos')
+      .select('id, items, total_clp, total, created_at, estado, status')
+      .gte('created_at', from.toISOString())
+      .lt('created_at', to.toISOString())
+      .order('created_at', { ascending: false });
+    if (pedidosErr) {
+      console.error('[Analytics] Error consultando pedidos:', pedidosErr);
+      return res.status(500).json({ error: 'query_failed', detail: pedidosErr.message });
+    }
+
+    const pedidos = Array.isArray(pedidosRaw) ? pedidosRaw.filter(p => String(p.estado).toLowerCase() === 'pagado' || String(p.status).toLowerCase() === 'pagado') : [];
+
+    // Traer productos para nombres y lista completa
+    const { data: productsList } = await supabase.from('productos').select('id, name, price');
+    const productsMap = new Map((productsList || []).map(p => [String(p.id), { name: p.name, price: p.price }]));
+
+    // Calcular KPIs
+    let totalSales = 0;
+    let ordersCount = 0;
+    const productStats = new Map(); // id -> { qty, revenue }
+
+    for (const p of pedidos) {
+      ordersCount += 1;
+      const totalVal = Number(p.total_clp ?? p.total ?? 0) || 0;
+      totalSales += totalVal;
+
+      let items = p.items || [];
+      if (typeof items === 'string') {
+        try { items = JSON.parse(items); } catch { items = []; }
+      }
+      if (!Array.isArray(items)) items = [];
+
+      for (const it of items) {
+        const id = String(it.id ?? it.productId ?? it.product_id ?? it.id);
+        const qty = Number(it.qty ?? it.quantity ?? 1) || 0;
+        const price = Number(it.price ?? 0) || 0;
+        const rev = qty * price;
+        if (!productStats.has(id)) productStats.set(id, { qty: 0, revenue: 0 });
+        const cur = productStats.get(id);
+        cur.qty += qty;
+        cur.revenue += rev;
+      }
+    }
+
+    const avgTicket = ordersCount > 0 ? Math.round(totalSales / ordersCount) : 0;
+
+    // Top productos
+    const topProducts = Array.from(productStats.entries()).map(([id, v]) => ({
+      id,
+      name: (productsMap.get(id)?.name) || null,
+      qty: v.qty,
+      revenue: Math.round(v.revenue || 0)
+    })).sort((a,b) => (b.revenue - a.revenue)).slice(0, 10);
+
+    // Low sellers: productos en catálogo con ventas bajas (incluye 0)
+    const lowSellers = (productsList || []).map(p => {
+      const id = String(p.id);
+      const stats = productStats.get(id) || { qty: 0, revenue: 0 };
+      return { id, name: p.name, qty: stats.qty, revenue: Math.round(stats.revenue || 0) };
+    }).sort((a,b) => a.qty - b.qty).slice(0, 10);
+
+    return res.json({
+      success: true,
+      summary: {
+        total_sales_clp: Math.round(totalSales),
+        orders_count: ordersCount,
+        avg_ticket_clp: avgTicket,
+        top_products: topProducts,
+        low_sellers: lowSellers
+      },
+      meta: { from: from.toISOString(), to: to.toISOString(), pedidos_fetched: pedidosRaw.length }
+    });
+  } catch (err) {
+    console.error('[Analytics] Error en /api/analytics/summary:', err);
+    return res.status(500).json({ error: 'server', detail: err?.message || String(err) });
+  }
+});
+
+// Endpoint que responde preguntas del Agente Analista (seguro)
+app.post('/api/analytics/query', async (req, res) => {
+  try {
+    const provided = String(req.headers['x-admin-key'] || '').trim();
+    const expected = String(process.env.ADMIN_KEY || '').trim();
+    if (!expected) return res.status(401).json({ error: 'unauthorized', reason: 'ADMIN_KEY not configured' });
+    if (!provided || provided !== expected) return res.status(401).json({ error: 'unauthorized' });
+
+    const body = req.body || {};
+    const question = String(body.question || '').trim();
+    const from = body.from || null;
+    const to = body.to || null;
+    if (!question) return res.status(400).json({ error: 'question_required' });
+
+    // Delegar al agente
+    const agent = await import('./agents/sales-analyst.js');
+    const resp = await agent.answerQuestion(question, { fromIso: from, toIso: to });
+    return res.json({ ok: true, answer: resp });
+  } catch (err) {
+    console.error('[Analytics Query] Error:', err);
+    return res.status(500).json({ error: 'server', detail: err?.message || String(err) });
+  }
+});
+
+// Endpoint: series de ventas por día en un rango
+app.get('/api/analytics/series', async (req, res) => {
+  try {
+    // Seguridad
+    const provided = String(req.headers['x-admin-key'] || '').trim();
+    const expected = String(process.env.ADMIN_KEY || '').trim();
+    if (!expected) return res.status(401).json({ error: 'unauthorized', reason: 'ADMIN_KEY not configured' });
+    if (!provided || provided !== expected) return res.status(401).json({ error: 'unauthorized' });
+
+    const fromQ = req.query.from;
+    const toQ = req.query.to;
+    const from = fromQ ? new Date(fromQ) : new Date(new Date().setHours(0,0,0,0));
+    const to = toQ ? new Date(toQ) : new Date(new Date().setHours(23,59,59,999));
+
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!supabaseUrl || !supabaseKey) {
+      return res.status(500).json({ error: 'server', detail: 'Supabase credentials missing' });
+    }
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const { data: pedidosRaw, error } = await supabase
+      .from('pedidos')
+      .select('created_at, total_clp, total, estado, status')
+      .gte('created_at', from.toISOString())
+      .lt('created_at', to.toISOString())
+      .order('created_at', { ascending: true });
+    if (error) {
+      console.error('[Analytics Series] Error consultando pedidos:', error);
+      return res.status(500).json({ error: 'query_failed', detail: error.message });
+    }
+
+    // Devolver raw para que el frontend agregue por día
+    return res.json({ success: true, pedidos: pedidosRaw || [], meta: { from: from.toISOString(), to: to.toISOString() } });
+  } catch (err) {
+    console.error('[Analytics Series] Error:', err);
+    return res.status(500).json({ error: 'server', detail: err?.message || String(err) });
+  }
+});
+
+// Endpoint: lista de pedidos (pagados) en un rango con detalles (secure)
+app.get('/api/analytics/orders', async (req, res) => {
+  try {
+    const provided = String(req.headers['x-admin-key'] || '').trim();
+    const expected = String(process.env.ADMIN_KEY || '').trim();
+    if (!expected) return res.status(401).json({ error: 'unauthorized', reason: 'ADMIN_KEY not configured' });
+    if (!provided || provided !== expected) return res.status(401).json({ error: 'unauthorized' });
+
+    const fromQ = req.query.from;
+    const toQ = req.query.to;
+    const from = fromQ ? new Date(fromQ) : new Date(new Date().setHours(0,0,0,0));
+    const to = toQ ? new Date(toQ) : new Date(new Date().setHours(23,59,59,999));
+
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!supabaseUrl || !supabaseKey) {
+      return res.status(500).json({ error: 'server', detail: 'Supabase credentials missing' });
+    }
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const { data: pedidosRaw, error } = await supabase
+      .from('pedidos')
+      .select('id, created_at, total_clp, total, estado, status, email, items, commerce_order')
+      .gte('created_at', from.toISOString())
+      .lt('created_at', to.toISOString())
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('[Analytics Orders] Error consultando pedidos:', error);
+      return res.status(500).json({ error: 'query_failed', detail: error.message });
+    }
+
+    // Filtrar solo pagados
+    const pedidos = Array.isArray(pedidosRaw) ? pedidosRaw.filter(p => String(p.estado).toLowerCase() === 'pagado' || String(p.status).toLowerCase() === 'pagado') : [];
+
+    return res.json({ success: true, pedidos: pedidos || [], meta: { from: from.toISOString(), to: to.toISOString(), total: (pedidosRaw||[]).length } });
+  } catch (err) {
+    console.error('[Analytics Orders] Error:', err);
+    return res.status(500).json({ error: 'server', detail: err?.message || String(err) });
+  }
+});
+
+// Debug route: validate admin key without requiring Supabase.
+// Only enabled in non-production environments to avoid leaking checks in prod.
+app.get('/debug/validate-admin-key', (req, res) => {
+  try {
+    if (process.env.NODE_ENV === 'production') return res.status(404).json({ error: 'not_found' });
+    const providedHeader = String(req.headers['x-admin-key'] || '').trim();
+    const providedQuery = String(req.query.key || '').trim();
+    const provided = providedHeader || providedQuery || '';
+    const expected = String(process.env.ADMIN_KEY || '').trim();
+    if (!expected) return res.status(500).json({ success: false, error: 'ADMIN_KEY not configured' });
+    const ok = provided && provided === expected;
+    return res.json({ success: ok, hasKeyProvided: Boolean(provided) });
+  } catch (e) {
+    console.error('[Debug validate-admin-key] Error', e?.message || e);
+    return res.status(500).json({ success: false, error: 'server' });
+  }
+});
+
+// Debug: enviar evento de compra de prueba a GA (solo en desarrollo)
+app.get('/debug/send-test-purchase', async (req, res) => {
+  try {
+    if (process.env.NODE_ENV === 'production') return res.status(404).json({ error: 'not_found' });
+    // Opcionales: amount, order, email
+    const amount = Number(req.query.amount || 19900) || 19900;
+    const order = String(req.query.order || `TEST-${Date.now()}`);
+    const email = String(req.query.email || 'test@example.com');
+    const testPedido = {
+      id: order,
+      commerce_order: order,
+      email,
+      total_clp: amount,
+      total: amount,
+      items: [
+        { id: 'SKU-TEST-1', name: 'Mock Producto A', price: Math.round(amount * 0.6), qty: 1 },
+        { id: 'SKU-TEST-2', name: 'Mock Producto B', price: Math.round(amount * 0.4), qty: 1 }
+      ]
+    };
+    await sendPurchaseToGA(testPedido);
+    return res.json({ success: true, sent: true, pedido: testPedido });
+  } catch (e) {
+    console.error('[Debug send-test-purchase] Error', e?.message || e);
+    return res.status(500).json({ success: false, error: e?.message || String(e) });
   }
 });
 
