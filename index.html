@@ -33,6 +33,9 @@
   </script>
   <script type="module" src="auth-header.js"></script>
   <script>window.GA_MEASUREMENT_ID = 'G-XXXXXXXXXX';</script>
+  <script>
+    window.GA_MEASUREMENT_ID = 'G-XKQGMM6ZK0';
+  </script>
   <script src="consent.js"></script>
   <script type="application/ld+json">
 
@@ -152,7 +155,7 @@
           </div>
           <div class="hero-actions">
             <a class="hero-btn btn primary" href="catalogo.html">Ver catálogo</a>
-            <a class="hero-btn btn outline" href="#contacto">Cotizar por WhatsApp</a>
+            <a class="hero-btn btn outline" href="#cotizar">Cotizar mi idea</a>
           </div>
         </div>
         <div class="hero-showcase" aria-hidden="true">
@@ -164,6 +167,66 @@
           <!-- Tarjetas de info eliminadas según solicitud: "Pedidos a medida" y "Entrega" -->
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- Agentes comerciales: califican la consulta antes de abrir WhatsApp -->
+  <section id="cotizar" class="sales-assistant" aria-labelledby="salesAssistantTitle">
+    <div class="sales-assistant__intro">
+      <span class="sales-assistant__eyebrow">Asistentes de venta</span>
+      <h2 id="salesAssistantTitle">Te ayudamos a avanzar en menos de un minuto</h2>
+      <p>Elige el tipo de ayuda, cuéntanos lo esencial y recibirás una conversación de WhatsApp lista para enviar. Así podemos responderte con una cotización más precisa.</p>
+      <ol class="sales-assistant__steps" aria-label="Cómo funciona">
+        <li><span>1</span> Cuéntanos qué necesitas</li>
+        <li><span>2</span> Indica cantidad y plazo</li>
+        <li><span>3</span> Recibe respuesta personalizada</li>
+      </ol>
+    </div>
+    <div class="sales-assistant__panel">
+      <div class="sales-assistant__tabs" role="tablist" aria-label="Tipo de ayuda">
+        <button class="sales-assistant__tab is-active" type="button" role="tab" aria-selected="true" aria-controls="quoteAgent" id="quoteAgentTab" data-agent-tab="quoteAgent">Quiero cotizar</button>
+        <button class="sales-assistant__tab" type="button" role="tab" aria-selected="false" aria-controls="supportAgent" id="supportAgentTab" data-agent-tab="supportAgent">Tengo una consulta</button>
+      </div>
+
+      <form id="quoteAgent" class="sales-agent-form" role="tabpanel" aria-labelledby="quoteAgentTab">
+        <h3>Agente de cotización</h3>
+        <p>Ideal para regalos, piezas a medida, proyectos y pedidos para empresas.</p>
+        <label for="quoteType">¿Qué quieres crear?</label>
+        <select id="quoteType" name="type" required>
+          <option value="">Selecciona una opción</option>
+          <option>Regalo personalizado</option>
+          <option>Pieza funcional o repuesto</option>
+          <option>Pedido para negocio, evento o empresa</option>
+          <option>Figura o artículo del catálogo</option>
+          <option>Otro proyecto</option>
+        </select>
+        <div class="sales-agent-form__grid">
+          <div><label for="quoteQuantity">Cantidad aproximada</label><input id="quoteQuantity" name="quantity" inputmode="numeric" placeholder="Ej.: 10 unidades"></div>
+          <div><label for="quoteDeadline">¿Para cuándo lo necesitas?</label><input id="quoteDeadline" name="deadline" placeholder="Ej.: antes del 15 de septiembre"></div>
+        </div>
+        <label for="quoteDetails">Describe tu idea o agrega medidas</label>
+        <textarea id="quoteDetails" name="details" rows="4" maxlength="700" placeholder="Ej.: llavero con nombre, 8 cm de alto, color negro. Tengo una foto de referencia."></textarea>
+        <button class="btn sales-agent-form__submit" type="submit">Preparar cotización por WhatsApp <span aria-hidden="true">↗</span></button>
+        <small>Podrás adjuntar imágenes o archivos directamente en WhatsApp.</small>
+      </form>
+
+      <form id="supportAgent" class="sales-agent-form" role="tabpanel" aria-labelledby="supportAgentTab" hidden>
+        <h3>Agente de compras y seguimiento</h3>
+        <p>Resolvemos dudas sobre productos, compras realizadas, despachos o pagos.</p>
+        <label for="supportTopic">¿En qué te ayudamos?</label>
+        <select id="supportTopic" name="topic" required>
+          <option value="">Selecciona una opción</option>
+          <option>Consulta sobre un producto</option>
+          <option>Estado de mi pedido</option>
+          <option>Envíos y plazos de entrega</option>
+          <option>Pagos o comprobante</option>
+          <option>Otro</option>
+        </select>
+        <label for="supportDetails">Cuéntanos los detalles</label>
+        <textarea id="supportDetails" name="details" rows="6" maxlength="700" placeholder="Incluye el número de pedido si ya realizaste una compra."></textarea>
+        <button class="btn sales-agent-form__submit" type="submit">Hablar por WhatsApp <span aria-hidden="true">↗</span></button>
+        <small>Para responderte más rápido, agrega tu número de pedido si lo tienes.</small>
+      </form>
     </div>
   </section>
 
@@ -230,7 +293,7 @@
   <section id="nosotros" class="nosotros"><h3>Sobre Mision3D</h3><p>Somos un emprendimiento chileno de impresión 3D personalizada. Creamos desde piezas funcionales hasta figuras coleccionables, con foco en una atención cercana y entregas claras.</p></section>
 
   <!-- Contacto -->
-  <section id="contacto" class="contacto"><h3>Contáctanos</h3><p>Cuéntanos qué quieres imprimir y te orientamos con material, tamaño, plazo y valor.</p><a href="https://wa.me/56950503585" class="btn whatsapp">WhatsApp</a><a href="https://instagram.com/mision3d.cl" class="btn instagram">Instagram</a></section>
+  <section id="contacto" class="contacto"><h3>¿Prefieres hablar directamente?</h3><p>Cuéntanos qué quieres imprimir y te orientamos con material, tamaño, plazo y valor.</p><a href="https://wa.me/56950503585?text=Hola%2C%20necesito%20ayuda%20con%20una%20consulta." class="btn whatsapp" data-sales-source="contacto">WhatsApp</a><a href="https://instagram.com/mision3d.cl" class="btn instagram">Instagram</a></section>
 
   <!-- Preguntas Frecuentes -->
   <section id="faq" class="faq-section">
@@ -385,6 +448,7 @@
   <!-- Toast de notificación -->
   <div id="toast" class="toast">¡Producto agregado al carrito!</div>
   <script src="script.js?v=20260304-1" defer></script>
+  <script src="sales-assistant.js" defer></script>
   <script>
     // FAQ toggle
     document.addEventListener('DOMContentLoaded',()=>{

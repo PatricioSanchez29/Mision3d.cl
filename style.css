@@ -4811,6 +4811,68 @@ body {
   color: #312e81;
 }
 
+
+/* Evita desbordes de contenido en la portada móvil. */
+@media (max-width: 768px) {
+  html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
+  .home-hero .hero-inner { display: block; width: 100%; padding: 0; }
+  .home-hero .hero-text { display: block; width: 100%; max-width: 100%; min-width: 0; }
+  .home-hero .hero-title { width: min(100%, 330px); }
+}
+/* Asistentes comerciales */
+.sales-assistant {
+  display: grid;
+  grid-template-columns: minmax(0, .9fr) minmax(440px, 1.1fr);
+  gap: clamp(28px, 6vw, 82px);
+  max-width: 1180px;
+  margin: -72px auto 56px;
+  padding: clamp(28px, 4vw, 52px);
+  position: relative;
+  z-index: 2;
+  border: 1px solid rgba(199, 210, 254, .8);
+  border-radius: 28px;
+  background: linear-gradient(135deg, #eff6ff, #f5f3ff 55%, #fff);
+  box-shadow: 0 24px 60px rgba(30, 41, 59, .16);
+}
+
+/* Cuando sigue a la vitrina de productos, deja de superponerse al hero. */
+.featured-section + .sales-assistant { margin: 0 auto 56px; }
+@media (max-width: 900px) {
+  .featured-section + .sales-assistant { margin: 0 16px 42px; }
+}
+
+.sales-assistant__eyebrow {
+  display: inline-block;
+  margin-bottom: 12px;
+  color: #6d28d9;
+  font-size: .78rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.sales-assistant h2 { margin: 0; color: #172554; font-size: clamp(1.8rem, 3vw, 2.55rem); line-height: 1.1; }
+.sales-assistant__intro > p { margin: 16px 0 26px; color: #475569; line-height: 1.65; }
+.sales-assistant__steps { display: grid; gap: 12px; padding: 0; margin: 0; list-style: none; color: #334155; font-weight: 650; }
+.sales-assistant__steps li { display: flex; align-items: center; gap: 10px; }
+.sales-assistant__steps span { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: #312e81; color: #fff; font-size: .8rem; }
+.sales-assistant__panel { overflow: hidden; border: 1px solid #e2e8f0; border-radius: 20px; background: #fff; box-shadow: 0 12px 28px rgba(15, 23, 42, .08); }
+.sales-assistant__tabs { display: grid; grid-template-columns: 1fr 1fr; padding: 6px; background: #f1f5f9; }
+.sales-assistant__tab { border: 0; border-radius: 11px; padding: 12px 10px; background: transparent; color: #475569; cursor: pointer; font: inherit; font-size: .9rem; font-weight: 750; }
+.sales-assistant__tab.is-active { background: #fff; color: #312e81; box-shadow: 0 2px 8px rgba(15, 23, 42, .1); }
+.sales-agent-form { padding: 26px; }
+.sales-agent-form h3 { margin: 0; color: #172554; font-size: 1.28rem; }
+.sales-agent-form > p { margin: 7px 0 20px; color: #64748b; font-size: .92rem; line-height: 1.45; }
+.sales-agent-form label { display: block; margin: 15px 0 6px; color: #334155; font-size: .84rem; font-weight: 750; }
+.sales-agent-form input, .sales-agent-form select, .sales-agent-form textarea { box-sizing: border-box; width: 100%; border: 1px solid #cbd5e1; border-radius: 10px; padding: 11px 12px; background: #fff; color: #0f172a; font: inherit; font-size: .92rem; }
+.sales-agent-form textarea { resize: vertical; min-height: 88px; }
+.sales-agent-form input:focus, .sales-agent-form select:focus, .sales-agent-form textarea:focus { outline: 3px solid rgba(99, 102, 241, .2); border-color: #6366f1; }
+.sales-agent-form__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.sales-agent-form__grid label { margin-top: 15px; }
+.sales-agent-form__submit { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin-top: 20px; padding: 13px 16px; border: 0; border-radius: 12px; background: linear-gradient(135deg, #16a34a, #15803d); color: #fff; font-weight: 800; cursor: pointer; }
+.sales-agent-form__submit:hover { filter: brightness(1.05); transform: translateY(-1px); }
+.sales-agent-form small { display: block; margin-top: 12px; color: #64748b; font-size: .76rem; line-height: 1.4; text-align: center; }
+
 .hero-showcase {
   position: relative;
   min-height: 430px;
@@ -5071,6 +5133,8 @@ body {
   .hero-showcase {
     display: none;
   }
+
+  .sales-assistant { grid-template-columns: 1fr; margin: -54px 16px 42px; padding: 28px 22px; }
 }
 
 @media (max-width: 768px) {
@@ -5093,6 +5157,7 @@ body {
   }
 
   .home-hero .hero-title {
+    width: min(100%, 330px);
     font-size: clamp(1.75rem, 8.4vw, 2.25rem);
     line-height: 1.08;
     max-width: 330px;
@@ -5108,13 +5173,22 @@ body {
     margin-right: auto;
   }
 
+  .home-hero .hero-text,
+  .home-hero .hero-inner,
+  .sales-assistant,
+  .sales-assistant__panel { min-width: 0; }
+
   .home-hero .hero-actions .hero-btn {
     width: min(100%, 300px);
   }
 
   .home-hero .hero-badges {
-    flex-direction: row;
+    flex-direction: column;
   }
+
+  .sales-assistant { margin-top: -42px; border-radius: 22px; }
+  .sales-agent-form { padding: 20px 16px; }
+  .sales-agent-form__grid { grid-template-columns: 1fr; gap: 0; }
 
   .hero-badge {
     font-size: .78rem;

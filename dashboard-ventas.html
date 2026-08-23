@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Dashboard Ventas - Misión 3D</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:24px;color:#111}
+    .kpis{display:flex;gap:20px;flex-wrap:wrap}
+    .kpi{background:#fff;padding:16px;border:1px solid #eee;border-radius:8px;min-width:160px}
+    .list{margin-top:16px}
+  </style>
+ </head>
+<body>
+  <h1>Dashboard Ventas</h1>
+  <div>
+    <label>From: <input id="from" type="date"></label>
+    <label>To: <input id="to" type="date"></label>
+    <button id="btnReload">Cargar</button>
+    <div style="display:inline-block;margin-left:20px;vertical-align:middle">
+      <label style="font-size:0.9rem;color:#444">Admin key:</label>
+      <input id="adminKeyInput" type="password" placeholder="x-admin-key" style="width:220px;margin-left:6px" />
+      <button id="saveAdminKey" style="margin-left:6px">Guardar</button>
+      <span id="adminKeyStatus" style="margin-left:8px;color:#666;font-size:0.9rem"></span>
+    </div>
+  </div>
+  <div id="errorBox" style="margin-top:12px;color:#a00;font-weight:600"></div>
+  <div class="kpis" id="kpis"></div>
+  <h2>Top productos</h2>
+  <div id="topProducts" class="list"></div>
+  <h2>Productos con menos ventas</h2>
+  <div id="lowSellers" class="list"></div>
+  <h2>Pagos anteriores</h2>
+  <div id="previousPayments" class="list"></div>
+  <h2>Ventas (comparativa)</h2>
+  <div style="max-width:900px">
+    <canvas id="salesChart" width="900" height="320"></canvas>
+  </div>
+  <div id="comparisonSummary" style="margin-top:12px"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script type="module" src="dashboard-ventas.js"></script>
+</body>
+</html>
