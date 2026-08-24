@@ -14,6 +14,20 @@
     <priority>0.9</priority>
   </url>
 
+  <!-- Cotizador de proyectos personalizados -->
+  <url>
+    <loc>https://mision3d.cl/cotizar.html</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <!-- Confirmacion de pedido (solo referencia, noindex en la pagina) -->
+  <url>
+    <loc>https://mision3d.cl/confirmacion.html</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.1</priority>
+  </url>
+
   <!-- Secciones internas están en index; no se listan como URLs separadas -->
 
   <!-- Carrito / Checkout -->
@@ -41,4 +55,33 @@
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
+
+  <!-- Página de producto individual -->
+  <url>
+    <loc>https://mision3d.cl/producto.html</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Cuenta de usuario -->
+  <url>
+    <loc>https://mision3d.cl/mi-cuenta.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+
+  <!-- Registro -->
+  <url>
+    <loc>https://mision3d.cl/register.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+
+  <!-- Recuperar contraseña -->
+  <url>
+    <loc>https://mision3d.cl/recuperar-password.html</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.2</priority>
+  </url>
+
 </urlset>

@@ -1,4 +1,17 @@
 User-agent: *
 Allow: /
+Disallow: /admin.html
+Disallow: /admin-pedidos.html
+Disallow: /dashboard-ventas.html
+Disallow: /checkout.html
+Disallow: /confirmacion.html
+Disallow: /confirmacion-flow.html
+Disallow: /confirmacion-transferencia.html
+Disallow: /mi-cuenta.html
+Disallow: /editar-perfil.html
+Disallow: /mis-pedidos.html
+Disallow: /reset-password.html
+Disallow: /restablecer-password.html
+Disallow: /favoritos.html
 
 Sitemap: https://mision3d.cl/sitemap.xml

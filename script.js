@@ -149,15 +149,27 @@ function del(id){
   save(); render(); badge();
 }
 
-/* ==================== Toast (ahora usa ui-components.js) ==================== */
-// Esta función antigua queda como fallback si ui-components.js no se carga
-/* function showToast(msg){
-  const toast = $('#toast');
-  if(!toast) return;
-  toast.textContent = msg;
+/* ==================== Toast Moderno y Flotante ==================== */
+window.showToast = function(msg, type = 'success') {
+  let toast = document.getElementById('modernToast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'modernToast';
+    toast.className = 'toast-float';
+    document.body.appendChild(toast);
+  }
+  const isErr = type === 'error';
+  toast.innerHTML = `
+    <div class="toast-float__icon" style="${isErr ? 'background:#ef4444;' : ''}">${isErr ? '✕' : '✓'}</div>
+    <div class="toast-float__text">${msg}</div>
+    ${!isErr ? `<button class="toast-float__btn" onclick="const oc=document.getElementById('openCart');if(oc)oc.click();">Ver carrito ➔</button>` : ''}
+  `;
   toast.classList.add('show');
-  setTimeout(()=>toast.classList.remove('show'), 1800);
-} */
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(() => {
+    toast.classList.remove('show');
+  }, 2800);
+};
 
 /* ==================== Render carrito lateral ==================== */
 function render(highlightId, addedName){

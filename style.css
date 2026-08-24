@@ -108,6 +108,29 @@
 	font-weight: bold;
 	margin-bottom: 2px;
 }
+.card .stars {
+	color: #f59e42;
+	font-size: 1.1rem;
+	margin-bottom: 2px;
+}
+.card .reviews {
+	color: #555;
+	font-size: 0.95rem;
+	margin-bottom: 2px;
+}
+/* Estrellas dinámicas en cards de inicio */
+.card-stars {
+	color: #f59e0b;
+	font-size: 0.95rem;
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	margin-bottom: 2px;
+}
+.card-reviews {
+	color: #888;
+	font-size: 0.8rem;
+}
 .card .name {
 	font-size: 1.08rem;
 	font-weight: 500;
@@ -5614,6 +5637,729 @@ body {
   .announcement-bar {
     display: none !important;
   }
+}
+
+/* ===== SECCIÓN NOSOTROS – MEJORADA ===== */
+.nosotros {
+  padding: 60px 20px;
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
+}
+.nosotros h3 {
+  font-size: 1.7rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #1f2937;
+}
+.nosotros > p {
+  color: #555;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  max-width: 640px;
+  margin: 0 auto 32px;
+}
+.nosotros-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 20px;
+  margin-bottom: 28px;
+}
+.nosotros-stat {
+  background: #f8f6ff;
+  border: 1px solid #e9d5ff;
+  border-radius: 14px;
+  padding: 20px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.nosotros-stat:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.15);
+}
+.nosotros-stat__num {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #7c3aed;
+}
+.nosotros-stat__label {
+  font-size: 0.85rem;
+  color: #666;
+  text-align: center;
+}
+
+/* ===== BADGE STOCK BAJO ===== */
+.badge--low-stock {
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+  color: #fff;
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .4px;
+  padding: 3px 8px;
+  border-radius: 14px;
+  text-transform: uppercase;
+  display: inline-block;
+  animation: pulse-stock 2s ease-in-out infinite;
+}
+@keyframes pulse-stock {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* =========================================================
+   MEJORAS VISUALES MODERNAS (CSS PURO, RÁPIDO Y LIGERO)
+   ========================================================= */
+
+/* --- Tarjetas de Producto Modernas --- */
+.card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 18px !important;
+  padding: 16px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04) !important;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.25s ease !important;
+  display: flex !important;
+  flex-direction: column !important;
+  position: relative !important;
+}
+
+.card:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.09) !important;
+  border-color: #cbd5e1 !important;
+}
+
+.card .prod-link {
+  display: block !important;
+  overflow: hidden !important;
+  border-radius: 14px !important;
+  background: #f8fafc !important;
+  margin-bottom: 10px !important;
+}
+
+.card img {
+  width: 100% !important;
+  height: 210px !important;
+  object-fit: cover !important;
+  border-radius: 14px !important;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.card:hover img {
+  transform: scale(1.04) !important;
+}
+
+.card h4 {
+  margin: 6px 0 4px !important;
+  font-size: 1.02rem !important;
+  font-weight: 700 !important;
+  line-height: 1.35 !important;
+}
+
+.card h4 a {
+  color: #0f172a !important;
+  text-decoration: none !important;
+  transition: color 0.2s ease !important;
+}
+
+.card h4 a:hover {
+  color: #e6462f !important;
+}
+
+.card .price {
+  font-size: 1.15rem !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+  margin: 8px 0 12px !important;
+  display: flex !important;
+  align-items: baseline !important;
+  gap: 8px !important;
+}
+
+.card .price .new {
+  color: #e6462f !important;
+  font-size: 1.25rem !important;
+  font-weight: 800 !important;
+}
+
+.card .price .old {
+  color: #94a3b8 !important;
+  font-size: 0.95rem !important;
+  text-decoration: line-through !important;
+  font-weight: 500 !important;
+}
+
+.card .add {
+  width: 100% !important;
+  border-radius: 50px !important;
+  background: #0f172a !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 0.92rem !important;
+  padding: 11px 18px !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: background 0.25s ease, transform 0.15s ease, box-shadow 0.25s ease !important;
+  margin-top: auto !important;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15) !important;
+}
+
+.card .add:hover {
+  background: #e6462f !important;
+  box-shadow: 0 6px 18px rgba(230, 70, 47, 0.35) !important;
+  transform: translateY(-2px) !important;
+}
+
+.card .add:active {
+  transform: scale(0.98) !important;
+}
+
+/* --- Hero Status Pill --- */
+.hero-kicker-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  padding: 6px 16px;
+  color: #ffffff;
+  font-size: 0.88rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.kicker-pulse-dot {
+  width: 8px;
+  height: 8px;
+  background: #22c55e;
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+  animation: pulse-green 2s infinite;
+}
+
+@keyframes pulse-green {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 7px rgba(34, 197, 94, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
+/* --- Beneficios Modernos --- */
+.beneficios {
+  padding: 60px 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.beneficios-header {
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+.beneficios-header .section-title {
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 6px;
+}
+
+.beneficios-header .section-subtitle {
+  font-size: 1rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.beneficios-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.beneficios .item {
+  background: #ffffff;
+  border: 1px solid #f1f5f9;
+  border-radius: 20px;
+  padding: 32px 24px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.beneficios .item:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.08);
+  border-color: #cbd5e1;
+}
+
+.beneficios .item svg {
+  width: 58px;
+  height: 58px;
+  padding: 12px;
+  border-radius: 16px;
+  background: #f8fafc;
+  margin-bottom: 14px;
+  transition: transform 0.3s ease;
+}
+
+.beneficios .item:hover svg {
+  transform: scale(1.12);
+}
+
+.beneficios .item h4 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 6px;
+}
+
+.beneficios .item p {
+  font-size: 0.9rem;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* --- Tarjeta de Contacto Directo Moderna --- */
+.contacto-bar {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 16px !important;
+  padding: 24px 28px !important;
+  max-width: 780px !important;
+  margin: 32px auto 40px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03) !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 20px !important;
+  text-align: left !important;
+}
+
+.contacto-bar__info {
+  flex: 1 !important;
+}
+
+.contacto-bar__tag {
+  display: inline-block !important;
+  background: #f0fdf4 !important;
+  color: #166534 !important;
+  border: 1px solid #bbf7d0 !important;
+  border-radius: 999px !important;
+  padding: 3px 12px !important;
+  font-size: 0.78rem !important;
+  font-weight: 700 !important;
+  margin-bottom: 8px !important;
+}
+
+.contacto-bar__info h3 {
+  font-size: 1.2rem !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+  margin: 0 0 4px !important;
+}
+
+.contacto-bar__info p {
+  font-size: 0.88rem !important;
+  color: #64748b !important;
+  margin: 0 !important;
+  line-height: 1.45 !important;
+}
+
+.contacto-bar__actions {
+  display: flex !important;
+  gap: 10px !important;
+  flex-shrink: 0 !important;
+  align-items: center !important;
+}
+
+.contacto-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 10px 18px !important;
+  border-radius: 50px !important;
+  font-size: 0.88rem !important;
+  font-weight: 700 !important;
+  text-decoration: none !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.contacto-btn.wa {
+  background: #25d366 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(37, 211, 102, 0.25) !important;
+}
+
+.contacto-btn.wa:hover {
+  background: #20ba59 !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 16px rgba(37, 211, 102, 0.35) !important;
+}
+
+.contacto-btn.ig {
+  background: linear-gradient(135deg, #e1306c, #fd1d1d) !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(225, 48, 108, 0.25) !important;
+}
+
+.contacto-btn.ig:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 16px rgba(225, 48, 108, 0.35) !important;
+}
+
+@media (max-width: 680px) {
+  .contacto-bar {
+    flex-direction: column !important;
+    text-align: center !important;
+    padding: 20px 16px !important;
+    gap: 16px !important;
+  }
+  .contacto-bar__actions {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+}
+
+/* --- FAQ Acordeón Compacto y Mejor Estructurado --- */
+.faq-section {
+  padding: 40px 16px 64px !important;
+  max-width: 780px !important;
+  margin: 0 auto !important;
+}
+
+.faq-header-compact {
+  text-align: center !important;
+  margin-bottom: 20px !important;
+}
+
+.faq-header-compact h2 {
+  font-size: 1.65rem !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+  margin-bottom: 6px !important;
+}
+
+.faq-header-compact .faq-subtitle {
+  font-size: 0.92rem !important;
+  color: #64748b !important;
+  margin: 0 !important;
+}
+
+.faq-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+.faq-item {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02) !important;
+  overflow: hidden !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+  padding: 0 !important;
+}
+
+.faq-item:hover {
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04) !important;
+}
+
+.faq-q {
+  padding: 13px 18px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  cursor: pointer !important;
+  font-size: 0.94rem !important;
+  font-weight: 600 !important;
+  color: #0f172a !important;
+  user-select: none !important;
+}
+
+.faq-q .icon {
+  font-size: 1.1rem !important;
+  line-height: 1 !important;
+}
+
+.faq-toggle {
+  margin-left: auto !important;
+  width: 24px !important;
+  height: 24px !important;
+  background: #f1f5f9 !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 0.75rem !important;
+  color: #64748b !important;
+  transition: transform 0.25s ease, background 0.2s ease, color 0.2s ease !important;
+}
+
+.faq-item.open .faq-toggle {
+  transform: rotate(180deg) !important;
+  background: #e6462f !important;
+  color: #ffffff !important;
+}
+
+.faq-a {
+  max-height: 0 !important;
+  overflow: hidden !important;
+  opacity: 0 !important;
+  padding: 0 18px 0 46px !important;
+  color: #475569 !important;
+  font-size: 0.88rem !important;
+  line-height: 1.5 !important;
+  transition: max-height 0.25s ease, opacity 0.2s ease, padding 0.25s ease !important;
+}
+
+.faq-item.open .faq-a {
+  max-height: 180px !important;
+  opacity: 1 !important;
+  padding: 0 18px 14px 46px !important;
+}
+
+.faq-a p {
+  margin: 0 !important;
+}
+
+
+/* --- Carrito Lateral (Drawer) Moderno --- */
+.cart {
+  box-shadow: -8px 0 40px rgba(0, 0, 0, 0.2) !important;
+  border-top-left-radius: 20px !important;
+  border-bottom-left-radius: 20px !important;
+}
+
+.cart-header {
+  padding: 20px 24px !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+.cart-header h3 {
+  font-size: 1.2rem !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+  margin: 0 !important;
+}
+
+.cart-header #closeCart {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50% !important;
+  border: none !important;
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 1rem !important;
+  transition: background 0.2s, color 0.2s !important;
+}
+
+.cart-header #closeCart:hover {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+.cart-footer {
+  padding: 20px 24px !important;
+  background: #fafafa !important;
+  border-top: 1px solid #f1f5f9 !important;
+}
+
+.cart-footer .totals {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: baseline !important;
+  margin-bottom: 16px !important;
+  font-size: 1.1rem !important;
+  font-weight: 700 !important;
+}
+
+.cart-footer #checkout {
+  width: 100% !important;
+  padding: 14px 20px !important;
+  border-radius: 50px !important;
+  background: linear-gradient(135deg, #e6462f, #d13019) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 1rem !important;
+  box-shadow: 0 4px 16px rgba(230, 70, 47, 0.35) !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: transform 0.2s, box-shadow 0.2s !important;
+  margin-bottom: 8px !important;
+}
+
+.cart-footer #checkout:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 24px rgba(230, 70, 47, 0.45) !important;
+}
+
+.cart-footer #clearCart {
+  width: 100% !important;
+  border-radius: 50px !important;
+  padding: 10px !important;
+  border: 1px solid #e2e8f0 !important;
+  background: transparent !important;
+  color: #64748b !important;
+  font-size: 0.85rem !important;
+  cursor: pointer !important;
+  transition: background 0.2s, color 0.2s !important;
+}
+
+.cart-footer #clearCart:hover {
+  background: #f1f5f9 !important;
+  color: #dc2626 !important;
+  border-color: #fecaca !important;
+}
+
+/* =========================================================
+   1. PÍLDORAS DE CATEGORÍA RÁPIDAS (CATÁLOGO)
+   ========================================================= */
+.category-pills-wrap {
+  margin: 14px 0 22px !important;
+}
+
+.category-pills {
+  display: flex !important;
+  gap: 8px 10px !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+}
+
+.cat-pill {
+  padding: 7px 16px !important;
+  border-radius: 50px !important;
+  border: 1px solid #e2e8f0 !important;
+  background: #ffffff !important;
+  color: #475569 !important;
+  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+.cat-pill:hover {
+  border-color: #cbd5e1 !important;
+  background: #f8fafc !important;
+  color: #0f172a !important;
+  transform: translateY(-1px) !important;
+}
+
+.cat-pill.active {
+  background: #0f172a !important;
+  border-color: #0f172a !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15) !important;
+}
+
+/* =========================================================
+   3. BARRA SUPERIOR DE ANUNCIOS MODERNA
+   ========================================================= */
+.announcement-bar {
+  background: linear-gradient(90deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%) !important;
+  color: #f8fafc !important;
+  font-size: 0.82rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.3px !important;
+  padding: 8px 0 !important;
+  overflow: hidden !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.ann-track span {
+  display: inline-block !important;
+  white-space: nowrap !important;
+}
+
+/* =========================================================
+   4. NOTIFICACIÓN FLOTANTE (TOAST MODERNO)
+   ========================================================= */
+.toast-float {
+  position: fixed !important;
+  bottom: 24px !important;
+  left: 24px !important;
+  z-index: 10000 !important;
+  background: rgba(15, 23, 42, 0.96) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+  border-radius: 16px !important;
+  padding: 12px 18px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25) !important;
+  transform: translateY(120%) scale(0.95) !important;
+  opacity: 0 !important;
+  transition: transform 0.3s cubic-bezier(0.4, 1.4, 0.4, 1), opacity 0.3s ease !important;
+  pointer-events: none !important;
+  max-width: calc(100vw - 48px) !important;
+}
+
+.toast-float.show {
+  transform: translateY(0) scale(1) !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+.toast-float__icon {
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 50% !important;
+  background: #22c55e !important;
+  color: #ffffff !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 0.85rem !important;
+  font-weight: 800 !important;
+  flex-shrink: 0 !important;
+}
+
+.toast-float__text {
+  font-size: 0.88rem !important;
+  font-weight: 600 !important;
+  color: #f8fafc !important;
+  line-height: 1.3 !important;
+}
+
+.toast-float__btn {
+  background: #e6462f !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 50px !important;
+  padding: 6px 14px !important;
+  font-size: 0.78rem !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  transition: background 0.2s, transform 0.15s !important;
+  flex-shrink: 0 !important;
+}
+
+.toast-float__btn:hover {
+  background: #d13019 !important;
+  transform: translateY(-1px) !important;
 }
 
 

@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es-CL">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
@@ -18,12 +18,13 @@
   <meta name="twitter:image" content="https://mision3d.cl/img/mision3d_logov2.png"/>
   <link rel="canonical" href="https://mision3d.cl/"/>
   <meta name="robots" content="index, follow"/>
-  <title>Mision3D - Tienda</title>
-  <link rel="icon" type="image/png" href="img/mision3d_logov2.png">
+  <title>Misión 3D – Impresión 3D Personalizada en Chile | Tienda Online</title>
   <link rel="icon" type="image/png" href="img/mision3d_logov2.png">
   <link rel="apple-touch-icon" href="img/mision3d_logov2.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="dns-prefetch" href="https://api.mision3d.cl">
+  <link rel="dns-prefetch" href="https://www.googletagmanager.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css"/>
   <link rel="stylesheet" href="header-new-style.css"/>
@@ -32,10 +33,7 @@
     window.API_BASE_URL = 'https://api.mision3d.cl';
   </script>
   <script type="module" src="auth-header.js"></script>
-  <script>window.GA_MEASUREMENT_ID = 'G-XXXXXXXXXX';</script>
-  <script>
-    window.GA_MEASUREMENT_ID = 'G-XKQGMM6ZK0';
-  </script>
+  <script>window.GA_MEASUREMENT_ID = 'G-XKQGMM6ZK0';</script>
   <script src="consent.js"></script>
   <script type="application/ld+json">
 
@@ -73,7 +71,7 @@
     <nav class="nav">
       <a href="index.html" class="active">Inicio</a>
       <a href="catalogo.html" id="navCatalog">Catálogo</a>
-      <a href="#contacto">Contacto</a>
+      <a href="cotizar.html">Cotizar</a>
     </nav>
     <div class="search-header">
       <div class="advanced-search-bar">
@@ -122,7 +120,7 @@
       <button class="cart-btn" id="openCart" aria-label="Abrir carrito">🛒 <span id="cartCount">0</span></button>
     </div>
   </header>
-  <div class="announcement-bar"><div class="ann-track"><span>Santiago despacho 1 a 3 días hábiles • Regiones envío 3 a 5 días hábiles • Pedidos personalizados: cotización gratuita • Soporte directo vía WhatsApp • Santiago despacho 1 a 3 días hábiles • Regiones envío 3 a 5 días hábiles • Pedidos personalizados: cotización gratuita • Soporte directo vía WhatsApp • </span></div></div>
+  <div class="announcement-bar"><div class="ann-track"><span>🇨🇱 Envíos a todo Chile (Starken y Chilexpress) &nbsp;•&nbsp; ⚡ Cotizaciones personalizadas en minutos &nbsp;•&nbsp; 🚚 Despacho rápido 1 a 3 días en Santiago &nbsp;•&nbsp; 💬 Asesoría directa vía WhatsApp (+56 9 5050 3585) &nbsp;•&nbsp; 🇨🇱 Envíos a todo Chile (Starken y Chilexpress) &nbsp;•&nbsp; ⚡ Cotizaciones personalizadas en minutos &nbsp;•&nbsp; 🚚 Despacho rápido 1 a 3 días en Santiago &nbsp;•&nbsp; 💬 Asesoría directa vía WhatsApp (+56 9 5050 3585)</span></div></div>
 
   <!-- Mini resumen carrito -->
   <section id="miniCart" style="max-width:1200px;margin:10px auto 0;padding:0 20px;display:none">
@@ -145,88 +143,30 @@
     <div class="hero-wrapper">
       <div class="hero-inner">
         <div class="hero-text">
-          <span class="hero-kicker">Impresión 3D en Chile</span>
+          <div class="hero-kicker-pill">
+            <span class="kicker-pulse-dot"></span> Impresión 3D en Chile • Calidad Premium
+          </div>
           <h2 class="hero-title">✨ Transformamos tus ideas en productos 3D</h2>
-          <p class="hero-subtitle">Diseños personalizados, regalos únicos y productos para tu negocio.</p>
+          <p class="hero-subtitle">Diseños personalizados, regalos únicos y piezas a medida para tu hogar o negocio.</p>
           <div class="hero-badges">
-            <span class="hero-badge">Cotización rápida</span>
-            <span class="hero-badge">Diseño personalizado</span>
-            <span class="hero-badge">Despacho nacional</span>
+            <span class="hero-badge">⚡ Cotización rápida</span>
+            <span class="hero-badge">🎨 100% Personalizado</span>
+            <span class="hero-badge">🚚 Despacho nacional</span>
           </div>
           <div class="hero-actions">
             <a class="hero-btn btn primary" href="catalogo.html">Ver catálogo</a>
-            <a class="hero-btn btn outline" href="#cotizar">Cotizar mi idea</a>
+            <a class="hero-btn btn outline" href="cotizar.html">Cotizar mi idea</a>
           </div>
         </div>
         <div class="hero-showcase" aria-hidden="true">
           <div class="hero-product-collage">
-            <img src="img/hero-new.png" alt="" class="hero-product hero-product-main" loading="eager">
-            <img src="img/calendario-f1.png" alt="" class="hero-product hero-product-top" loading="lazy">
-            <img src="img/cr7.img.webp" alt="" class="hero-product hero-product-bottom" loading="lazy">
+            <img src="img/hero-new.png" alt="Producto de impresión 3D personalizada Misión 3D" class="hero-product hero-product-main" loading="eager">
+            <img src="img/calendario-f1.png" alt="Calendario F1 2026 impreso en 3D" class="hero-product hero-product-top" loading="lazy">
+            <img src="img/cr7.img.webp" alt="Figura personalizada impresa en 3D" class="hero-product hero-product-bottom" loading="lazy">
           </div>
           <!-- Tarjetas de info eliminadas según solicitud: "Pedidos a medida" y "Entrega" -->
         </div>
       </div>
-    </div>
-  </section>
-
-  <!-- Agentes comerciales: califican la consulta antes de abrir WhatsApp -->
-  <section id="cotizar" class="sales-assistant" aria-labelledby="salesAssistantTitle">
-    <div class="sales-assistant__intro">
-      <span class="sales-assistant__eyebrow">Asistentes de venta</span>
-      <h2 id="salesAssistantTitle">Te ayudamos a avanzar en menos de un minuto</h2>
-      <p>Elige el tipo de ayuda, cuéntanos lo esencial y recibirás una conversación de WhatsApp lista para enviar. Así podemos responderte con una cotización más precisa.</p>
-      <ol class="sales-assistant__steps" aria-label="Cómo funciona">
-        <li><span>1</span> Cuéntanos qué necesitas</li>
-        <li><span>2</span> Indica cantidad y plazo</li>
-        <li><span>3</span> Recibe respuesta personalizada</li>
-      </ol>
-    </div>
-    <div class="sales-assistant__panel">
-      <div class="sales-assistant__tabs" role="tablist" aria-label="Tipo de ayuda">
-        <button class="sales-assistant__tab is-active" type="button" role="tab" aria-selected="true" aria-controls="quoteAgent" id="quoteAgentTab" data-agent-tab="quoteAgent">Quiero cotizar</button>
-        <button class="sales-assistant__tab" type="button" role="tab" aria-selected="false" aria-controls="supportAgent" id="supportAgentTab" data-agent-tab="supportAgent">Tengo una consulta</button>
-      </div>
-
-      <form id="quoteAgent" class="sales-agent-form" role="tabpanel" aria-labelledby="quoteAgentTab">
-        <h3>Agente de cotización</h3>
-        <p>Ideal para regalos, piezas a medida, proyectos y pedidos para empresas.</p>
-        <label for="quoteType">¿Qué quieres crear?</label>
-        <select id="quoteType" name="type" required>
-          <option value="">Selecciona una opción</option>
-          <option>Regalo personalizado</option>
-          <option>Pieza funcional o repuesto</option>
-          <option>Pedido para negocio, evento o empresa</option>
-          <option>Figura o artículo del catálogo</option>
-          <option>Otro proyecto</option>
-        </select>
-        <div class="sales-agent-form__grid">
-          <div><label for="quoteQuantity">Cantidad aproximada</label><input id="quoteQuantity" name="quantity" inputmode="numeric" placeholder="Ej.: 10 unidades"></div>
-          <div><label for="quoteDeadline">¿Para cuándo lo necesitas?</label><input id="quoteDeadline" name="deadline" placeholder="Ej.: antes del 15 de septiembre"></div>
-        </div>
-        <label for="quoteDetails">Describe tu idea o agrega medidas</label>
-        <textarea id="quoteDetails" name="details" rows="4" maxlength="700" placeholder="Ej.: llavero con nombre, 8 cm de alto, color negro. Tengo una foto de referencia."></textarea>
-        <button class="btn sales-agent-form__submit" type="submit">Preparar cotización por WhatsApp <span aria-hidden="true">↗</span></button>
-        <small>Podrás adjuntar imágenes o archivos directamente en WhatsApp.</small>
-      </form>
-
-      <form id="supportAgent" class="sales-agent-form" role="tabpanel" aria-labelledby="supportAgentTab" hidden>
-        <h3>Agente de compras y seguimiento</h3>
-        <p>Resolvemos dudas sobre productos, compras realizadas, despachos o pagos.</p>
-        <label for="supportTopic">¿En qué te ayudamos?</label>
-        <select id="supportTopic" name="topic" required>
-          <option value="">Selecciona una opción</option>
-          <option>Consulta sobre un producto</option>
-          <option>Estado de mi pedido</option>
-          <option>Envíos y plazos de entrega</option>
-          <option>Pagos o comprobante</option>
-          <option>Otro</option>
-        </select>
-        <label for="supportDetails">Cuéntanos los detalles</label>
-        <textarea id="supportDetails" name="details" rows="6" maxlength="700" placeholder="Incluye el número de pedido si ya realizaste una compra."></textarea>
-        <button class="btn sales-agent-form__submit" type="submit">Hablar por WhatsApp <span aria-hidden="true">↗</span></button>
-        <small>Para responderte más rápido, agrega tu número de pedido si lo tienes.</small>
-      </form>
     </div>
   </section>
 
@@ -289,44 +229,40 @@
       </div>
     </div>
   </section>
-  <!-- Nosotros -->
-  <section id="nosotros" class="nosotros"><h3>Sobre Mision3D</h3><p>Somos un emprendimiento chileno de impresión 3D personalizada. Creamos desde piezas funcionales hasta figuras coleccionables, con foco en una atención cercana y entregas claras.</p></section>
-
-  <!-- Contacto -->
-  <section id="contacto" class="contacto"><h3>¿Prefieres hablar directamente?</h3><p>Cuéntanos qué quieres imprimir y te orientamos con material, tamaño, plazo y valor.</p><a href="https://wa.me/56950503585?text=Hola%2C%20necesito%20ayuda%20con%20una%20consulta." class="btn whatsapp" data-sales-source="contacto">WhatsApp</a><a href="https://instagram.com/mision3d.cl" class="btn instagram">Instagram</a></section>
 
   <!-- Preguntas Frecuentes -->
   <section id="faq" class="faq-section">
-  <div class="faq-bg"><img src="img/impresion.png" alt="" aria-hidden="true" loading="lazy" /></div>
     <div class="faq-inner">
-      <h2>Preguntas Frecuentes</h2>
-      <div class="faq-category">Importante</div>
-      <ul class="faq-list" id="faqList">
-        <li class="faq-item">
+      <div class="faq-header-compact">
+        <h2>Preguntas Frecuentes</h2>
+        <p class="faq-subtitle">Todo lo que necesitas saber sobre entregas, materiales y personalización</p>
+      </div>
+      <div class="faq-list" id="faqList">
+        <div class="faq-item">
           <div class="faq-q"><span class="icon">🕒</span><span>¿Cuánto demora mi pedido?</span><span class="faq-toggle">▾</span></div>
-          <div class="faq-a"><p>Depende de la complejidad y cantidad. Piezas simples: 1 a 3 días hábiles. Proyectos personalizados o grandes: 5 a 10 días. Siempre te mantenemos informado del avance.</p></div>
-        </li>
-        <li class="faq-item">
+          <div class="faq-a"><p>Piezas simples: 1 a 3 días hábiles. Proyectos personalizados o de mayor tamaño: 5 a 10 días. Te informamos el avance paso a paso.</p></div>
+        </div>
+        <div class="faq-item">
           <div class="faq-q"><span class="icon">🚚</span><span>¿Hacen envíos? ¿Cuánto cuesta?</span><span class="faq-toggle">▾</span></div>
-          <div class="faq-a"><p>Realizamos envíos a todo Chile vía couriers confiables. En Santiago ofrecemos entrega a domicilio fija y también retiro en taller sin costo. El valor regional depende del peso y destino.</p></div>
-        </li>
-        <li class="faq-item">
-          <div class="faq-q"><span class="icon">🎨</span><span>¿Puedo pedir algo personalizado?</span><span class="faq-toggle">▾</span></div>
-          <div class="faq-a"><p>Sí. Puedes enviarnos tu idea, referencia o modelo. Si necesitas diseño 3D desde cero, evaluamos el trabajo adicional y te enviamos una cotización antes de imprimir.</p></div>
-        </li>
-        <li class="faq-item">
-            <div class="faq-q"><span class="icon">🧼</span><span>¿Cómo cuido mi impresión 3D?</span><span class="faq-toggle">▾</span></div>
-            <div class="faq-a"><p>Mantén lejos de calor extremo (>60°C si es PLA). Límpiala con un paño seco o levemente húmedo sin solventes. Evita golpes o presión en piezas delgadas.</p></div>
-        </li>
-        <li class="faq-item">
-          <div class="faq-q"><span class="icon">↩️</span><span>¿Puedo devolver un producto?</span><span class="faq-toggle">▾</span></div>
-          <div class="faq-a"><p>Productos personalizados no tienen devolución salvo falla de fabricación. Si hubo un error nuestro, re-imprimimos o devolvemos el dinero.</p></div>
-        </li>
-        <li class="faq-item">
-          <div class="faq-q"><span class="icon">🐾</span><span>¿Hacen modelos de mascotas?</span><span class="faq-toggle">▾</span></div>
-          <div class="faq-a"><p>¡Sí! Con fotos de buena calidad podemos crear una figura estilizada. También ofrecemos pintura básica con costo adicional.</p></div>
-        </li>
-      </ul>
+          <div class="faq-a"><p>Enviamos a todo Chile por Starken o Chilexpress (por pagar). En Santiago contamos con entrega fija a $3.500 y retiro gratis en taller en La Florida.</p></div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q"><span class="icon">🎨</span><span>¿Puedo pedir un diseño personalizado?</span><span class="faq-toggle">▾</span></div>
+          <div class="faq-a"><p>¡Claro que sí! Puedes enviarnos tu idea, imagen o archivo 3D. Te entregamos asesoría y cotización previa sin costo.</p></div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q"><span class="icon">🧼</span><span>¿Cómo cuido mi impresión 3D?</span><span class="faq-toggle">▾</span></div>
+          <div class="faq-a"><p>Evita fuentes de calor directo mayores a 60°C. Límpiala suavemente con un paño seco o levemente húmedo sin químicos abrasivos.</p></div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q"><span class="icon">↩️</span><span>¿Tienen garantía o devolución?</span><span class="faq-toggle">▾</span></div>
+          <div class="faq-a"><p>Garantizamos calidad en cada pieza. Si tu pedido presenta alguna falla o defecto de fabricación, re-imprimimos sin costo o devolvemos tu dinero.</p></div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q"><span class="icon">🐾</span><span>¿Hacen figuras de mascotas?</span><span class="faq-toggle">▾</span></div>
+          <div class="faq-a"><p>Sí, modelamos e imprimimos figuras estilizadas a partir de fotos de tu mascota, con opción de acabado personalizado.</p></div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -376,13 +312,28 @@
         </div>
       </div>
       <div style="text-align: center; padding: 20px 0; border-top: 1px solid #333; margin-top: 20px;">
-        <p style="margin: 0; font-size: 0.85rem; color: #888;">&copy; 2025 Misión 3D - Todos los derechos reservados</p>
+        <p style="margin: 0; font-size: 0.85rem; color: #888;">&copy; <span id="footerYear">2026</span> Misión 3D - Todos los derechos reservados</p>
       </div>
     </div>
   </footer>
 
   <!-- Carrito -->
   <button id="scrollTop" class="scroll-top" aria-label="Subir" title="Subir" style="display:none">▲</button>
+
+  <!-- Botón flotante WhatsApp -->
+  <a id="whatsappFloat" href="https://wa.me/56950503585?text=Hola%2C%20tengo%20una%20consulta%20sobre%20sus%20productos%20de%20impresi%C3%B3n%203D%20%F0%9F%A4%94"
+     target="_blank" rel="noopener" aria-label="Contactar por WhatsApp"
+     style="position:fixed;bottom:24px;right:24px;z-index:9990;display:flex;align-items:center;gap:10px;background:#25d366;color:#fff;border-radius:50px;padding:13px 20px 13px 16px;box-shadow:0 6px 24px rgba(37,211,102,.45);text-decoration:none;font-weight:700;font-size:.88rem;transition:transform .2s,box-shadow .2s;animation:wa-pop .6s cubic-bezier(.4,1.6,.4,1) both .8s">
+    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0">
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+    </svg>
+    ¿Tienes dudas?
+  </a>
+  <style>
+    @keyframes wa-pop { from { transform:scale(0) translateY(20px); opacity:0; } to { transform:scale(1) translateY(0); opacity:1; } }
+    #whatsappFloat:hover { transform:translateY(-3px) scale(1.04); box-shadow:0 10px 32px rgba(37,211,102,.55); }
+    @media (max-width:500px) { #whatsappFloat span { display:none; } #whatsappFloat { padding:14px; border-radius:50%; } }
+  </style>
   <!-- Carrito y modal (mismo markup que en index) -->
 <aside id="cartDrawer" class="cart">
   <div class="cart-header"><h3>Tu carrito</h3><button id="closeCart">✕</button></div>
@@ -448,7 +399,6 @@
   <!-- Toast de notificación -->
   <div id="toast" class="toast">¡Producto agregado al carrito!</div>
   <script src="script.js?v=20260304-1" defer></script>
-  <script src="sales-assistant.js" defer></script>
   <script>
     // FAQ toggle
     document.addEventListener('DOMContentLoaded',()=>{
@@ -466,32 +416,9 @@
       });
     });
 
-    // Procesar logo footer para hacer fondo blanco transparente (runtime, sin editar archivo original)
-    document.addEventListener('DOMContentLoaded',()=>{
-      const logo = document.querySelector('.footer-logo');
-      if(!logo) return;
-      function makeTransparent(){
-        try {
-          const w = logo.naturalWidth; const h = logo.naturalHeight;
-          if(!w || !h) return; // imagen no lista
-          const canvas = document.createElement('canvas');
-          canvas.width = w; canvas.height = h;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(logo,0,0);
-          const imgData = ctx.getImageData(0,0,w,h);
-            const d = imgData.data;
-            for(let i=0;i<d.length;i+=4){
-              const r=d[i],g=d[i+1],b=d[i+2];
-              // píxeles muy claros -> transparente
-              if(r>240 && g>240 && b>240){ d[i+3]=0; }
-            }
-          ctx.putImageData(imgData,0,0);
-          logo.src = canvas.toDataURL('image/png');
-          logo.classList.remove('remove-white'); // ya no necesitamos filtro
-        } catch(err){ /* silencioso */ }
-      }
-      if(logo.complete) makeTransparent(); else logo.onload = makeTransparent;
-    });
+    // Actualizar año de copyright dinámicamente
+    const yearEl = document.getElementById('footerYear');
+    if(yearEl) yearEl.textContent = new Date().getFullYear();
   </script>
 
 <!-- Firebase RTDB (módulos) -->
@@ -551,12 +478,35 @@
 
   // Cargar productos desde Supabase y renderizar catálogo
   async function cargarProductosDesdeSupabase() {
+    // ── Cache con TTL de 30 minutos: si el cache es reciente, no llamamos a Supabase ──
+    const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutos
+    try {
+      const cachedTs = Number(localStorage.getItem('PRODUCTS_TS') || 0);
+      const cachedData = localStorage.getItem('PRODUCTS');
+      if (cachedTs && cachedData && (Date.now() - cachedTs < CACHE_TTL_MS)) {
+        const parsed = JSON.parse(cachedData);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          mergeProducts(parsed);
+          document.dispatchEvent(new Event('productsReady'));
+          window.dispatchEvent(new CustomEvent('productsLoaded'));
+          const featuredCached = (window.PRODUCTS||[]).filter(p => Number(p.discount||0) > 0);
+          renderHomeProducts((featuredCached.length ? featuredCached : (window.PRODUCTS||[])).slice(0, 5));
+          if (typeof window.renderCatalog === 'function') renderCatalog('');
+          return; // Salir sin llamar a Supabase
+        }
+      }
+    } catch { /* Si falla el cache, continuar normalmente */ }
+
     try {
       const { data, error } = await supabase.from('productos').select('*');
       if (error) throw error;
       const arr = Array.isArray(data) ? data : [];
       mergeProducts(arr);
-      try { localStorage.setItem('PRODUCTS', JSON.stringify(window.PRODUCTS||[])); } catch {}
+      // Guardar cache con timestamp
+      try {
+        localStorage.setItem('PRODUCTS', JSON.stringify(window.PRODUCTS||[]));
+        localStorage.setItem('PRODUCTS_TS', String(Date.now()));
+      } catch {}
       document.dispatchEvent(new Event('productsReady'));
       window.dispatchEvent(new CustomEvent('productsLoaded'));
       // Mostrar primero productos con descuento, si existen
@@ -590,7 +540,19 @@
       const hasDiscount = Number.isFinite(d) && d > 0;
       const badgeHtml = hasDiscount ? (d > 0 && d <= 25 ? `<span class="badge badge--bf">DTO -${d}%</span>` : `<span class="badge badge--sale">-${d}%</span>`) : '';
       const isOut = String(p.stock || '').toLowerCase() === 'agotado';
-      const stockBadge = isOut ? `<span class="badge badge--out">Agotado</span>` : '';
+      const isLow = String(p.stock || '').toLowerCase() === 'bajo';
+      const stockBadge = isOut
+        ? `<span class="badge badge--out">Agotado</span>`
+        : isLow
+          ? `<span class="badge--low-stock">⚡ Pocas unidades</span>`
+          : '';
+      const reviews = Number(p.reviews || 0);
+      const starsHtml = reviews > 0
+        ? `<div class="card-stars" aria-label="${p.stars} de 5 estrellas, ${reviews} reseñas">
+             ${'★'.repeat(Math.round(p.stars || 5))}${'☆'.repeat(5 - Math.round(p.stars || 5))}
+             <span class="card-reviews">(${reviews})</span>
+           </div>`
+        : `<span class="badge new" style="font-size:.65rem">Nuevo</span>`;
       const basePrice = Number(p.price || 0);
       const finalPrice = hasDiscount ? Math.round(basePrice * (1 - d/100)) : basePrice;
       const priceHtml = hasDiscount
@@ -605,8 +567,11 @@
             <a href="producto.html?id=${p.id}" class="prod-link">${p.name}</a>
           </h4>
           ${desc ? `<p>${desc}</p>` : ''}
-          ${badgeHtml}
-          ${stockBadge}
+          <div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center">
+            ${badgeHtml}
+            ${stockBadge}
+          </div>
+          ${starsHtml}
           <strong class="price">${priceHtml}</strong>
           ${isOut ? `<button class="add disabled" disabled>Agotado</button>` : `<button class="add" data-id="${p.id}">Agregar</button>`}
         </div>
@@ -616,6 +581,19 @@
       btn.addEventListener('click', () => {
         if (typeof window.add === 'function') {
           window.add(btn.dataset.id);
+          // Feedback visual: cambiar texto y color por 2 segundos
+          const originalText = btn.textContent;
+          const originalBg = btn.style.background;
+          btn.textContent = '✓ Agregado';
+          btn.style.background = '#22c55e';
+          btn.style.color = '#fff';
+          btn.disabled = true;
+          setTimeout(() => {
+            btn.textContent = originalText;
+            btn.style.background = originalBg;
+            btn.style.color = '';
+            btn.disabled = false;
+          }, 2000);
         }
       });
     });
@@ -665,12 +643,18 @@
       try {
         const { error } = await supabase.from('pedidos').insert([pedido]);
         if (error) throw error;
-        alert("✅ Pedido registrado. Te contactaremos por correo/WhatsApp.");
+        // Guardar datos del pedido para mostrarlos en la página de confirmación
+        const orderNum = 'ORD-' + Date.now().toString().slice(-6);
+        try {
+          localStorage.setItem('last_order_number', orderNum);
+          localStorage.setItem('last_order_items', JSON.stringify(pedido.items || []));
+          localStorage.setItem('last_order_total', String(pedido.totalCLP || 0));
+        } catch {}
         localStorage.removeItem("cart");
-        window.location.href = "index.html";
+        window.location.href = "confirmacion.html";
       } catch (e) {
         console.error(e);
-        alert("❌ Hubo un problema registrando el pedido. Intenta nuevamente.");
+        alert("Error al registrar el pedido. Por favor intenta nuevamente o contacta por WhatsApp.");
       }
     });
   });
@@ -682,21 +666,25 @@
   <script src="quick-view.js" defer></script>
   <!-- Wishlist (favoritos) también en home -->
   <script src="wishlist.js" defer></script>
-<!-- Scripts página producto -->
 <script>
-  // Scroll to top button behavior
+  // Scroll to top button behavior (optimizado con rAF)
   (function(){
     const btn = document.getElementById('scrollTop');
     if(!btn) return;
+    let ticking = false;
     function onScroll(){
-      if(window.scrollY > 240) { btn.style.display = 'flex'; }
-      else { btn.style.display = 'none'; }
+      if(!ticking){
+        window.requestAnimationFrame(()=>{
+          btn.style.display = window.scrollY > 240 ? 'flex' : 'none';
+          ticking = false;
+        });
+        ticking = true;
+      }
     }
     window.addEventListener('scroll', onScroll, { passive: true });
     btn.addEventListener('click', ()=>{ window.scrollTo({top:0,behavior:'smooth'}); });
-    // initial check
     onScroll();
   })();
 </script>
-  <script src="debug-hero-touch.js" defer></script>
+  <!-- debug-hero-touch.js eliminado (solo para desarrollo local) -->
 </body></html>

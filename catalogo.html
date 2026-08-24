@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es-CL">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
@@ -29,18 +29,16 @@
   <meta name="robots" content="index, follow"/>
   <title>Catálogo - Misión 3D</title>
   <link rel="icon" type="image/png" href="img/mision3d_logov2.png">
-  <link rel="icon" type="image/png" href="img/mision3d_logov2.png">
   <link rel="apple-touch-icon" href="img/mision3d_logov2.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="dns-prefetch" href="https://api.mision3d.cl">
+  <link rel="dns-prefetch" href="https://www.googletagmanager.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="header-new-style.css"/>
   <script type="module" src="auth-header.js"></script>
-  <script>window.GA_MEASUREMENT_ID = window.GA_MEASUREMENT_ID || 'G-XXXXXXXXXX';</script>
-  <script>
-    window.GA_MEASUREMENT_ID = 'G-XKQGMM6ZK0';
-  </script>
+  <script>window.GA_MEASUREMENT_ID = 'G-XKQGMM6ZK0';</script>
   <script src="consent.js"></script>
   <style>
     .discount-toggle {
@@ -98,7 +96,7 @@
     <nav class="nav">
       <a href="index.html">Inicio</a>
       <a href="catalogo.html" class="active">Catálogo</a>
-      <a href="index.html#contacto">Contacto</a>
+      <a href="cotizar.html">Cotizar</a>
     </nav>
     <div class="search-header">
       <div class="advanced-search-bar">
@@ -123,10 +121,18 @@
       <button class="cart-btn" id="openCart" aria-label="Abrir carrito">🛒 <span id="cartCount">0</span></button>
     </div>
   </header>
-  <div class="announcement-bar"><div class="ann-track"><span>Santiago despacho 1 a 3 días hábiles • Regiones envío 3 a 5 días hábiles • Pedidos personalizados: cotización gratuita • Soporte directo vía WhatsApp • Santiago despacho 1 a 3 días hábiles • Regiones envío 3 a 5 días hábiles • Pedidos personalizados: cotización gratuita • Soporte directo vía WhatsApp • Santiago despacho 1 a 3 días hábiles • Regiones envío 3 a 5 días hábiles • Pedidos personalizados: cotización gratuita • Soporte directo vía WhatsApp • Santiago despacho 1 a 3 días hábiles • Regiones envío 3 a 5 días hábiles • Pedidos personalizados: cotización gratuita • Soporte directo vía WhatsApp • </span></div></div>
+  <div class="announcement-bar"><div class="ann-track"><span>🇨🇱 Envíos a todo Chile (Starken y Chilexpress) &nbsp;•&nbsp; ⚡ Cotizaciones personalizadas en minutos &nbsp;•&nbsp; 🚚 Despacho rápido 1 a 3 días en Santiago &nbsp;•&nbsp; 💬 Asesoría directa vía WhatsApp (+56 9 5050 3585) &nbsp;•&nbsp; 🇨🇱 Envíos a todo Chile (Starken y Chilexpress) &nbsp;•&nbsp; ⚡ Cotizaciones personalizadas en minutos &nbsp;•&nbsp; 🚚 Despacho rápido 1 a 3 días en Santiago &nbsp;•&nbsp; 💬 Asesoría directa vía WhatsApp (+56 9 5050 3585)</span></div></div>
   <section class="catalog-wrap" id="productos">
     <nav class="breadcrumbs"><a href="index.html">Inicio</a> <span class="crumb-sep">›</span> <span>Productos</span></nav>
-    <h2 class="catalog-title">Productos</h2>
+    <h2 class="catalog-title">Catálogo de Productos</h2>
+    
+    <!-- Píldoras de categoría rápidas -->
+    <div class="category-pills-wrap">
+      <div class="category-pills" id="categoryPills">
+        <button class="cat-pill active" data-cat="all">✨ Todos</button>
+      </div>
+    </div>
+
     <div id="activeCategoryChip" style="margin-bottom:12px"></div>
     <div class="catalog-layout">
       <aside class="catalog-sidebar">
@@ -476,5 +482,42 @@
     }
   }
   cargarProductosDesdeSupabase();
+
+  // Inicializar Píldoras de Categoría Rápidas
+  function initCategoryPills() {
+    const container = document.getElementById('categoryPills');
+    if (!container) return;
+    const prods = window.PRODUCTS || [];
+    const cats = [...new Set(prods.map(p => p.category).filter(Boolean))].sort();
+    if (!cats.length) return;
+    
+    let html = '<button class="cat-pill active" data-cat="all">✨ Todos</button>';
+    cats.forEach(c => {
+      html += `<button class="cat-pill" data-cat="${c}">${c}</button>`;
+    });
+    container.innerHTML = html;
+
+    container.querySelectorAll('.cat-pill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        container.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const cat = btn.getAttribute('data-cat');
+        const catValue = cat === 'all' ? '' : cat;
+        
+        // Sincronizar selectores existentes
+        const sel = document.getElementById('categorySelect');
+        if (sel) sel.value = cat;
+        const selHeader = document.getElementById('headerCategorySelect');
+        if (selHeader) selHeader.value = cat;
+        
+        if (typeof window.renderCatalog === 'function') {
+          window.renderCatalog(catValue);
+        }
+      });
+    });
+  }
+
+  window.addEventListener('productsLoaded', initCategoryPills);
+  document.addEventListener('productsReady', initCategoryPills);
 </script>
 </body></html>

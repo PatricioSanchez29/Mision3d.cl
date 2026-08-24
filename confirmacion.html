@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>!Pedido confirmado! | Mision 3D</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/png" href="img/mision3d_logov2.png">
+  <link rel="apple-touch-icon" href="img/mision3d_logov2.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="header-new-style.css" />
+  <script>window.GA_MEASUREMENT_ID = 'G-XKQGMM6ZK0';</script>
+  <script src="consent.js"></script>
+  <script type="module" src="auth-header.js"></script>
+  <style>
+    body { background:#f4f6fb; font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; min-height:100vh; padding-top:90px; }
+    .confirm-wrap { max-width:680px; margin:40px auto 80px; padding:0 20px; }
+    .confirm-card { background:#fff; border-radius:20px; padding:48px 40px; box-shadow:0 8px 32px rgba(0,0,0,.09); text-align:center; }
+    .success-ring { width:90px; height:90px; margin:0 auto 24px; border-radius:50%; background:linear-gradient(135deg,#22c55e,#16a34a); display:flex; align-items:center; justify-content:center; box-shadow:0 0 0 12px rgba(34,197,94,.12); animation:pop-in .5s cubic-bezier(.4,1.6,.4,1) both; }
+    @keyframes pop-in { from { transform:scale(0); opacity:0; } to { transform:scale(1); opacity:1; } }
+    .success-ring svg { width:44px; height:44px; stroke:#fff; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; }
+    .confirm-title { font-size:1.9rem; font-weight:800; color:#111827; margin:0 0 8px; }
+    .confirm-subtitle { color:#6b7280; font-size:1rem; margin:0 0 28px; line-height:1.5; }
+    .order-badge { display:inline-block; background:linear-gradient(135deg,#f0f4ff,#e8edff); border:1.5px solid #c7d2fe; border-radius:12px; padding:12px 24px; margin-bottom:32px; font-size:1.05rem; color:#3730a3; font-weight:700; letter-spacing:.5px; }
+    .order-items { background:#fafafa; border:1px solid #e5e7eb; border-radius:14px; padding:20px; margin-bottom:28px; text-align:left; }
+    .order-items h3 { font-size:.85rem; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:.7px; margin:0 0 14px; }
+    .order-item { display:flex; align-items:center; gap:14px; padding:10px 0; border-bottom:1px solid #f0f0f0; }
+    .order-item:last-child { border-bottom:none; }
+    .order-item img { width:52px; height:52px; object-fit:cover; border-radius:10px; background:#eee; flex-shrink:0; }
+    .order-item-info { flex:1; min-width:0; }
+    .order-item-name { font-weight:600; font-size:.9rem; color:#111827; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .order-item-qty { font-size:.78rem; color:#9ca3af; margin-top:2px; }
+    .order-item-price { font-weight:700; font-size:.92rem; color:#e6462f; white-space:nowrap; }
+    .order-total { display:flex; justify-content:space-between; align-items:center; font-weight:700; font-size:1rem; padding-top:14px; color:#111827; }
+    .steps-card { background:#fff; border-radius:16px; padding:28px 32px; box-shadow:0 4px 16px rgba(0,0,0,.06); margin-bottom:20px; text-align:left; }
+    .steps-card h3 { font-size:1rem; font-weight:700; color:#111827; margin:0 0 18px; }
+    .step-row { display:flex; align-items:flex-start; gap:14px; margin-bottom:16px; }
+    .step-row:last-child { margin-bottom:0; }
+    .step-num { width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg,#8b5cf6,#6366f1); color:#fff; font-weight:700; font-size:.82rem; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px; }
+    .step-text strong { display:block; font-size:.9rem; color:#111827; margin-bottom:2px; }
+    .step-text span { font-size:.82rem; color:#6b7280; line-height:1.45; }
+    .confirm-actions { display:flex; flex-direction:column; gap:12px; margin-top:28px; }
+    .btn-confirm-primary { display:block; width:100%; padding:16px 24px; background:linear-gradient(135deg,#25d366,#1da851); color:#fff; font-weight:700; font-size:.95rem; border-radius:40px; text-decoration:none; text-align:center; transition:transform .2s,box-shadow .2s; box-shadow:0 8px 20px rgba(37,211,102,.3); }
+    .btn-confirm-primary:hover { transform:translateY(-2px); box-shadow:0 12px 28px rgba(37,211,102,.35); }
+    .btn-confirm-secondary { display:block; width:100%; padding:14px 24px; background:#f3f4f6; color:#374151; font-weight:600; font-size:.92rem; border-radius:40px; text-decoration:none; text-align:center; transition:background .2s; }
+    .btn-confirm-secondary:hover { background:#e5e7eb; }
+    .newsletter-card { background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); border-radius:16px; padding:28px 32px; color:#fff; margin-bottom:20px; text-align:left; margin-top:20px; }
+    .newsletter-card h3 { font-size:1rem; font-weight:700; margin:0 0 6px; }
+    .newsletter-card p { font-size:.85rem; opacity:.88; margin:0 0 14px; }
+    .newsletter-form { display:flex; gap:8px; }
+    .newsletter-form input { flex:1; padding:10px 14px; border:none; border-radius:10px; font-size:.88rem; background:rgba(255,255,255,.95); color:#111; }
+    .newsletter-form input:focus { outline:2px solid rgba(255,255,255,.6); }
+    .newsletter-form button { padding:10px 18px; background:#fff; color:#7c3aed; font-weight:700; font-size:.85rem; border:none; border-radius:10px; cursor:pointer; white-space:nowrap; transition:background .2s; }
+    .newsletter-form button:hover { background:#f3e8ff; }
+    .newsletter-ok { display:none; font-size:.85rem; opacity:.9; font-weight:600; }
+    @media (max-width:560px) {
+      .confirm-card { padding:32px 20px; }
+      .confirm-title { font-size:1.5rem; }
+      .steps-card,.newsletter-card { padding:22px 18px; }
+      .newsletter-form { flex-direction:column; }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1 class="logo" style="margin:0;display:flex;align-items:center">
+      <a href="index.html" style="display:inline-flex;align-items:center;text-decoration:none">
+        <img src="img/mision3d_logov2.png" alt="Mision 3D" class="logo-img"
+             onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-text',textContent:'Mision 3D'}));" />
+      </a>
+    </h1>
+    <nav class="nav">
+      <a href="index.html">Inicio</a>
+      <a href="catalogo.html">Catalogo</a>
+    </nav>
+  </header>
+
+  <main class="confirm-wrap">
+
+    <div class="confirm-card">
+      <div class="success-ring">
+        <svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      </div>
+      <h1 class="confirm-title">Pedido confirmado!</h1>
+      <p class="confirm-subtitle">Gracias por tu compra. Te contactaremos por WhatsApp o correo para coordinar los detalles.</p>
+      <div class="order-badge">Pedido #<span id="orderNumber">---</span></div>
+      <div class="order-items" id="orderItemsSection" style="display:none">
+        <h3>Resumen de tu pedido</h3>
+        <div id="orderItemsList"></div>
+        <div class="order-total">
+          <span>Total</span>
+          <span id="orderTotalDisplay">$0</span>
+        </div>
+      </div>
+      <div class="confirm-actions">
+        <a id="whatsappConfirm" href="#" class="btn-confirm-primary" target="_blank" rel="noopener">
+          Confirmar pedido por WhatsApp
+        </a>
+        <a href="catalogo.html" class="btn-confirm-secondary">Seguir comprando</a>
+      </div>
+    </div>
+
+    <div class="steps-card" style="margin-top:20px">
+      <h3>Que sigue ahora?</h3>
+      <div class="step-row">
+        <div class="step-num">1</div>
+        <div class="step-text">
+          <strong>Confirmacion por WhatsApp</strong>
+          <span>Nuestro equipo te contactara en horario habil (lunes a viernes, 9:00-18:00) para confirmar tu pedido.</span>
+        </div>
+      </div>
+      <div class="step-row">
+        <div class="step-num">2</div>
+        <div class="step-text">
+          <strong>Pago y produccion</strong>
+          <span>Una vez confirmado el pago, comenzamos la impresion. El tiempo depende de la complejidad del pedido.</span>
+        </div>
+      </div>
+      <div class="step-row">
+        <div class="step-num">3</div>
+        <div class="step-text">
+          <strong>Envio o retiro</strong>
+          <span>Recibiras el codigo de seguimiento. Tambien puedes retirar en nuestro taller en La Florida, Santiago.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="newsletter-card">
+      <h3>Recibe ofertas y novedades</h3>
+      <p>Suscribete y enterate primero de los descuentos y nuevos productos.</p>
+      <form class="newsletter-form" id="newsletterConfirmForm">
+        <input type="email" id="newsletterEmailConfirm" placeholder="tu@correo.com" autocomplete="email" required />
+        <button type="submit">Suscribirme</button>
+      </form>
+      <p class="newsletter-ok" id="newsletterOkMsg">Gracias! Te avisaremos de las proximas ofertas.</p>
+    </div>
+
+  </main>
+
+  <script>
+    (function() {
+      var fmt = function(n) { return '$' + Number(n || 0).toLocaleString('es-CL'); };
+      var orderNum = localStorage.getItem('last_order_number') || ('ORD-' + Date.now().toString().slice(-6));
+      document.getElementById('orderNumber').textContent = orderNum;
+      var waLink = document.getElementById('whatsappConfirm');
+      if (waLink) {
+        var msg = encodeURIComponent('Hola, acabo de realizar el pedido #' + orderNum + ' en Mision 3D. Podrian confirmarme el estado?');
+        waLink.href = 'https://wa.me/56950503585?text=' + msg;
+      }
+      try {
+        var cartRaw = localStorage.getItem('last_order_items') || localStorage.getItem('cart') || '[]';
+        var cart = JSON.parse(cartRaw);
+        var totalRaw = localStorage.getItem('last_order_total');
+        if (Array.isArray(cart) && cart.length > 0) {
+          var section = document.getElementById('orderItemsSection');
+          var list = document.getElementById('orderItemsList');
+          var totalEl = document.getElementById('orderTotalDisplay');
+          var total = 0;
+          list.innerHTML = cart.map(function(item) {
+            var price = Number(item.price || 0);
+            var qty = Number(item.qty || 1);
+            total += price * qty;
+            return '<div class="order-item">' +
+              '<img src="' + (item.img || 'img/placeholder.png') + '" alt="' + (item.name || 'Producto') + '" onerror="this.src=\'img/placeholder.png\'" loading="lazy">' +
+              '<div class="order-item-info">' +
+                '<div class="order-item-name">' + (item.name || 'Producto') + '</div>' +
+                '<div class="order-item-qty">Cantidad: ' + qty + (item.variant ? ' - ' + item.variant : '') + '</div>' +
+              '</div>' +
+              '<div class="order-item-price">' + fmt(price * qty) + '</div>' +
+            '</div>';
+          }).join('');
+          totalEl.textContent = fmt(totalRaw || total);
+          section.style.display = 'block';
+        }
+      } catch(e) {}
+      localStorage.removeItem('cart');
+      localStorage.removeItem('last_order_items');
+    })();
+
+    document.getElementById('newsletterConfirmForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      var email = document.getElementById('newsletterEmailConfirm').value.trim();
+      if (!email) return;
+      try {
+        var subs = JSON.parse(localStorage.getItem('newsletter_subs') || '[]');
+        if (subs.indexOf(email) === -1) { subs.push(email); localStorage.setItem('newsletter_subs', JSON.stringify(subs)); }
+      } catch(err) {}
+      this.style.display = 'none';
+      document.getElementById('newsletterOkMsg').style.display = 'block';
+    });
+  </script>
+</body>
+</html>

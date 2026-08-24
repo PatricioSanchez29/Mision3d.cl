@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cotizar Impresión 3D Personalizada | Misión 3D</title>
+  <meta name="description" content="Cotiza tu proyecto de impresión 3D personalizada en Chile. Respuesta rápida en minutos y asesoría directa por WhatsApp.">
+  <link rel="icon" type="image/png" href="img/mision3d_logov2.png">
+  <link rel="apple-touch-icon" href="img/mision3d_logov2.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="header-new-style.css"/>
+  <script type="module" src="auth-header.js"></script>
+  <script>window.GA_MEASUREMENT_ID = 'G-XKQGMM6ZK0';</script>
+  <script src="consent.js"></script>
+  <style>
+    body {
+      background: #f8fafc;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    .cotizar-page {
+      max-width: 1100px;
+      margin: 40px auto 80px;
+      padding: 0 20px;
+    }
+    .cotizar-hero {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    .cotizar-badge {
+      display: inline-block;
+      background: #e0f2fe;
+      color: #0369a1;
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .cotizar-hero h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 0 0 10px;
+    }
+    .cotizar-hero p {
+      font-size: 1.05rem;
+      color: #64748b;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <button class="hamburger-btn" id="hamburgerBtn" aria-label="Abrir menú">
+      <div class="hamburger-icon">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </button>
+
+    <h1 class="logo" style="margin:0;display:flex;align-items:center">
+      <a href="index.html" style="display:inline-flex;align-items:center;text-decoration:none">
+        <img src="img/mision3d_logov2.png" alt="Misión 3D" class="logo-img" loading="lazy" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-text',textContent:'Misión 3D'}));" />
+      </a>
+    </h1>
+    <nav class="nav">
+      <a href="index.html">Inicio</a>
+      <a href="catalogo.html">Catálogo</a>
+      <a href="cotizar.html" class="active">Cotizar</a>
+    </nav>
+    <div class="search-header">
+      <div class="advanced-search-bar">
+        <select id="headerCategorySelect" class="category-select">
+          <option value="all">Todas las categorías</option>
+        </select>
+        <input type="text" id="searchInput" placeholder="¿Qué estás buscando?" class="search-input" autocomplete="off">
+        <button type="button" id="headerSearchBtn" class="search-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+        </button>
+      </div>
+      <div id="searchSuggestions" class="search-suggestions"></div>
+    </div>
+    <div class="right-actions" style="display:flex;align-items:center;gap:10px">
+      <div id="userArea" class="user-area">
+        <a href="login.html" id="loginLink" class="btn small outline">Ingresar</a>
+      </div>
+      <button class="cart-btn" id="openCart" aria-label="Abrir carrito">🛒 <span id="cartCount">0</span></button>
+    </div>
+  </header>
+
+  <main class="cotizar-page">
+    <div class="cotizar-hero">
+      <span class="cotizar-badge">🚀 Asistente de Cotizaciones</span>
+      <h1>Cotiza tu proyecto en 3D</h1>
+      <p>Cuéntanos lo esencial de tu idea y te generamos un mensaje directo a WhatsApp con toda la información lista para cotizarte.</p>
+    </div>
+
+    <!-- Asistente de cotización -->
+    <section id="cotizar" class="sales-assistant" aria-labelledby="salesAssistantTitle" style="margin-top:0;">
+      <div class="sales-assistant__intro">
+        <span class="sales-assistant__eyebrow">Paso a paso</span>
+        <h2 id="salesAssistantTitle">Te ayudamos a avanzar en menos de un minuto</h2>
+        <p>Elige el tipo de ayuda, completa los datos básicos y recibirás una conversación de WhatsApp lista para enviar.</p>
+        <ol class="sales-assistant__steps" aria-label="Cómo funciona">
+          <li><span>1</span> Cuéntanos qué necesitas</li>
+          <li><span>2</span> Indica cantidad y plazo</li>
+          <li><span>3</span> Recibe respuesta y cotización</li>
+        </ol>
+      </div>
+      <div class="sales-assistant__panel">
+        <div class="sales-assistant__tabs" role="tablist" aria-label="Tipo de ayuda">
+          <button class="sales-assistant__tab is-active" type="button" role="tab" aria-selected="true" aria-controls="quoteAgent" id="quoteAgentTab" data-agent-tab="quoteAgent">Quiero cotizar</button>
+          <button class="sales-assistant__tab" type="button" role="tab" aria-selected="false" aria-controls="supportAgent" id="supportAgentTab" data-agent-tab="supportAgent">Tengo una consulta</button>
+        </div>
+
+        <form id="quoteAgent" class="sales-agent-form" role="tabpanel" aria-labelledby="quoteAgentTab">
+          <h3>Agente de cotización</h3>
+          <p>Ideal para regalos, piezas a medida, proyectos y pedidos para empresas.</p>
+          <label for="quoteType">¿Qué quieres crear?</label>
+          <select id="quoteType" name="type" required>
+            <option value="">Selecciona una opción</option>
+            <option>Regalo personalizado</option>
+            <option>Pieza funcional o repuesto</option>
+            <option>Pedido para negocio, evento o empresa</option>
+            <option>Figura o artículo del catálogo</option>
+            <option>Otro proyecto</option>
+          </select>
+          <div class="sales-agent-form__grid">
+            <div><label for="quoteQuantity">Cantidad aproximada</label><input id="quoteQuantity" name="quantity" inputmode="numeric" placeholder="Ej.: 10 unidades"></div>
+            <div><label for="quoteDeadline">¿Para cuándo lo necesitas?</label><input id="quoteDeadline" name="deadline" placeholder="Ej.: antes del 15 de septiembre"></div>
+          </div>
+          <label for="quoteDetails">Describe tu idea o agrega medidas</label>
+          <textarea id="quoteDetails" name="details" rows="4" maxlength="700" placeholder="Ej.: llavero con nombre, 8 cm de alto, color negro. Tengo una foto de referencia."></textarea>
+          <button class="btn sales-agent-form__submit" type="submit">Preparar cotización por WhatsApp <span aria-hidden="true">↗</span></button>
+          <small>Podrás adjuntar imágenes o archivos directamente en WhatsApp.</small>
+        </form>
+
+        <form id="supportAgent" class="sales-agent-form" role="tabpanel" aria-labelledby="supportAgentTab" hidden>
+          <h3>Agente de compras y seguimiento</h3>
+          <p>Resolvemos dudas sobre productos, compras realizadas, despachos o pagos.</p>
+          <label for="supportTopic">¿En qué te ayudamos?</label>
+          <select id="supportTopic" name="topic" required>
+            <option value="">Selecciona una opción</option>
+            <option>Consulta sobre un producto</option>
+            <option>Estado de mi pedido</option>
+            <option>Envíos y plazos de entrega</option>
+            <option>Pagos o comprobante</option>
+            <option>Otro</option>
+          </select>
+          <label for="supportDetails">Cuéntanos los detalles</label>
+          <textarea id="supportDetails" name="details" rows="6" maxlength="700" placeholder="Incluye el número de pedido si ya realizaste una compra."></textarea>
+          <button class="btn sales-agent-form__submit" type="submit">Hablar por WhatsApp <span aria-hidden="true">↗</span></button>
+          <small>Para responderte más rápido, agrega tu número de pedido si lo tienes.</small>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div style="text-align: center; padding: 24px 0; border-top: 1px solid #e2e8f0; color: #888; font-size: 0.85rem;">
+      &copy; 2026 Misión 3D - Todos los derechos reservados
+    </div>
+  </footer>
+
+  <script src="script.js?v=20260304-1" defer></script>
+  <script src="sales-assistant.js" defer></script>
+  <script src="mobile-menu.js" defer></script>
+</body>
+</html>

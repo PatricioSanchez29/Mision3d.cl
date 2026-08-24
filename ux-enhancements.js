@@ -108,18 +108,10 @@
     }
   }
   
-  // Ejecutar al cargar y observar cambios en el DOM
+  // Ejecutar al cargar y cuando se carguen productos dinámicamente (sin MutationObserver pesado)
   document.addEventListener('DOMContentLoaded', enableImageZoom);
-  
-  // Observer para productos cargados dinámicamente
-  const observer = new MutationObserver(() => {
-    enableImageZoom();
-  });
-  
-  observer.observe(document.body, {
-    childList: true,
-    subtree: true
-  });
+  window.addEventListener('productsLoaded', enableImageZoom);
+  document.addEventListener('productsReady', enableImageZoom);
 })();
 
 // ===== PRICE RANGE SLIDER =====

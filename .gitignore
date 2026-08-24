@@ -63,6 +63,5 @@ ssl/
 data/
 volumes/
 
-backend/firebase-credentials.json.json
-
-backend/firebase-credentials.json.json
+# Duplicados / descargas
+Mision3d.cl-main/
