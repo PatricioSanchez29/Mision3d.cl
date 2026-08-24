@@ -1619,3 +1619,34 @@ document.addEventListener('DOMContentLoaded', ()=>{
   window.$$ || (q => document.querySelectorAll(q)),
   window.money || (v => Number(v || 0).toLocaleString('es-CL', { style: 'currency', currency: 'CLP' }))
 );
+
+/* =========================================================
+   SEGUIMIENTO DE CONVERSIONES DE WHATSAPP (GOOGLE ADS & GA4)
+   ========================================================= */
+document.addEventListener('click', function(e) {
+  const target = e.target.closest('a[href*="wa.me"], a[href*="whatsapp.com"], #btnOrderWA, #shareWA, .btn-wa-order, .whatsapp-float');
+  if (target) {
+    try {
+      if (typeof gtag === 'function') {
+        gtag('event', 'contact', {
+          event_category: 'WhatsApp',
+          event_label: target.id || target.className || 'WhatsApp Click',
+          link_url: target.href || ''
+        });
+        gtag('event', 'generate_lead', {
+          event_category: 'WhatsApp',
+          event_label: target.id || 'WhatsApp Lead'
+        });
+      }
+      if (typeof window.gaEvent === 'function') {
+        window.gaEvent('whatsapp_click', {
+          button: target.id || 'whatsapp_link',
+          page: location.pathname
+        });
+      }
+    } catch(err) {
+      console.warn('[WhatsApp Tracking]', err);
+    }
+  }
+}, true);
+
