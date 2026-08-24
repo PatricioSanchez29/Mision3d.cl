@@ -546,6 +546,21 @@ function renderCatalog(filterText = ""){
     productos = productos.filter(p => p.discount && p.discount > 0);
   }
 
+  // Filtrar por rango de precio rápido
+  if (window.currentPriceRange && window.currentPriceRange !== 'all') {
+    productos = productos.filter(p => {
+      const disc = Number(p.discount || 0);
+      const eff = disc > 0 ? Math.round(p.price * (1 - disc / 100)) : Number(p.price || 0);
+      switch (window.currentPriceRange) {
+        case 'under-10k': return eff < 10000;
+        case '10k-20k':   return eff >= 10000 && eff <= 20000;
+        case 'over-20k':   return eff > 20000;
+        case 'offers':     return disc > 0;
+        default:           return true;
+      }
+    });
+  }
+
   grid.innerHTML = "";
   const resultCount = document.getElementById('resultCount');
   if (productos.length === 0) {
@@ -606,32 +621,31 @@ function renderCatalog(filterText = ""){
 
     if(viewMode==='list'){
       card.innerHTML = `
-        <img src="${p.img}" loading="lazy" data-link>
-        <div class="badge-wrap">${badges}${galleryIndicator}</div>
-        <div class="name" style="font-size:1.15rem;font-weight:600">${p.name}</div>
-        <div style="display:flex;flex-direction:column;gap:4px">
-          <div class="price" style="margin:0">${priceOriginal}${money(finalPrice)}</div>
-          ${desc ? `<div class="desc" style="margin:0">${desc}</div>` : ''}
-          ${energia} ${stockTxt}
-          <div></div>
+        <div class="prod-link" data-link>
+          <img src="${p.img}" loading="lazy" alt="${p.name}" onerror="this.src='img/placeholder.png'">
+          <div class="badge-wrap">${badges}${galleryIndicator}</div>
         </div>
-          <div class="btns" style="justify-content:flex-end">
-          ${isOut ? `<button class="btn-options add disabled" disabled>Agotado</button>` : `<button class="btn-options add" data-id="${p.id}">${btnLabel}</button>`}
-          <button class="btn-options" data-view id="view-${p.id}">Ver</button>
+        <div class="card-body">
+          <h4 class="name" data-link>${p.name}</h4>
+          <div class="price">${priceOriginal}${money(finalPrice)}</div>
+          ${desc ? `<div class="desc">${desc}</div>` : ''}
+          ${stockTxt}
+        </div>
+        <div class="btns" style="justify-content:flex-end">
+          ${isOut ? `<button class="add disabled" disabled>Agotado</button>` : `<button class="add" data-id="${p.id}">${btnLabel}</button>`}
         </div>`;
     } else {
       card.innerHTML = `
-        <img src="${p.img}" loading="lazy" data-link>
-        <div class="badge-wrap">${badges}${galleryIndicator}</div>
+        <div class="prod-link" data-link>
+          <img src="${p.img}" loading="lazy" alt="${p.name}" onerror="this.src='img/placeholder.png'">
+          <div class="badge-wrap">${badges}${galleryIndicator}</div>
+        </div>
         <div class="price">${priceOriginal}${money(finalPrice)}</div>
-        <div class="name" data-link>${p.name}</div>
+        <h4 class="name" data-link>${p.name}</h4>
         ${desc ? `<div class="desc">${desc}</div>` : ''}
-        ${energia}
         ${stockTxt}
-        
         <div class="btns">
-          <button class="btn-quick" data-view>Ver</button>
-          ${isOut ? `<button class="btn-options add disabled" disabled>Agotado</button>` : `<button class="btn-options add" data-id="${p.id}">${btnLabel}</button>`}
+          ${isOut ? `<button class="add disabled" disabled>Agotado</button>` : `<button class="add" data-id="${p.id}">${btnLabel}</button>`}
         </div>`;
     }
 
