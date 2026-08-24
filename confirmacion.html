@@ -183,6 +183,21 @@
           totalEl.textContent = fmt(totalRaw || total);
           section.style.display = 'block';
         }
+
+        // Registrar evento de conversión de Compra en Google Ads
+        var finalValue = Number(totalRaw || total || 1.0);
+        var convKey = 'gads_conv_' + orderNum;
+        if (!sessionStorage.getItem(convKey)) {
+          if (typeof gtag === 'function') {
+            gtag('event', 'conversion', {
+              'send_to': 'AW-18407050174/q0xqCOiY3eYcEL6XlclE',
+              'value': finalValue,
+              'currency': 'CLP',
+              'transaction_id': String(orderNum)
+            });
+            sessionStorage.setItem(convKey, 'true');
+          }
+        }
       } catch(e) {}
       localStorage.removeItem('cart');
       localStorage.removeItem('last_order_items');
