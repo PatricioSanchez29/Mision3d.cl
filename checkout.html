@@ -52,7 +52,16 @@
   <link rel="icon" type="image/png" href="img/mision3d_logov2.png">
   <link rel="apple-touch-icon" href="img/mision3d_logov2.png">
   <link rel="stylesheet" href="style.css">
-  <script>window.GA_MEASUREMENT_ID = 'G-XKQGMM6ZK0';</script>
+  <!-- Google tag (gtag.js) - Google Ads & Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18407050174"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'AW-18407050174');
+    gtag('config', 'G-XKQGMM6ZK0');
+  </script>
   <script>
     // Configuración dinámica del backend (local => http://localhost:3001, prod => https://api.mision3d.cl)
     (function(){
@@ -63,7 +72,6 @@
     })();
   </script>
   <script type="module" src="auth-header.js"></script>
-  <script src="consent.js"></script>
   <style>
   /* Microinteracciones para botones principales */
   .btn-register, .btn.primary, .btn.small, .btn.outline, .cart-btn, .search-btn, .btn-wide {

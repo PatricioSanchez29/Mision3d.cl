@@ -37,9 +37,16 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="header-new-style.css"/>
-  <script type="module" src="auth-header.js"></script>
-  <script>window.GA_MEASUREMENT_ID = 'G-XKQGMM6ZK0';</script>
-  <script src="consent.js"></script>
+  <!-- Google tag (gtag.js) - Google Ads & Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18407050174"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'AW-18407050174');
+    gtag('config', 'G-XKQGMM6ZK0');
+  </script>
   <style>
     .discount-toggle {
       display: flex;
@@ -130,6 +137,18 @@
     <div class="category-pills-wrap">
       <div class="category-pills" id="categoryPills">
         <button class="cat-pill active" data-cat="all">✨ Todos</button>
+      </div>
+    </div>
+
+    <!-- Filtros Rápidos de Precio y Ofertas -->
+    <div class="price-pills-wrap">
+      <span class="price-pills-label">Precio:</span>
+      <div class="price-pills" id="pricePills">
+        <button class="price-pill active" data-range="all">Todos</button>
+        <button class="price-pill" data-range="under-10k">Hasta $10.000</button>
+        <button class="price-pill" data-range="10k-20k">$10.000 - $20.000</button>
+        <button class="price-pill" data-range="over-20k">Más de $20.000</button>
+        <button class="price-pill offer-pill" data-range="offers">🔥 En Oferta</button>
       </div>
     </div>
 
@@ -517,7 +536,24 @@
     });
   }
 
-  window.addEventListener('productsLoaded', initCategoryPills);
-  document.addEventListener('productsReady', initCategoryPills);
+  // Inicializar Píldoras de Rango de Precios
+  function initPricePills() {
+    const pContainer = document.getElementById('pricePills');
+    if (!pContainer) return;
+    pContainer.querySelectorAll('.price-pill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        pContainer.querySelectorAll('.price-pill').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const range = btn.getAttribute('data-range') || 'all';
+        window.currentPriceRange = range;
+        if (typeof window.renderCatalog === 'function') {
+          window.renderCatalog(document.getElementById('searchInput')?.value || '');
+        }
+      });
+    });
+  }
+
+  window.addEventListener('productsLoaded', () => { initCategoryPills(); initPricePills(); });
+  document.addEventListener('productsReady', () => { initCategoryPills(); initPricePills(); });
 </script>
 </body></html>
