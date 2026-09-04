@@ -1637,6 +1637,12 @@ document.addEventListener('click', function(e) {
           event_category: 'WhatsApp',
           event_label: target.id || 'WhatsApp Lead'
         });
+        // Conversión Google Ads - WhatsApp Contacto
+        gtag('event', 'conversion', {
+          'send_to': 'AW-18407050174/hcjKCPDlue4cEL6XlclE',
+          'value': 1.0,
+          'currency': 'CLP'
+        });
       }
       if (typeof window.gaEvent === 'function') {
         window.gaEvent('whatsapp_click', {
