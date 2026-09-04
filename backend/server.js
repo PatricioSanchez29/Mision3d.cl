@@ -1278,27 +1278,36 @@ const handleFlowRetorno = async (req, res) => {
         ${
           isSuccess
             ? `
+        <!-- Google tag (gtag.js) - Conversión de compra Flow -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18407050174"></script>
         <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){ dataLayer.push(arguments); }
+          gtag('js', new Date());
+          gtag('config', 'AW-18407050174');
+          gtag('config', 'G-XKQGMM6ZK0');
+
+          // Anti-duplicados: solo disparar una vez por orden
+          var _convKey = 'gads_flow_conv_${payment.commerceOrder || ''}';
+          if (!sessionStorage.getItem(_convKey)) {
+            // Evento de conversión de compra → Google Ads
+            gtag('event', 'conversion', {
+              'send_to': 'AW-18407050174/q0xqCOiY3eYcEL6XlclE',
+              'value': ${Number.isFinite(+payment.amount) ? +payment.amount : 0},
+              'currency': 'CLP',
+              'transaction_id': '${payment.commerceOrder || ''}'
+            });
+            // Evento purchase → GA4
+            gtag('event', 'purchase', {
+              'transaction_id': '${payment.commerceOrder || ''}',
+              'value': ${Number.isFinite(+payment.amount) ? +payment.amount : 0},
+              'currency': 'CLP'
+            });
+            sessionStorage.setItem(_convKey, 'true');
+          }
+
           // Limpia carrito local
-          setTimeout(() => localStorage.removeItem('cart'), 1000);
-          // Enviar evento de compra a GA4 si hay consentimiento
-          (function(){
-            try {
-              var consent = JSON.parse(localStorage.getItem('cookieConsent')||'null');
-              var GA_ID = localStorage.getItem('ga4_id');
-              if (!consent || consent.analytics !== 'granted' || !GA_ID) return;
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){ dataLayer.push(arguments); }
-              var s = document.createElement('script'); s.async=true; s.src='https://www.googletagmanager.com/gtag/js?id='+GA_ID; document.head.appendChild(s);
-              gtag('js', new Date());
-              gtag('config', GA_ID);
-              gtag('event','purchase', {
-                currency: 'CLP',
-                value: ${Number.isFinite(+payment.amount) ? +payment.amount : 0},
-                transaction_id: '${payment.commerceOrder || ''}'
-              });
-            } catch(e) {}
-          })();
+          setTimeout(function(){ try { localStorage.removeItem('cart'); } catch(e){} }, 1000);
         </script>
         `
             : ""
