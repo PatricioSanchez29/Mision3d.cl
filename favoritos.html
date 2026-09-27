@@ -127,6 +127,34 @@
   <!-- Scripts -->
   <script src="ui-components.js"></script>
   <script src="script.js?v=20260304-1"></script>
+  <script type="module">
+    try {
+      const { supabase } = await import('./supabase-orders.js');
+      const { data, error } = await supabase.from('productos').select('*');
+      if (!error && Array.isArray(data) && data.length > 0) {
+        window.PRODUCTS = data;
+        try { localStorage.setItem('PRODUCTS', JSON.stringify(data)); } catch(e) {}
+        document.dispatchEvent(new Event('productsReady'));
+        window.dispatchEvent(new CustomEvent('productsLoaded'));
+      } else {
+        throw new Error('Supabase empty or error');
+      }
+    } catch(err) {
+      console.warn('[favoritos] Usando fallback local para productos:', err?.message || err);
+      try {
+        const res = await fetch('datos.json');
+        if (res.ok) {
+          const json = await res.json();
+          const raw = json && json.productos ? Object.entries(json.productos).map(([id, p]) => ({ id, ...p })) : [];
+          if (raw.length > 0) {
+            window.PRODUCTS = raw;
+            document.dispatchEvent(new Event('productsReady'));
+            window.dispatchEvent(new CustomEvent('productsLoaded'));
+          }
+        }
+      } catch(e) {}
+    }
+  </script>
   <script src="ux-enhancements.js"></script>
   <script src="wishlist.js"></script>
   <script src="mobile-menu.js"></script>

@@ -166,14 +166,14 @@ function renderWishlistPage() {
   const container = document.getElementById('wishlistGrid');
   if (!container) return;
   
-  if (wishlist.length === 0) {
+  if (!wishlist || wishlist.length === 0) {
     container.innerHTML = `
       <div style="grid-column: 1/-1; text-align: center; padding: 60px 20px;">
         <div style="font-size: 4rem; margin-bottom: 20px;">💔</div>
-        <h2 style="margin: 0 0 10px; color: #333;">No tienes favoritos aún</h2>
-        <p style="color: #666; margin-bottom: 30px;">Guarda tus productos favoritos para comprarlos después</p>
-        <a href="catalogo.html" class="btn primary" style="text-decoration: none; padding: 12px 24px; display: inline-block;">
-          Explorar productos
+        <h2 style="margin: 0 0 10px; color: #1e293b; font-weight:800;">No tienes favoritos aún</h2>
+        <p style="color: #64748b; margin-bottom: 28px; font-size:1rem;">Guarda tus productos favoritos tocando el corazón ❤️ en el catálogo para comprarlos cuando quieras.</p>
+        <a href="catalogo.html" class="btn primary" style="text-decoration: none; padding: 14px 28px; display: inline-flex; align-items:center; gap:8px; border-radius: 999px; font-weight:700; background:#4f46e5; color:#fff;">
+          🔍 Explorar catálogo
         </a>
       </div>
     `;
@@ -181,43 +181,69 @@ function renderWishlistPage() {
   }
   
   if (!window.PRODUCTS || window.PRODUCTS.length === 0) {
-    container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #888;">Cargando productos...</p>';
+    try {
+      const cached = JSON.parse(localStorage.getItem('PRODUCTS') || '[]');
+      if (Array.isArray(cached) && cached.length > 0) {
+        window.PRODUCTS = cached;
+      }
+    } catch(e) {}
+  }
+
+  if (!window.PRODUCTS || window.PRODUCTS.length === 0) {
+    container.innerHTML = `
+      <div style="grid-column: 1/-1; text-align: center; padding: 50px 20px;">
+        <div style="font-size: 3rem; margin-bottom: 16px;">⏳</div>
+        <h3 style="color:#1e293b;margin-bottom:8px">No pudimos conectar con el catálogo</h3>
+        <p style="color:#64748b;margin-bottom:20px;font-size:0.95rem">Por favor revisa tu conexión a internet o recarga la página.</p>
+        <button onclick="location.reload()" class="btn primary" style="border-radius:999px;padding:10px 22px;cursor:pointer">🔄 Recargar página</button>
+      </div>
+    `;
     return;
   }
   
   const wishlistProducts = wishlist
-    .map(id => window.PRODUCTS.find(p => p.id === id))
-    .filter(p => p); // Filtrar productos que ya no existen
+    .map(id => window.PRODUCTS.find(p => String(p.id) === String(id)))
+    .filter(Boolean); // Filtrar productos válidos
   
+  if (wishlistProducts.length === 0) {
+    container.innerHTML = `
+      <div style="grid-column: 1/-1; text-align: center; padding: 60px 20px;">
+        <div style="font-size: 4rem; margin-bottom: 20px;">💔</div>
+        <h2 style="margin: 0 0 10px; color: #1e293b; font-weight:800;">No tienes favoritos guardados</h2>
+        <p style="color: #64748b; margin-bottom: 28px; font-size:1rem;">Los productos que tenías guardados ya no están en el catálogo o fueron modificados.</p>
+        <a href="catalogo.html" class="btn primary" style="text-decoration: none; padding: 14px 28px; display: inline-flex; align-items:center; gap:8px; border-radius: 999px; font-weight:700; background:#4f46e5; color:#fff;">
+          🔍 Explorar catálogo
+        </a>
+      </div>
+    `;
+    return;
+  }
+
   container.innerHTML = wishlistProducts.map(p => {
-    const desc = p.name.includes('Calendario') ? '' :
-                 p.name.includes('Beyblade') ? 'Personalizable con tu nombre' :
-                 p.name.includes('Mascota') ? 'Tu mascota en 3D' :
-                 p.name.includes('Pokebola') ? 'Pokebola coleccionable' : 
-                 '';
-    
-    const price = p.price ? `$${p.price.toLocaleString('es-CL')}` : 'Consultar';
-    const oldPrice = p.discount && p.discount > 0 ? `$${p.price.toLocaleString('es-CL')}` : '';
-    const finalPrice = p.discount && p.discount > 0 ? 
-      `$${Math.round(p.price * (1 - p.discount / 100)).toLocaleString('es-CL')}` : price;
+    const desc = p.descripcion || p.description || p.desc || '';
+    const numPrice = Number(p.price || 0);
+    const price = numPrice > 0 ? `$${numPrice.toLocaleString('es-CL')}` : 'Consultar';
+    const discount = Number(p.discount || 0);
+    const hasDiscount = discount > 0;
+    const finalPrice = hasDiscount ? `$${Math.round(numPrice * (1 - discount / 100)).toLocaleString('es-CL')}` : price;
     
     return `
       <div class="card" style="position: relative;">
-        <button class="wishlist-btn active" data-product-id="${p.id}" style="position: absolute; top: 10px; right: 10px;">
+        <button class="wishlist-btn active" data-product-id="${p.id}" style="position: absolute; top: 10px; right: 10px;" title="Quitar de favoritos">
           ❤️
         </button>
         <a href="producto.html?id=${p.id}" class="prod-link">
-          <img src="${p.img || 'img/placeholder.png'}" alt="${p.name}" loading="lazy">
+          <img src="${p.img || 'img/placeholder.png'}" alt="${p.name}" loading="lazy" onerror="this.src='img/placeholder.png'">
         </a>
         <h4>
           <a href="producto.html?id=${p.id}" class="prod-link">${p.name}</a>
         </h4>
         ${desc ? `<p class="desc">${desc}</p>` : ''}
-        ${oldPrice ? `<span class="price-old">${oldPrice}</span>` : ''}
+        ${hasDiscount ? `<span class="price-old">${price}</span>` : ''}
         <strong class="price">${finalPrice}</strong>
-        ${p.discount > 0 ? `<span class="badge discount">-${p.discount}%</span>` : ''}
+        ${hasDiscount ? `<span class="badge discount">-${discount}%</span>` : ''}
         <div class="btns">
-          <button class="add" data-id="${p.id}">Agregar al carrito</button>
+          <button class="add" data-id="${p.id}">🛒 Agregar</button>
           <a href="producto.html?id=${p.id}" class="btn outline small">Ver detalles</a>
         </div>
       </div>
@@ -230,7 +256,6 @@ function renderWishlistPage() {
       e.preventDefault();
       e.stopPropagation();
       toggleWishlist(btn.dataset.productId);
-      // Volver a renderizar la página
       renderWishlistPage();
     });
   });
@@ -268,15 +293,61 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Renderizar página de favoritos si estamos en ella
   if (document.getElementById('wishlistGrid')) {
-    // Esperar a que los productos se carguen
+    // Si no hay favoritos, renderizar de inmediato (sin esperar a productos)
+    if (!wishlist || wishlist.length === 0) {
+      renderWishlistPage();
+      return;
+    }
+
+    // Si hay favoritos, intentar recuperar PRODUCTS de cache de inmediato
+    if (!window.PRODUCTS || window.PRODUCTS.length === 0) {
+      try {
+        const cached = JSON.parse(localStorage.getItem('PRODUCTS') || '[]');
+        if (Array.isArray(cached) && cached.length > 0) {
+          window.PRODUCTS = cached;
+        }
+      } catch (e) {}
+    }
+
+    if (window.PRODUCTS && window.PRODUCTS.length > 0) {
+      renderWishlistPage();
+      return;
+    }
+
+    // Esperar a que los productos se carguen o usar fallback
+    let rendered = false;
+    const finish = () => {
+      if (!rendered) {
+        rendered = true;
+        renderWishlistPage();
+      }
+    };
+
     const checkProducts = setInterval(() => {
       if (window.PRODUCTS && window.PRODUCTS.length > 0) {
         clearInterval(checkProducts);
-        renderWishlistPage();
+        finish();
       }
     }, 100);
-    
-    setTimeout(() => clearInterval(checkProducts), 5000);
+
+    // Si después de 1.5s no cargó, intentar datos.json y terminar
+    setTimeout(() => {
+      clearInterval(checkProducts);
+      if (!window.PRODUCTS || window.PRODUCTS.length === 0) {
+        fetch('datos.json')
+          .then(r => r.json())
+          .then(json => {
+            const raw = json && json.productos ? Object.entries(json.productos).map(([id, p]) => ({ id, ...p })) : [];
+            if (raw.length) window.PRODUCTS = raw;
+          })
+          .catch(() => {})
+          .finally(() => {
+            finish();
+          });
+      } else {
+        finish();
+      }
+    }, 1500);
   }
 });
 
