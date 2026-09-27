@@ -19,6 +19,11 @@
       createDrawerStructure();
     }
 
+    // Crear barra de navegación inferior móvil si no existe
+    if (!document.querySelector('.mobile-bottom-nav')) {
+      createBottomNavStructure();
+    }
+
     // Referencias DOM
     const hamburgerBtn = document.getElementById('hamburgerBtn');
     const drawer = document.querySelector('.mobile-drawer');
@@ -267,6 +272,150 @@
       drawerUserText.textContent = 'Iniciar Sesión';
       drawerUserLink.href = 'mi-cuenta.html';
     }
+  }
+
+  /**
+   * Crear estructura HTML de la barra de navegación inferior móvil
+   */
+  function createBottomNavStructure() {
+    const rawPath = window.location.pathname.split('/').pop() || 'index.html';
+    const currentPage = rawPath.toLowerCase();
+
+    // No mostrar la barra de navegación inferior en checkout, confirmaciones o panel admin
+    const isExcludedPage = currentPage.includes('checkout') || 
+                           currentPage.includes('confirmacion') || 
+                           currentPage.includes('admin') || 
+                           currentPage.includes('dashboard');
+    if (isExcludedPage) {
+      return;
+    }
+
+    const bottomNav = document.createElement('nav');
+    bottomNav.className = 'mobile-bottom-nav';
+    bottomNav.setAttribute('aria-label', 'Navegación inferior móvil');
+
+    const isHome = currentPage === '' || currentPage === 'index.html';
+    const isCatalog = currentPage.includes('catalogo');
+    const isQuote = currentPage.includes('cotizar');
+    const isFav = currentPage.includes('favoritos');
+
+    bottomNav.innerHTML = `
+      <a href="index.html" class="bottom-nav-item ${isHome ? 'active' : ''}">
+        <div class="bottom-nav-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </div>
+        <span class="bottom-nav-label">Inicio</span>
+      </a>
+      <a href="catalogo.html" class="bottom-nav-item ${isCatalog ? 'active' : ''}">
+        <div class="bottom-nav-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="7" height="7" x="3" y="3" rx="1"/>
+            <rect width="7" height="7" x="14" y="3" rx="1"/>
+            <rect width="7" height="7" x="14" y="14" rx="1"/>
+            <rect width="7" height="7" x="3" y="14" rx="1"/>
+          </svg>
+        </div>
+        <span class="bottom-nav-label">Catálogo</span>
+      </a>
+      <a href="cotizar.html" class="bottom-nav-item ${isQuote ? 'active' : ''}">
+        <div class="bottom-nav-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+        </div>
+        <span class="bottom-nav-label">Cotizar</span>
+      </a>
+      <a href="favoritos.html" class="bottom-nav-item ${isFav ? 'active' : ''}">
+        <div class="bottom-nav-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+          </svg>
+          <span class="bottom-nav-badge" id="bottomNavWishlistBadge" style="display:none">0</span>
+        </div>
+        <span class="bottom-nav-label">Favoritos</span>
+      </a>
+      <button type="button" class="bottom-nav-item" id="bottomNavCartBtn" aria-label="Abrir carrito">
+        <div class="bottom-nav-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="8" cy="21" r="1"/>
+            <circle cx="19" cy="21" r="1"/>
+            <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
+          </svg>
+          <span class="bottom-nav-badge" id="bottomNavCartBadge" style="display:none">0</span>
+        </div>
+        <span class="bottom-nav-label">Carrito</span>
+      </button>
+    `;
+
+    document.body.appendChild(bottomNav);
+
+    // Event listener para el botón de carrito
+    const cartBtn = bottomNav.querySelector('#bottomNavCartBtn');
+    if (cartBtn) {
+      cartBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (typeof window.openCart === 'function') {
+          window.openCart();
+        } else {
+          const headerCart = document.getElementById('openCart');
+          if (headerCart) headerCart.click();
+        }
+      });
+    }
+
+    // Inicializar sincronización de contadores
+    syncBottomNavBadges();
+    setupCartCountObserver();
+  }
+
+  /**
+   * Sincronizar badges de carrito y favoritos en la barra inferior
+   */
+  function syncBottomNavBadges() {
+    const cartBadge = document.getElementById('bottomNavCartBadge');
+    if (cartBadge) {
+      try {
+        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        const count = Array.isArray(cart) ? cart.reduce((total, item) => total + (Number(item.qty) || 1), 0) : 0;
+        cartBadge.textContent = count > 99 ? '99+' : count;
+        cartBadge.style.display = count > 0 ? 'flex' : 'none';
+      } catch (e) {
+        cartBadge.style.display = 'none';
+      }
+    }
+
+    const wishBadge = document.getElementById('bottomNavWishlistBadge');
+    if (wishBadge) {
+      try {
+        const wishlist = JSON.parse(localStorage.getItem('wishlist') || localStorage.getItem('mision3d_wishlist') || '[]');
+        const count = Array.isArray(wishlist) ? wishlist.length : 0;
+        wishBadge.textContent = count > 99 ? '99+' : count;
+        wishBadge.style.display = count > 0 ? 'flex' : 'none';
+      } catch (e) {
+        wishBadge.style.display = 'none';
+      }
+    }
+  }
+
+  /**
+   * Observar cambios en el carrito
+   */
+  function setupCartCountObserver() {
+    window.addEventListener('storage', syncBottomNavBadges);
+
+    const headerCartCount = document.getElementById('cartCount');
+    if (headerCartCount && window.MutationObserver) {
+      const observer = new MutationObserver(() => {
+        syncBottomNavBadges();
+      });
+      observer.observe(headerCartCount, { childList: true, characterData: true, subtree: true });
+    }
+
+    // Intervalo de seguridad ligero para mantener consistencia
+    setInterval(syncBottomNavBadges, 1500);
   }
 
   /**

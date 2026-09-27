@@ -4,61 +4,46 @@
  */
 
 // ==================== VALIDACIÓN DE RUT ====================
+function cleanRUT(rut) {
+  return String(rut || '').replace(/[^0-9kK]/g, '').toUpperCase().slice(0, 9);
+}
+
 function formatRUT(rut) {
-  // Eliminar todo excepto números y K
-  let value = rut.replace(/[^0-9kK]/g, '').toUpperCase();
-  
-  // Limitar a 9 caracteres (8 dígitos + 1 verificador)
-  if (value.length > 9) {
-    value = value.slice(0, 9);
-  }
-  
-  // Si no hay nada, retornar vacío
+  let value = cleanRUT(rut);
   if (!value) return '';
+  if (value.length < 2) return value;
   
-  // Si solo hay un carácter, retornarlo tal cual
-  if (value.length <= 1) return value;
-  
-  // Separar dígito verificador
   const dv = value.slice(-1);
   let body = value.slice(0, -1);
-  
-  // Agregar puntos cada 3 dígitos (de derecha a izquierda)
   body = body.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-  
-  // Retornar formateado
   return `${body}-${dv}`;
 }
 
 function validateRUT(rut) {
-  // Limpiar RUT
-  let valor = rut.replace(/\./g, '').replace(/-/g, '').toUpperCase();
+  if (!rut || typeof rut !== 'string') return false;
+  let valor = cleanRUT(rut);
   
-  // Verificar largo mínimo
-  if (valor.length < 2) return false;
+  // En Chile un RUT válido tiene entre 7 y 9 caracteres (cuerpo de 6 a 8 dígitos + DV)
+  if (valor.length < 7 || valor.length > 9) return false;
   
-  // Separar cuerpo y dígito verificador
   const cuerpo = valor.slice(0, -1);
   const dv = valor.slice(-1);
   
-  // Validar que el cuerpo sean solo números
   if (!/^\d+$/.test(cuerpo)) return false;
   
-  // Calcular dígito verificador
   let suma = 0;
   let multiplicador = 2;
   
   for (let i = cuerpo.length - 1; i >= 0; i--) {
-    suma += parseInt(cuerpo[i]) * multiplicador;
-    multiplicador = multiplicador === 7 ? 2 : multiplicador + 1;
+    suma += parseInt(cuerpo[i], 10) * multiplicador;
+    multiplicador = (multiplicador === 7) ? 2 : multiplicador + 1;
   }
   
-  const dvEsperado = 11 - (suma % 11);
-  let dvCalculado;
-  
-  if (dvEsperado === 11) dvCalculado = '0';
-  else if (dvEsperado === 10) dvCalculado = 'K';
-  else dvCalculado = dvEsperado.toString();
+  const resto = 11 - (suma % 11);
+  let dvCalculado = '0';
+  if (resto === 11) dvCalculado = '0';
+  else if (resto === 10) dvCalculado = 'K';
+  else dvCalculado = String(resto);
   
   return dv === dvCalculado;
 }
@@ -142,6 +127,67 @@ function setFieldValidation(input, isValid, message = '') {
       container.appendChild(errorMsg);
     }
   }
+}
+
+// ==================== CONFIGURAR RUT CON FORMATEO INTELIGENTE ====================
+function setupRutInput(inputId) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+
+  function evaluate(isBlur = false) {
+    const raw = input.value;
+    const clean = cleanRUT(raw);
+
+    if (!clean) {
+      const parent = input.parentElement;
+      if (parent) {
+        parent.classList.remove('field-valid', 'field-invalid');
+        parent.querySelector('.field-icon')?.remove();
+        parent.querySelector('.field-error')?.remove();
+      }
+      return;
+    }
+
+    const isValid = validateRUT(clean);
+
+    if (isValid) {
+      input.value = formatRUT(clean);
+      setFieldValidation(input, true);
+    } else {
+      if (isBlur) {
+        if (clean.length >= 2) input.value = formatRUT(clean);
+        setFieldValidation(input, false, 'RUT inválido. Verifica los dígitos (ej: 12.345.678-9)');
+      } else if (clean.length >= 9) {
+        setFieldValidation(input, false, 'RUT incorrecto. Revisa el dígito verificador.');
+      } else {
+        const parent = input.parentElement;
+        if (parent && parent.classList.contains('field-invalid')) {
+          parent.classList.remove('field-invalid');
+          parent.querySelector('.field-icon')?.remove();
+          parent.querySelector('.field-error')?.remove();
+        }
+      }
+    }
+  }
+
+  input.addEventListener('input', () => {
+    const clean = cleanRUT(input.value);
+    // Si pegó o escribió 8 o más dígitos, evaluar y formatear inmediatamente
+    if (clean.length >= 8) {
+      evaluate(false);
+    } else {
+      const parent = input.parentElement;
+      if (parent) {
+        parent.classList.remove('field-valid', 'field-invalid');
+        parent.querySelector('.field-icon')?.remove();
+        parent.querySelector('.field-error')?.remove();
+      }
+    }
+  });
+
+  input.addEventListener('blur', () => {
+    evaluate(true);
+  });
 }
 
 // ==================== CONFIGURAR CAMPO CON VALIDACIÓN ====================
@@ -249,13 +295,8 @@ function validateForm(formId, fieldsConfig) {
 
 // ==================== INICIALIZACIÓN ====================
 function initValidations() {
-  // RUT
-  setupFieldValidation(
-    'inputRut',
-    validateRUT,
-    'RUT inválido. Ej: 12.345.678-9',
-    formatRUT
-  );
+  // RUT con formateo inteligente y validación inmediata
+  setupRutInput('inputRut');
   
   // Email
   setupFieldValidation(
@@ -302,8 +343,10 @@ if (document.readyState === 'loading') {
 }
 
 // Exportar funciones para uso global
+window.cleanRUT = cleanRUT;
 window.validateRUT = validateRUT;
 window.formatRUT = formatRUT;
+window.setupRutInput = setupRutInput;
 window.validateEmail = validateEmail;
 window.validatePhone = validatePhone;
 window.formatPhone = formatPhone;

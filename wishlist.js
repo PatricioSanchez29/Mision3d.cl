@@ -40,7 +40,7 @@ function addToWishlist(productId) {
     
     if (typeof showToast === 'function') {
       const product = window.PRODUCTS?.find(p => p.id === productId);
-      showToast(`❤️ ${product?.name || 'Producto'} agregado a favoritos`, 'success');
+      showToast(`${product?.name || 'Producto'} agregado a favoritos`, 'success', false);
     }
     
     // Actualizar botones de corazón
@@ -59,7 +59,7 @@ function removeFromWishlist(productId) {
     
     if (typeof showToast === 'function') {
       const product = window.PRODUCTS?.find(p => p.id === productId);
-      showToast(`💔 ${product?.name || 'Producto'} eliminado de favoritos`, 'info');
+      showToast(`${product?.name || 'Producto'} eliminado de favoritos`, 'info', false);
     }
     
     // Actualizar botones de corazón

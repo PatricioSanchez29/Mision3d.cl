@@ -2568,11 +2568,11 @@ body.checkout, body.login {
 .field-icon {
   position: absolute;
   right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 1.2rem;
+  top: 33px;
+  font-size: 1.15rem;
   font-weight: bold;
   pointer-events: none;
+  line-height: 1;
 }
 
 .field-icon-valid {
@@ -6750,6 +6750,12 @@ body {
     z-index: 800 !important;
   }
 }
+
+/* Ocultar mobile-bottom-nav por defecto si no se carga header-new-style.css */
+.mobile-bottom-nav {
+  display: none;
+}
+
 
 
 

@@ -19,10 +19,13 @@ function computeDV(body){
 }
 function validateRUT(rut){
   rut = cleanRut(rut);
-  if(rut.length<2) return false;
+  if(rut.length < 7 || rut.length > 9) return false;
   const body = rut.slice(0,-1), dv = rut.slice(-1);
   return computeDV(body) === dv;
 }
+window.validateRUT = validateRUT;
+window.formatRUT = formatRUT;
+window.cleanRut = cleanRut;
 
 /* ==================== Carrito (localStorage) ==================== */
 let cart = [];
@@ -150,7 +153,7 @@ function del(id){
 }
 
 /* ==================== Toast Moderno y Flotante ==================== */
-window.showToast = function(msg, type = 'success') {
+window.showToast = function(msg, type = 'success', showCartBtn = null) {
   let toast = document.getElementById('modernToast');
   if (!toast) {
     toast = document.createElement('div');
@@ -159,10 +162,18 @@ window.showToast = function(msg, type = 'success') {
     document.body.appendChild(toast);
   }
   const isErr = type === 'error';
+  const isFav = msg.toLowerCase().includes('favorito');
+  const isCartAdd = showCartBtn !== null 
+    ? Boolean(showCartBtn) 
+    : (!isErr && !isFav && msg.toLowerCase().includes('carrito') && !msg.toLowerCase().includes('vaciado'));
+
+  const iconBg = isErr ? 'background:#ef4444;' : (isFav ? 'background:#ec4899;' : '');
+  const iconSymbol = isErr ? '✕' : (isFav ? '❤️' : '✓');
+
   toast.innerHTML = `
-    <div class="toast-float__icon" style="${isErr ? 'background:#ef4444;' : ''}">${isErr ? '✕' : '✓'}</div>
+    <div class="toast-float__icon" style="${iconBg}">${iconSymbol}</div>
     <div class="toast-float__text">${msg}</div>
-    ${!isErr ? `<button class="toast-float__btn" onclick="const oc=document.getElementById('openCart');if(oc)oc.click();">Ver carrito ➔</button>` : ''}
+    ${isCartAdd ? `<button class="toast-float__btn" onclick="const oc=document.getElementById('openCart');if(oc)oc.click();">Ver carrito ➔</button>` : ''}
   `;
   toast.classList.add('show');
   clearTimeout(window.__toastTimer);
@@ -663,6 +674,9 @@ function renderCatalog(filterText = ""){
   });
 
   $$('.add').forEach(b=>b.onclick=()=>add(b.dataset.id));
+  try {
+    if (typeof addWishlistButtons === 'function') addWishlistButtons();
+  } catch(e) {}
   renderCatalog._loading = false;
 }
 
@@ -1108,6 +1122,47 @@ document.addEventListener('DOMContentLoaded', ()=>{
     } else {
       window.location.href = 'checkout.html';
     }
+  });
+  $('#cartWhatsAppBtn')?.addEventListener('click', () => {
+    if (!cart || cart.length === 0) {
+      if (typeof showToast === 'function') {
+        showToast('Tu carrito está vacío. Agrega productos para consultar por WhatsApp.', 'warning');
+      } else {
+        alert('Tu carrito está vacío');
+      }
+      return;
+    }
+
+    let msg = '👋 ¡Hola Misión 3D! Quisiera consultar o pedir estos productos de mi carrito:\n\n';
+    let total = 0;
+    cart.forEach((item, idx) => {
+      const p = (window.PRODUCTS || []).find(x => String(x.id) === String(item.id)) || {};
+      const name = item.name || p.name || 'Producto 3D';
+      const price = Number(item.price || p.price || 0);
+      const qty = item.qty || 1;
+      const subtotal = price * qty;
+      total += subtotal;
+      msg += `${idx + 1}. *${name}* x${qty}`;
+      if (subtotal > 0) {
+        msg += ` — $${subtotal.toLocaleString('es-CL')}`;
+      }
+      msg += '\n';
+      if (item.custom) {
+        msg += `   • _Detalle/Color: ${item.custom}_\n`;
+      }
+      if (item.variant) {
+        msg += `   • _Variante: ${item.variant}_\n`;
+      }
+    });
+
+    if (total > 0) {
+      msg += `\n💰 *Total Estimado:* $${total.toLocaleString('es-CL')}\n`;
+    }
+    msg += '\n¿Tienen disponibilidad y cómo coordinamos el pago/envío? ¡Muchas gracias!';
+
+    const waPhone = '56950503585';
+    const waUrl = `https://wa.me/${waPhone}?text=${encodeURIComponent(msg)}`;
+    window.open(waUrl, '_blank');
   });
   $('#clearCart')?.addEventListener('click', ()=>{
     if(cart.length > 0) {

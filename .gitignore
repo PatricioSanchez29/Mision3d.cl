@@ -48,6 +48,7 @@ desktop.ini
 # Build/dist
 dist/
 build/
+output/
 
 # Certificados SSL (se generan en servidor)
 *.pem
