@@ -214,17 +214,159 @@ window.initPriceSlider = function(containerSelector = '#priceSliderContainer') {
   track.style.width = (percentMax - percentMin) + '%';
 };
 
-// ===== MEJOR ANIMACIÓN PARA TOAST =====
-if (typeof window.showToast === 'function') {
-  const originalShowToast = window.showToast;
-  window.showToast = function(message, type = 'success') {
-    // Llamar a la función original
-    originalShowToast(message, type);
-    
-    // Agregar sonido de éxito (opcional)
-    // const audio = new Audio('data:audio/wav;base64,...'); 
-    // audio.play().catch(() => {});
-  };
-}
+// ===== NOTIFICACIONES DE PRUEBA SOCIAL (SOCIAL PROOF) =====
+(function () {
+  'use strict';
+
+  // No mostrar en páginas de checkout o autenticación para evitar distracciones
+  const path = window.location.pathname.toLowerCase();
+  if (
+    path.includes('checkout') ||
+    path.includes('confirmacion') ||
+    path.includes('login') ||
+    path.includes('register') ||
+    path.includes('admin')
+  ) {
+    return;
+  }
+
+  // Verificar si el usuario lo cerró en esta sesión
+  if (sessionStorage.getItem('socialProofDismissed')) {
+    return;
+  }
+
+  const BUYERS = [
+    { name: 'Matías', city: 'La Florida' },
+    { name: 'Camila', city: 'Las Condes' },
+    { name: 'Sebastián', city: 'Concepción' },
+    { name: 'Valentina', city: 'Viña del Mar' },
+    { name: 'Nicolás', city: 'Maipú' },
+    { name: 'Ignacio', city: 'Providencia' },
+    { name: 'Constanza', city: 'Ñuñoa' },
+    { name: 'Benjamín', city: 'Santiago' },
+    { name: 'Javiera', city: 'Temuco' },
+    { name: 'Felipe', city: 'Puente Alto' },
+    { name: 'Francisca', city: 'Rancagua' },
+    { name: 'Diego', city: 'Antofagasta' }
+  ];
+
+  const FALLBACK_PRODUCTS = [
+    { name: 'Soporte Auriculares Gamer', img: 'img/mision3d_logov2.png' },
+    { name: 'Llavero Articulado Dragón', img: 'img/mision3d_logov2.png' },
+    { name: 'Soporte Control PS5 / Xbox', img: 'img/mision3d_logov2.png' },
+    { name: 'Calendario F1 2026', img: 'img/mision3d_logov2.png' },
+    { name: 'Pokebola Coleccionable', img: 'img/mision3d_logov2.png' },
+    { name: 'Litofanía Personalizada 3D', img: 'img/mision3d_logov2.png' }
+  ];
+
+  const TIMES_AGO = [
+    'hace 4 min',
+    'hace 8 min',
+    'hace 14 min',
+    'hace 22 min',
+    'hace 35 min',
+    'hace 48 min',
+    'hace 1 hora'
+  ];
+
+  let toastEl = null;
+  let timerId = null;
+  let hideTimerId = null;
+
+  function createToastElement() {
+    toastEl = document.createElement('div');
+    toastEl.id = 'socialProofToast';
+    toastEl.className = 'social-proof-toast';
+    document.body.appendChild(toastEl);
+
+    // Pausar ocultado al poner el mouse o tocar
+    toastEl.addEventListener('mouseenter', () => {
+      clearTimeout(hideTimerId);
+    });
+    toastEl.addEventListener('mouseleave', () => {
+      hideTimerId = setTimeout(hideToast, 2500);
+    });
+  }
+
+  function getProductsPool() {
+    if (Array.isArray(window.PRODUCTS) && window.PRODUCTS.length > 0) {
+      return window.PRODUCTS;
+    }
+    try {
+      const cached = JSON.parse(localStorage.getItem('PRODUCTS') || '[]');
+      if (Array.isArray(cached) && cached.length > 0) return cached;
+    } catch (e) {}
+    return FALLBACK_PRODUCTS;
+  }
+
+  function showSocialToast() {
+    if (!toastEl) createToastElement();
+    if (sessionStorage.getItem('socialProofDismissed')) return;
+
+    const products = getProductsPool();
+    const product = products[Math.floor(Math.random() * products.length)];
+    const buyer = BUYERS[Math.floor(Math.random() * BUYERS.length)];
+    const timeAgo = TIMES_AGO[Math.floor(Math.random() * TIMES_AGO.length)];
+    const prodImg = product.img || 'img/placeholder.png';
+    const prodName = product.name || 'Producto personalizado 3D';
+    const prodLink = product.id ? `producto.html?id=${product.id}` : 'catalogo.html';
+
+    toastEl.innerHTML = `
+      <button class="sp-close" type="button" aria-label="Cerrar notificación">✕</button>
+      <a href="${prodLink}" class="sp-content">
+        <div class="sp-thumb">
+          <img src="${prodImg}" alt="${prodName}" loading="lazy" onerror="this.src='img/placeholder.png'">
+        </div>
+        <div class="sp-info">
+          <p class="sp-buyer"><strong>${buyer.name}</strong> de ${buyer.city}</p>
+          <p class="sp-item">compró <span>${prodName}</span></p>
+          <div class="sp-meta">
+            <span class="sp-time">${timeAgo}</span>
+            <span class="sp-badge">✓ Verificado</span>
+          </div>
+        </div>
+      </a>
+    `;
+
+    // Cerrar
+    const closeBtn = toastEl.querySelector('.sp-close');
+    closeBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      hideToast();
+      sessionStorage.setItem('socialProofDismissed', 'true');
+      clearTimeout(timerId);
+    });
+
+    // Mostrar con animación
+    toastEl.classList.remove('hiding');
+    toastEl.classList.add('visible');
+
+    // Ocultar automáticamente tras 5.5s
+    clearTimeout(hideTimerId);
+    hideTimerId = setTimeout(hideToast, 5500);
+
+    // Programar la siguiente notificación entre 28 y 38 segundos
+    scheduleNext(Math.floor(Math.random() * 10000) + 28000);
+  }
+
+  function hideToast() {
+    if (!toastEl) return;
+    toastEl.classList.remove('visible');
+    toastEl.classList.add('hiding');
+  }
+
+  function scheduleNext(delayMs) {
+    clearTimeout(timerId);
+    timerId = setTimeout(showSocialToast, delayMs);
+  }
+
+  // Iniciar después de 6.5 segundos de cargar la página
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => scheduleNext(6500));
+  } else {
+    scheduleNext(6500);
+  }
+})();
 
 console.log('✨ UX Enhancements cargado correctamente');

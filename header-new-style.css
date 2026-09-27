@@ -1141,6 +1141,211 @@ body.dark .cart-footer {
   opacity: 1;
 }
 
+/* ==================== BARRA FLOTANTE DE COMPRA MÓVIL (STICKY BUY) ==================== */
+@media (max-width: 768px) {
+  .sticky-buy-bar {
+    bottom: calc(62px + env(safe-area-inset-bottom, 0px)) !important;
+    z-index: 13900 !important;
+    padding: 8px 14px !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(10px) !important;
+    border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.08) !important;
+  }
+
+  body.dark .sticky-buy-bar {
+    background: rgba(15, 23, 42, 0.95) !important;
+    border-top-color: #334155 !important;
+  }
+
+  .sticky-buy-btn {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    padding: 10px 18px !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35) !important;
+    border: none !important;
+    cursor: pointer !important;
+  }
+}
+
+/* ==================== NOTIFICACIONES DE PRUEBA SOCIAL (SOCIAL PROOF) ==================== */
+.social-proof-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  max-width: 320px;
+  width: calc(100% - 48px);
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 10px 14px 10px 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  z-index: 13800;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  opacity: 0;
+  transform: translateY(20px) scale(0.96);
+  pointer-events: none;
+  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.social-proof-toast.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.social-proof-toast.hiding {
+  opacity: 0;
+  transform: translateY(12px) scale(0.96);
+  pointer-events: none;
+}
+
+body.dark .social-proof-toast {
+  background: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+}
+
+.sp-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+  flex: 1;
+  overflow: hidden;
+}
+
+.sp-thumb {
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #f1f5f9;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.sp-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sp-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.sp-buyer {
+  font-size: 0.8rem;
+  color: #1e293b;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.dark .sp-buyer {
+  color: #f1f5f9;
+}
+
+.sp-buyer strong {
+  color: #0f172a;
+}
+
+body.dark .sp-buyer strong {
+  color: #fff;
+}
+
+.sp-item {
+  font-size: 0.76rem;
+  color: #64748b;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.25;
+}
+
+body.dark .sp-item {
+  color: #94a3b8;
+}
+
+.sp-item span {
+  font-weight: 600;
+  color: #334155;
+}
+
+body.dark .sp-item span {
+  color: #cbd5e1;
+}
+
+.sp-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.68rem;
+  margin-top: 2px;
+}
+
+.sp-time {
+  color: #94a3b8;
+}
+
+.sp-badge {
+  color: #10b981;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.sp-close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 3px 6px;
+  border-radius: 50%;
+  line-height: 1;
+  transition: color 0.15s;
+}
+
+.sp-close:hover {
+  color: #334155;
+}
+
+body.dark .sp-close:hover {
+  color: #ffffff;
+}
+
+@media (max-width: 768px) {
+  .social-proof-toast {
+    bottom: calc(74px + env(safe-area-inset-bottom, 0px));
+    left: 12px;
+    max-width: 290px;
+    width: auto;
+    padding: 8px 12px 8px 8px;
+    border-radius: 12px;
+  }
+  .sp-thumb {
+    width: 38px;
+    height: 38px;
+  }
+}
+
+
 
 
 
